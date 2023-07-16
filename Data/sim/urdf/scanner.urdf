@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<robot name="scanner">
+	<material name="z-rail">
+		<color rgba="0 0 1 1"/>
+	</material>
+  
+	<material name="y-rail">
+		<color rgba="0 1 0 1"/>
+	</material>
+  
+	<material name="x-rail">
+		<color rgba="1 0 0 1"/>
+	</material>
+  
+	<material name="laser-box">
+		<color rgba="0 0 0 1"/>
+	</material>
+
+	<link name="world"/>
+	
+	<link name="y-link">
+		<visual>
+			<geometry>
+				<box size="0.028 0.19685 0.03"/>
+			</geometry>
+			<material name="y-rail"/>
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.028 0.19685 0.03"/>
+			</geometry>
+		</collision>
+	</link>
+
+	<link name="x-link">
+		<visual>
+			<geometry>
+				<box size="0.31115 0.028 0.03"/>
+			</geometry>
+			<material name="x-rail"/>
+		</visual>
+	</link>
+
+	<link name="z-link">
+		<visual>
+			<geometry>
+				<box size="0.042 0.066 0.498475"/>
+			</geometry>
+			<material name="z-rail"/>
+		</visual>
+	</link>
+
+
+	<link name="laser-box-link">
+		<visual>
+			<geometry>
+				<box size="0.0175 0.031 0.0444"/>
+			</geometry>
+			<material name="laser-box"/>
+		</visual>
+	</link>
+
+	<joint name="ground" type="fixed">
+		<parent link="world"/>
+		<child link="z-link"/>
+		<origin xyz="0 0 0.2492375"/>
+	</joint>
+
+	<link name="connZ"/>
+
+	<joint name="z-motion" type="prismatic">
+		<parent link="z-link"/>
+		<child link="connZ"/>
+		<axis xyz="0 0 1"/>
+		<limit effort="0" lower="0" upper="0.3687" velocity="0.05"/>
+		<origin xyz="0.176575 0 -0.1294625"/>
+	</joint>
+
+	<joint name="x-motion" type="prismatic">
+		<parent link="connZ"/>
+		<child link="x-link"/>
+		<axis xyz="1 0 0"/>
+		<limit effort="0" lower="-0.2921" upper="0" velocity="0.05"/>
+		<origin xyz="-0.042 0.047 0"/>
+	</joint>
+
+	<joint name="y-motion" type="prismatic">
+		<parent link="x-link"/>
+		<child link="y-link"/>
+		<axis xyz="0 1 0"/>
+		<limit effort="0" lower="-0.083425" upper="0.083425" velocity="0.05"/>
+		<origin xyz="0.169575 0 0"/>
+	</joint>
+
+	<joint name="laser-joint" type="fixed">
+		<parent link="y-link"/>
+		<child link="laser-box-link"/>
+		<origin xyz="0.02275 0.082925 0.008"/>
+	</joint>
+
+
+</robot>

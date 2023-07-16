@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<robot name="chamber">
+  <material name="chamber_color">
+	<color rgba="1 0 0 0.1"/>
+  </material>
+  
+  <link name="chamber">
+	<visual>
+		<origin xyz="0 -0.15 0" rpy="0 0 1.57079632679"/>
+		<geometry>
+			<mesh filename="package://data/sim/meshes/chamber.stl" scale="1 1 1"/>
+		</geometry>
+		<material name="chamber_color"/>
+	</visual>
+	
+	<inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  
+</robot>
