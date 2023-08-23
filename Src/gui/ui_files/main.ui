@@ -548,19 +548,19 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_pybullet">
      <attribute name="title">
       <string>Simulation</string>
      </attribute>
-     <widget class="QOpenGLWidget" name="widget_open3d_2" native="true">
+     <widget class="QOpenGLWidget" name="widget_pybullet">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
-        <width>1221</width>
-        <height>761</height>
+        <y>10</y>
+        <width>1220</width>
+        <height>900</height>
        </rect>
       </property>
      </widget>
@@ -569,7 +569,7 @@
      <attribute name="title">
       <string>Object Visualizer</string>
      </attribute>
-     <widget class="QOpenGLWidget" name="widget_open3d" native="true">
+     <widget class="QOpenGLWidget" name="widget_open3d">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1153,13 +1153,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QOpenGLWidget</class>
-   <extends>QWidget</extends>
-   <header>qopenglwidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

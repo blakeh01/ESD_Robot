@@ -89,6 +89,7 @@ s
 
     def restart_sim(self):
         self.canRun = False
+        self.main_instance.window.setParent(None)
         p.disconnect()
 
         time.sleep(1)
@@ -96,4 +97,5 @@ s
         time.sleep(1)
 
         self.simulation_instance = Simulation()
+        self.main_instance.embed_pysim()
         self.canRun = True

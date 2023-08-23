@@ -10,6 +10,7 @@ import sys
 import Src.sim.ObjectVisualizer
 import win32gui
 import time
+import pybullet as p
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import (
@@ -89,10 +90,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
-        # hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
-        # self.window = QtGui.QWindow.fromWinId(hwnd)
-        # self.windowcontainer = self.createWindowContainer(self.window, self.widget_pybullet)
-        # self.windowcontainer.setMinimumSize(1221, 761)
+        self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -114,26 +112,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lbl_distance_rbt_obj.setStyleSheet("background-color: lightgreen")
         self.lbl_distance_rbt_obj.setText(str(round(self.controller.obj_distance, 5)))
 
-        # if self.controller.robot_instance.get_moving_flags()[0]:
-        #     self.lbl_ismoving_rail.setStyleSheet("background-color: green")
-        # else:
-        #     self.lbl_ismoving_rail.setStyleSheet("background-color: red")
-        #
-        # if self.controller.robot_instance.get_moving_flags()[2]:
-        #     self.lbl_ismoving_shoulder.setStyleSheet("background-color: green")
-        # else:
-        #     self.lbl_ismoving_shoulder.setStyleSheet("background-color: red")
-        #
-        # if self.controller.robot_instance.get_moving_flags()[3]:
-        #     self.lbl_ismoving_elbow.setStyleSheet("background-color: green")
-        # else:
-        #     self.lbl_ismoving_elbow.setStyleSheet("background-color: red")
-        #
-        # if self.controller.robot_instance.get_moving_flags()[4]:
-        #     self.lbl_ismoving_wrist.setStyleSheet("background-color: green")
-        # else:
-        #     self.lbl_ismoving_wrist.setStyleSheet("background-color: red")
-
         # Update time labels
         self.lbl_dt.setText(str(round(self.controller.dt, 6)))
         self.lbl_time.setText(str(round(self.controller.time_elapsed, 6)))
@@ -145,12 +123,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # If there is no current mesh, disable the 'send to sim' button
         self.btn_obj_send_to_sim.setEnabled(not self.o3d_visualizer.cur_mesh is None)
 
+    def embed_pysim(self):
+        hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
+        self.window = QtGui.QWindow.fromWinId(hwnd)
+        self.windowcontainer = self.createWindowContainer(self.window, self.widget_pybullet)
+        self.windowcontainer.setMinimumSize(1220, 900)
+
     def edit_constants(self):
         self.controller.restart_sim()
         pass
 
     def stop_program(self):
         print("[MAIN] Stopping Program!")
+        self.window.setParent(None)
         self.update_thread.stop()
         self.controller.shutdown()
         self.o3d_visualizer.visualizer.destroy_window()
@@ -265,6 +250,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msg.exec()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
+        self.update_thread.quit()
         self.stop_program()
         a0.accept()
 

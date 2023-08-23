@@ -3,6 +3,7 @@ import os.path
 import pybullet as p
 import pybullet_planning as pp
 import Src.sim.simhelper as simhelper
+import signal
 
 from Src.sim.sim_constants import *
 
@@ -11,10 +12,10 @@ DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_PLANE = os.path.join(DATA_DIR, "urdf", "plane.urdf")
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
-URDF_PLAT = os.path.join(DATA_DIR, "urdf", "rot_base.urdf")
+URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 URDF_OBJECT = os.path.join(DATA_DIR, "urdf", "object.urdf")
-URDF_CHAMBER = os.path.join(DATA_DIR, "urdf", "chamber.urdf")
-URDF_SCANNER = os.path.join(DATA_DIR, "urdf", "scanner.urdf")
+#URDF_CHAMBER = os.path.join(DATA_DIR, "urdf", "chamber.urdf")
+# URDF_SCANNER = os.path.join(DATA_DIR, "urdf", "scanner.urdf")
 
 
 class Simulation:
@@ -76,23 +77,23 @@ class Simulation:
         print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
 
         # Place chamber in environment
-        self.sim_chamber = pp.load_pybullet(URDF_CHAMBER, fixed_base=True, scale=SIM_SCALE)
-        p.resetBasePositionAndOrientation(self.sim_chamber, SIM_CHAMBER_OFFSET,
-                                          p.getQuaternionFromEuler(SIM_CHAMBER_ORN))
-        print(f"[SIM] Added chamber model to environment: {self.sim_chamber}")
+        # self.sim_chamber = pp.load_pybullet(URDF_CHAMBER, fixed_base=True, scale=SIM_SCALE)
+        # p.resetBasePositionAndOrientation(self.sim_chamber, SIM_CHAMBER_OFFSET,
+        #                                   p.getQuaternionFromEuler(SIM_CHAMBER_ORN))
+        # print(f"[SIM] Added chamber model to environment: {self.sim_chamber}")
 
         # Add scanner arm to environment
-        self.sim_scanner = pp.load_pybullet(URDF_SCANNER, fixed_base=True, scale=SIM_SCALE)
-        p.resetBasePositionAndOrientation(self.sim_scanner, SIM_SCANNER_OFFSET,
-                                          p.getQuaternionFromEuler(SIM_SCANNER_ORN))
-        print(f"[SIM] Added scanner arm to enivronment: {self.sim_scanner}")
+        # self.sim_scanner = pp.load_pybullet(URDF_SCANNER, fixed_base=True, scale=SIM_SCALE)
+        # p.resetBasePositionAndOrientation(self.sim_scanner, SIM_SCANNER_OFFSET,
+        #                                   p.getQuaternionFromEuler(SIM_SCANNER_ORN))
+        # print(f"[SIM] Added scanner arm to enivronment: {self.sim_scanner}")
 
         # Disable chamber collisions
-        p.setCollisionFilterGroupMask(self.sim_chamber, -1, 0, 0)
+        # p.setCollisionFilterGroupMask(self.sim_chamber, -1, 0, 0)
         p.setCollisionFilterPair(self.sim_chamber, self.sim_robot, -1, -1, 0)
         p.setCollisionFilterPair(self.sim_chamber, self.sim_platform, -1, -1, 0)
 
-        pp.set_camera_pose(tuple(np.array((0, 0.1, 0)) + np.array([0.25, -0.25, 0.25])), (0, 0.1, 0))
+        pp.set_camera_pose(tuple(np.array((0, 0, 0.1)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.1))
 
         if not PYBULLET_SHOW_GUI:
             simhelper.draw_world_axis(1 * SIM_SCALE, 5)

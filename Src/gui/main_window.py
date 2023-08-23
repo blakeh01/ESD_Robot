@@ -158,9 +158,9 @@ class Ui_MainWindow(object):
         self.widget_window_tabs.setObjectName("widget_window_tabs")
         self.tab_pybullet = QtWidgets.QWidget()
         self.tab_pybullet.setObjectName("tab_pybullet")
-        self.widget_open3d_2 = QtWidgets.QOpenGLWidget(self.tab_pybullet)
-        self.widget_open3d_2.setGeometry(QtCore.QRect(10, 160, 1221, 761))
-        self.widget_open3d_2.setObjectName("widget_open3d_2")
+        self.widget_pybullet = QtWidgets.QOpenGLWidget(self.tab_pybullet)
+        self.widget_pybullet.setGeometry(QtCore.QRect(10, 10, 1220, 900))
+        self.widget_pybullet.setObjectName("widget_pybullet")
         self.widget_window_tabs.addTab(self.tab_pybullet, "")
         self.tab_open3d = QtWidgets.QWidget()
         self.tab_open3d.setObjectName("tab_open3d")
@@ -363,7 +363,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.widget_window_tabs.setCurrentIndex(1)
+        self.widget_window_tabs.setCurrentIndex(0)
         self.tabObjectMode.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 

@@ -4,7 +4,7 @@ import os
 import open3d as o3d
 import numpy as np
 
-DATA_DIR = os.path.join(os.path.abspath('../..'), "data", "sim", "meshes")
+DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim", "meshes")
 
 class ObjectVisualizer:
 

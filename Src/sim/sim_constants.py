@@ -8,11 +8,10 @@ DRAW_TIP_AXES = True
 SIM_SCALE = 2
 UPDATE_RATE = 60  # Simulation speed / robot polling in frames per second.
 
-SIM_ROBOT_OFFSET = np.dot(SIM_SCALE, [-0.275, 0, 0.0333375])
-                          #[0, 0.275, 0.0333375])  # Position of the CENTER of robot relative to the origin (m)
+SIM_ROBOT_OFFSET = np.dot(SIM_SCALE, [-0.40, 0, 0])
 SIM_ROBOT_ORN = [0, 0, 0]  # Euler angles
 
-SIM_PLATFORM_OFFSET = np.dot(SIM_SCALE, [0, 0, 0.0635])
+SIM_PLATFORM_OFFSET = np.dot(SIM_SCALE, [0, 0, 0])
 SIM_PLATFORM_ORN = [0, 0, 0]
 
 SIM_CHAMBER_OFFSET = np.dot(SIM_SCALE, [0, 0, 0])

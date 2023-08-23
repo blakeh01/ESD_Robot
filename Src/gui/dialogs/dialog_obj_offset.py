@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
-URDF_PLAT = os.path.join(DATA_DIR, "urdf", "rot_base.urdf")
+URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 
 class UIDialogObjectOffset(object):
     def setupUi(self, dialog_obj_offset):
@@ -123,11 +123,11 @@ class DialogOffsetObject(QDialog):
     def on_done(self):
         (x, y, z) = (float(self.ui.txt_obj_a.text())/1000,
                      float(self.ui.txt_obj_a_2.text())/1000, float(self.ui.txt_obj_a_3.text())/1000)
-        URDF_OFFSET_LINE_NUM = 68
+        URDF_OFFSET_LINE_NUM = 77
 
         with open(URDF_PLAT, 'r') as file:
             content = file.readlines()
-            str_write = f'    <origin xyz="{x} {y} 0.01349375"/>\n'
+            str_write = f'    <origin xyz="{x} {y} 0.175"/>\n'
             content[URDF_OFFSET_LINE_NUM-1] = str_write  # replace contents with modified offset.
 
         with open(URDF_PLAT, 'w') as file:
