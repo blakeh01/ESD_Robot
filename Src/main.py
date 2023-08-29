@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QThread, pyqtSignal, QSize, QTimer
 from Src.gui.dialogs.dialog_probe_helper import DialogProbeHelper
+from scipy.spatial import KDTree
 
 from Src.gui.main_window import Ui_MainWindow
 from Src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
@@ -73,7 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Program Signals:
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
         self.btn_edit_consts.clicked.connect(self.edit_constants) # set probe pos dialog TODO
-        self.btn_rbt_info.clicked.connect(self.dialog_set_probe_pos) # robot 'info' button
+        self.btn_rbt_info.clicked.connect(self.dialog_rbt_info) # robot 'info' button
         self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select) # primitive select combobox
         self.btn_obj_create.clicked.connect(self.on_primitive_create) # primitive create button
         self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
@@ -115,6 +116,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Update time labels
         self.lbl_dt.setText(str(round(self.controller.dt, 6)))
         self.lbl_time.setText(str(round(self.controller.time_elapsed, 6)))
+
+        # Update probe voltage label
+        self.lbl_probe_voltage.setText(str(round(self.controller.probe_voltage, 5)))
 
         # If the user is currently on the visualizer, update it.
         if self.widget_window_tabs.currentIndex() == 1:

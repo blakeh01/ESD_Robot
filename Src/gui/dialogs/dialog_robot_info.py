@@ -14,10 +14,12 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QDialog
 
 
-class UIDialogRobotInfo(object):
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_DialogRobotInfo(object):
     def setupUi(self, DialogRobotInfo):
         DialogRobotInfo.setObjectName("DialogRobotInfo")
-        DialogRobotInfo.resize(683, 554)
+        DialogRobotInfo.resize(683, 657)
         DialogRobotInfo.setMinimumSize(QtCore.QSize(683, 554))
         self.widget_graph_rail = PlotWidget(DialogRobotInfo)
         self.widget_graph_rail.setGeometry(QtCore.QRect(10, 10, 321, 161))
@@ -68,11 +70,29 @@ class UIDialogRobotInfo(object):
         self.lbl_info_elbow.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_info_elbow.setObjectName("lbl_info_elbow")
         self.btn_pause = QtWidgets.QPushButton(DialogRobotInfo)
-        self.btn_pause.setGeometry(QtCore.QRect(500, 520, 75, 23))
+        self.btn_pause.setGeometry(QtCore.QRect(500, 620, 75, 23))
         self.btn_pause.setObjectName("btn_pause")
         self.btn_close = QtWidgets.QPushButton(DialogRobotInfo)
-        self.btn_close.setGeometry(QtCore.QRect(590, 520, 75, 23))
+        self.btn_close.setGeometry(QtCore.QRect(590, 620, 75, 23))
         self.btn_close.setObjectName("btn_close")
+        self.cmb_mode = QtWidgets.QComboBox(DialogRobotInfo)
+        self.cmb_mode.setGeometry(QtCore.QRect(20, 620, 111, 22))
+        self.cmb_mode.setObjectName("cmb_mode")
+        self.cmb_mode.addItem("")
+        self.cmb_mode.addItem("")
+        self.cmb_mode.addItem("")
+        self.widget_graph_probe = PlotWidget(DialogRobotInfo)
+        self.widget_graph_probe.setGeometry(QtCore.QRect(10, 450, 661, 161))
+        self.widget_graph_probe.setMinimumSize(QtCore.QSize(0, 0))
+        self.widget_graph_probe.setObjectName("widget_graph_probe")
+        self.lbl_info_probe_voltage = QtWidgets.QLabel(DialogRobotInfo)
+        self.lbl_info_probe_voltage.setGeometry(QtCore.QRect(270, 620, 121, 20))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.lbl_info_probe_voltage.setFont(font)
+        self.lbl_info_probe_voltage.setAlignment(QtCore.Qt.AlignCenter)
+        self.lbl_info_probe_voltage.setObjectName("lbl_info_probe_voltage")
 
         self.retranslateUi(DialogRobotInfo)
         QtCore.QMetaObject.connectSlotsByName(DialogRobotInfo)
@@ -86,13 +106,16 @@ class UIDialogRobotInfo(object):
         self.lbl_info_elbow.setText(_translate("DialogRobotInfo", "Elbow Position"))
         self.btn_pause.setText(_translate("DialogRobotInfo", "Pause"))
         self.btn_close.setText(_translate("DialogRobotInfo", "Close"))
+        self.cmb_mode.setItemText(0, _translate("DialogRobotInfo", "Position"))
+        self.cmb_mode.setItemText(1, _translate("DialogRobotInfo", "Velocity"))
+        self.cmb_mode.setItemText(2, _translate("DialogRobotInfo", "Acceleration"))
+        self.lbl_info_probe_voltage.setText(_translate("DialogRobotInfo", "Probe Potential"))
 from pyqtgraph import PlotWidget
-
 class DialogRobotInfo(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = UIDialogRobotInfo()
+        self.ui = Ui_DialogRobotInfo()
         self.ui.setupUi(self)
 
         self.REFRESH_RATE = 50
@@ -114,6 +137,7 @@ class DialogRobotInfo(QDialog):
         self.sim_shoulder_line = self.ui.widget_graph_shoulder.plot([0], [0], pen=self.sim_pen)
         self.sim_elbow_line = self.ui.widget_graph_elbow.plot([0], [0], pen=self.sim_pen)
         self.sim_wrist_line = self.ui.widget_graph_wrist.plot([0], [0], pen=self.sim_pen)
+        self.probe_pot_line = self.ui.widget_graph_probe.plot([0], [0], pen=self.sim_pen)
 
         self.ui.btn_pause.clicked.connect(self.toggle_pause)
         self.ui.btn_close.clicked.connect(self.close)
@@ -122,7 +146,8 @@ class DialogRobotInfo(QDialog):
             "RAIL":[0],
             "SHOULDER":[0],
             "ELBOW":[0],
-            "WRIST":[0]
+            "WRIST":[0],
+            "PROBE_POT":[0]
         }
 
         self.t = [0]
@@ -141,12 +166,14 @@ class DialogRobotInfo(QDialog):
         self.stored_positions["SHOULDER"].append(read_pos[2]) # Skipped waist as will be disabled
         self.stored_positions["ELBOW"].append(read_pos[3])
         self.stored_positions["WRIST"].append(read_pos[4])
+        self.stored_positions["PROBE_POT"].append(self.controller_instance.probe_voltage)
 
         # create X and Y axis values.
         rail_plot_data = (self.stored_positions["RAIL"])[-min(len(self.t), self.MAX_ELEMS_DISP):]
         shoulder_plot_data = self.stored_positions["SHOULDER"][-min(len(self.t), self.MAX_ELEMS_DISP):]
         elbow_plot_data = self.stored_positions["ELBOW"][-min(len(self.t), self.MAX_ELEMS_DISP):]
         wrist_plot_data = self.stored_positions["WRIST"][-min(len(self.t), self.MAX_ELEMS_DISP):]
+        probe_plot_data = self.stored_positions["PROBE_POT"][-min(len(self.t), self.MAX_ELEMS_DISP):]
         x_plot_data = self.t[-min(len(self.t), self.MAX_ELEMS_DISP):]
 
         # update the graphs
@@ -154,6 +181,7 @@ class DialogRobotInfo(QDialog):
         self.sim_shoulder_line.setData(x_plot_data, shoulder_plot_data)
         self.sim_elbow_line.setData(x_plot_data, elbow_plot_data)
         self.sim_wrist_line.setData(x_plot_data, wrist_plot_data)
+        self.probe_pot_line.setData(x_plot_data, probe_plot_data)
 
 
     def trim(self):

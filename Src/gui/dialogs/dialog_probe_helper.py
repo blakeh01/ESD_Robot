@@ -12,7 +12,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
 from Src.Controller import Controller
 from Src.sim import simhelper, sim_constants
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from PIL import Image
+import matplotlib.animation as animation
 
+import numpy as np
+import heapq
+import networkx as nx
 
 class UiDialogProbeHelper(object):
 
@@ -150,5 +157,9 @@ class DialogProbeHelper(QDialog):
             self.controller_instance.simulation_instance.current_point_cloud = None
 
         self.controller_instance.simulation_instance.current_point_cloud = cloud
+
+        points = []
+        for ap in cloud.alignment_points:
+            points.append(ap.pos)
 
         self.ui.lbl_probe_points.setText(str(cloud.get_num_points()))

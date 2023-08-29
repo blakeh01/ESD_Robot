@@ -86,7 +86,7 @@ class PointCloud:
         Stores a list of alignment points and draws them with platform rotation.
     '''
 
-    def __init__(self, alignment_points):
+    def __init__(self, alignment_points: AlignmentPoint):
         self.alignment_points = alignment_points
         self.debug_point = None
 

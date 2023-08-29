@@ -6,7 +6,7 @@ import numpy as np
 PYBULLET_SHOW_GUI = False
 DRAW_TIP_AXES = True
 SIM_SCALE = 2
-UPDATE_RATE = 60  # Simulation speed / robot polling in frames per second.
+UPDATE_RATE = 90  # Simulation speed / robot polling in frames per second.
 
 SIM_ROBOT_OFFSET = np.dot(SIM_SCALE, [-0.40, 0, 0])
 SIM_ROBOT_ORN = [0, 0, 0]  # Euler angles

@@ -6,6 +6,9 @@ from Src.sim.sim_constants import *
 from Src.robot.RobotHandler import *
 from Src.sim.simulation import *
 
+import nidaqmx
+import nidaqmx.system
+
 class Controller:
     """
         Initializes the overseer class.
@@ -18,7 +21,7 @@ class Controller:
             * GUI instance (self.gui)
                 - Allows for user interaction and viewing of data.
                 - Will most likely need to execute on separate thread
-s
+
         This class also is in control of time, using it's time to pass to all 3 of the instances.
         This ensures that each instance has a reference to each other's time.
 
@@ -39,6 +42,12 @@ s
         # self.maneuver_handler = ManeuverHandler(self.robot_instance)
         self.simulation_instance = Simulation()
         self.main_instance = main_instance
+
+        # NIDAQ probing
+        print("Connecting to NI-DAQ @ Dev1/ai0...")
+        self.nidaq_vTask = nidaqmx.Task()
+        self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+        self.probe_voltage = 0
 
         # Program mode
         self.canRun = True
@@ -71,6 +80,9 @@ s
             self.obj_distance = min(dist_list)
         else:
             self.obj_distance = 0.2
+
+        # Retrieve probe voltage
+        self.probe_voltage = self.nidaq_vTask.read()
 
         # Time management ('Tok')
         time.sleep(self.update_rate)
