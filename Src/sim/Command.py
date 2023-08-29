@@ -1,9 +1,9 @@
 import time
 
-import pybullet as p
 import numpy as np
-import pybullet_planning as pp
+import pybullet as p
 import src.sim.simhelper as simhelper
+
 
 class Command:
 
@@ -48,18 +48,18 @@ class CmdTest(Command):
         self.refid = p.addUserDebugPoints([[0, 0, 0]], [[0, 0, 0]], 5)
 
         self.waypoints = [
-            [0, 0.0925, 0.2+0.2],
-            [0, 0.0925, 0.22+0.2],
-            [0, 0.0925, 0.24+0.2],
-            [0, 0.0925, 0.26+0.2],
-            [0, 0.0925, 0.28+0.2],
+            [0, 0.0925, 0.2 + 0.2],
+            [0, 0.0925, 0.22 + 0.2],
+            [0, 0.0925, 0.24 + 0.2],
+            [0, 0.0925, 0.26 + 0.2],
+            [0, 0.0925, 0.28 + 0.2],
             [0, 0.0925, 0.3 + 0.2],
             [0, 0.0925, 0.32 + 0.2],
             [0, 0.0925, 0.34 + 0.2],
             [0, 0.0925, 0.36 + 0.2],
             [0, 0.0925, 0.38 + 0.2]
         ]
-        p.addUserDebugPoints(self.waypoints, [[1, 0, 0]]*len(self.waypoints), 2)
+        p.addUserDebugPoints(self.waypoints, [[1, 0, 0]] * len(self.waypoints), 2)
 
         self.is_here = True
         self.goal_conf = None
@@ -87,11 +87,9 @@ class CmdTest(Command):
             self.is_here = False
             return conf
 
-
         if not self.is_here and np.isclose(self.sim_instance.get_sim_joint_states(), self.goal_conf, atol=0.005).all():
             self.is_here = True
             spin()
-
 
         if not self.is_here:
             p.setJointMotorControlArray(self.sim_instance.sim_robot, [0, 2, 3, 4, 5],
@@ -120,9 +118,9 @@ class CmdTest(Command):
             self.goal_conf = go_to_next(self.current_idx)
             self.new = False
 
-        #self.complete = True
+        # self.complete = True
 
-        #self.frame += 1
+        # self.frame += 1
 
         #
         # if self.plan is None:
@@ -150,9 +148,9 @@ class CmdTest(Command):
         #
         # path = pp.plan_cartesian_motion(self.sim_instance.sim_robot, [])
 
-        #pp.simulate_controller(ctrl)
+        # pp.simulate_controller(ctrl)
 
-        #self.complete = True
+        # self.complete = True
         #
         # if self.frame % 5 == 0:
         #     pp.set_joint_positions(
@@ -180,10 +178,9 @@ class CmdTest(Command):
         # ]
         # print(waypoints)
 
-        #plan = pp.plan_waypoints_joint_motion(self.sim_instance.sim_robot, [0, 2, 3, 4, 5], waypoints=wp)
+        # plan = pp.plan_waypoints_joint_motion(self.sim_instance.sim_robot, [0, 2, 3, 4, 5], waypoints=wp)
 
-        #print(plan)
-
+        # print(plan)
 
 
 class CmdGenerateNormals(Command):
@@ -197,15 +194,15 @@ class CmdGenerateNormals(Command):
 
     def onUpdate(self):
         super(CmdGenerateNormals, self).onUpdate()
-        #self.sim_instance.current_point_cloud = simhelper.get_surface_alignment_points(draw_cloud=False)
+        # self.sim_instance.current_point_cloud = simhelper.get_surface_alignment_points(draw_cloud=False)
         self.sim_instance.current_point_cloud = simhelper.get_grouped_alignment_points()
         self.complete = True
+
 
 class CmdRestartSim(Command):
 
     def __init__(self, controller, timeout=0):
         super().__init__(controller, timeout)
-
 
     def executeCommand(self, args):
         super(CmdRestartSim, self).executeCommand(args)
@@ -241,7 +238,7 @@ class CmdGoToPosiiton(Command):
 
         goal_pos = self.args[0][0]
         joint_poses = p.calculateInverseKinematics(self.sim_instance.sim_robot, 6, goal_pos,
-                                                       p.getQuaternionFromEuler([0, 0, -np.pi / 2]))
+                                                   p.getQuaternionFromEuler([0, 0, -np.pi / 2]))
         self.enableMotor(joint_poses, [0, 2, 3, 4, 5])
 
         if np.isclose(joint_poses, self.sim_instance.get_sim_joint_states(), atol=0.001).all():
@@ -268,7 +265,7 @@ class CmdGoToPosiiton(Command):
                                 velocityGain=1,
                                 maxVelocity=0)
 
-        #SHOULDER
+        # SHOULDER
         p.setJointMotorControl2(self.sim_instance.sim_robot, joints[2],
                                 controlMode=p.POSITION_CONTROL,
                                 targetPosition=joint_pos[2],
@@ -277,7 +274,7 @@ class CmdGoToPosiiton(Command):
                                 velocityGain=1,
                                 maxVelocity=1.5)
 
-        #ELBOW
+        # ELBOW
         p.setJointMotorControl2(self.sim_instance.sim_robot, joints[3],
                                 controlMode=p.POSITION_CONTROL,
                                 targetPosition=joint_pos[3],
@@ -294,4 +291,3 @@ class CmdGoToPosiiton(Command):
                                 positionGain=1,
                                 velocityGain=1,
                                 maxVelocity=2)
-

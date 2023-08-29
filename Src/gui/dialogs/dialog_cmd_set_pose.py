@@ -1,12 +1,7 @@
-
-
 import pybullet as p
-import pybullet_planning as pp
-import numpy as np
-
-from Src.Controller import Controller
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
+from Src.Controller import Controller
 
 
 class UiDialogSetProbePosition(object):
@@ -136,7 +131,6 @@ class DialogSetProbePosition(QDialog):
         self.ui.btn_drawpoint.clicked.connect(self.draw_point)
         self.ui.btn_cancel.clicked.connect(self.done)
 
-
     def draw_point(self):
         pos = [float(self.ui.txt_x.text()), float(self.ui.txt_y.text()), float(self.ui.txt_z.text())]
         p.addUserDebugPoints([pos], [[255, 0, 0]], 5,
@@ -145,5 +139,4 @@ class DialogSetProbePosition(QDialog):
     # [[x,y,z],[rx,ry,rz]]
     def send_probe_state(self):
         pos = [float(self.ui.txt_x.text()), float(self.ui.txt_y.text()), float(self.ui.txt_z.text())]
-        #rot = [float(self.ui.txt_rx.text()) * (np.pi/180), float(self.ui.txt_ry.text()) * (np.pi/180), float(self.ui.txt_rz.text()) * (np.pi/180)]
-
+        # rot = [float(self.ui.txt_rx.text()) * (np.pi/180), float(self.ui.txt_ry.text()) * (np.pi/180), float(self.ui.txt_rz.text()) * (np.pi/180)]

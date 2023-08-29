@@ -1,7 +1,8 @@
-import serial
 import time
-import serial.tools.list_ports as port_list
+
 import numpy as np
+import serial
+import serial.tools.list_ports as port_list
 
 
 def generate_g_code(rot, feed, motor_axis):
@@ -57,7 +58,6 @@ for i in z_split:
         print(f"Setting X to: {0}")
 
     time.sleep(maneuver_time)
-
 
 input("Done with test! Setting home...")
 zero_axes(s)

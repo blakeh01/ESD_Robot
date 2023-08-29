@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class AlignmentPoint:
 
     def __init__(self, world_pos, surface_normal):

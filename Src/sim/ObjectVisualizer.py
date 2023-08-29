@@ -1,10 +1,10 @@
-import random
-
 import os
-import open3d as o3d
+
 import numpy as np
+import open3d as o3d
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim", "meshes")
+
 
 class ObjectVisualizer:
 
@@ -60,8 +60,10 @@ class ObjectVisualizer:
         else:
             z_offset = -1 * vertices[:, 2].min()
 
-        self.cur_mesh.translate(-centroid)     # move the object by the negative offset of the centroid, thereby centering it.
-        self.cur_mesh.translate(np.array([0, 0, z_offset])) # offset the object by the neg. of minimum z, thus lifting it off the ground.
+        self.cur_mesh.translate(
+            -centroid)  # move the object by the negative offset of the centroid, thereby centering it.
+        self.cur_mesh.translate(
+            np.array([0, 0, z_offset]))  # offset the object by the neg. of minimum z, thus lifting it off the ground.
 
         # add the geometry to the visualizer to allow for viewing
         self.visualizer.add_geometry(self.cur_mesh)

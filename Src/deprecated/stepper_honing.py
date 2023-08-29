@@ -36,8 +36,6 @@ if self.mode == MODE_MIRROR:
         state = self.simulation_instance.get_sim_joint_states()
         self.robot_instance.sync_write_states(state)
 
-
-
 # motor code
 p.setJointMotorControlArray(self.simulation_instance.sim_robot_id, [0, 2, 3, 4, 5],
                             controlMode=p.POSITION_CONTROL,

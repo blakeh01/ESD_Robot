@@ -1,12 +1,11 @@
 import os.path
+import time
 
 import pybullet as p
 import pybullet_data
-import time
-
 from dynio import *
-
 from src.sim.sim_constants import *
+
 
 def chunk(array, size_limit):
     out = []
@@ -14,13 +13,15 @@ def chunk(array, size_limit):
     s = 0
 
     while l - s > 0:
-        out.append(array[s:s+size_limit])
+        out.append(array[s:s + size_limit])
         s += size_limit
 
     return out
 
+
 def unit_vector(vector):
     return vector / np.linalg.norm(vector)
+
 
 def move(t, pos, rot):
     poses = inverse_kinematics_helper(sim_robot_id, 6,
@@ -34,11 +35,10 @@ def move(t, pos, rot):
                                 positionGains=[1, 1, 1, 1, 1],
                                 velocityGains=[1, 1, 1, 1, 1])
 
+
 # directory management
 HERE = os.path.abspath('..')
 RBT_PATH = os.path.join(HERE, 'data', 'universal_robot', 'ur_description', 'urdf', 'ur5.urdf')
-
-
 
 p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -71,7 +71,6 @@ p.setCollisionFilterPair(sim_robot_id, sim_platform_id, 6, -1, 0)
 p.setCollisionFilterPair(sim_robot_id, sim_platform_id, 5, -1, 0)
 p.setCollisionFilterPair(sim_robot_id, sim_platform_id, 4, -1, 0)
 
-
 ## END SETUP
 
 
@@ -84,7 +83,7 @@ resolution = 360  # ex. 1 raybatch per degree
 z_density = 250
 
 z_space = np.linspace(z_lower_limit, z_upper_limit, z_density, endpoint=True)
-theta_space = np.arange(0, 2*np.pi, (2*np.pi)/resolution)
+theta_space = np.arange(0, 2 * np.pi, (2 * np.pi) / resolution)
 
 ray_to_positions = []
 ray_from_positions = []
@@ -94,9 +93,8 @@ for z in z_space:
         x_coord = xz_offset * np.cos(theta)
         y_coord = xz_offset * np.sin(theta)
 
-        ray_from_positions.append([x_coord+center[0], y_coord+center[1], z])
+        ray_from_positions.append([x_coord + center[0], y_coord + center[1], z])
         ray_to_positions.append([center[0], center[1], z])
-
 
 # Batch our rays to avoid ray limit
 batched_froms = chunk(ray_from_positions, p.MAX_RAY_INTERSECTION_BATCH_SIZE)
@@ -126,7 +124,6 @@ for i in range(len(batched_froms)):
             pos = np.add(hit_pos, np.dot(hit_norm, dist_from_obj))
             points.append(pos)
 
-
 colors = []
 for i in range(len(points)):
     colors.append([0, 0, 1])
@@ -135,7 +132,6 @@ p.addUserDebugPoints(points, colors, 2)
 
 # Run sim loop.
 
-while(1):
+while (1):
     p.stepSimulation()
     time.sleep(dt)
-

@@ -6,26 +6,22 @@
 '''
 
 import sys
+import time
 
 import Src.sim.ObjectVisualizer
 import win32gui
-import time
-import pybullet as p
-
 from PyQt5 import QtGui
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QMessageBox
 )
-from PyQt5.QtCore import QThread, pyqtSignal, QSize, QTimer
-from Src.gui.dialogs.dialog_probe_helper import DialogProbeHelper
-from scipy.spatial import KDTree
-
-from Src.gui.main_window import Ui_MainWindow
-from Src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
-from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
-from Src.gui.dialogs.dialog_obj_offset import DialogOffsetObject
 from Src.Controller import Controller
-from Src.robot.RobotHandler import RobotHandler
+from Src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
+from Src.gui.dialogs.dialog_obj_offset import DialogOffsetObject
+from Src.gui.dialogs.dialog_probe_helper import DialogProbeHelper
+from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
+from Src.gui.main_window import Ui_MainWindow
+
 
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
@@ -45,6 +41,7 @@ class UpdateThread(QThread):
     def stop(self):
         self.is_running = False
         self.quit()
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
@@ -68,20 +65,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_thread = UpdateThread(self.controller)
         self.update_thread.update_frame.connect(self.update)
-        self.update_thread.start() # start controller thread
+        self.update_thread.start()  # start controller thread
         self._gui_timer.start(16)  # start GUI update thread ~ 60 FPS
 
         # Program Signals:
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
-        self.btn_edit_consts.clicked.connect(self.edit_constants) # set probe pos dialog TODO
-        self.btn_rbt_info.clicked.connect(self.dialog_rbt_info) # robot 'info' button
-        self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select) # primitive select combobox
-        self.btn_obj_create.clicked.connect(self.on_primitive_create) # primitive create button
+        self.btn_edit_consts.clicked.connect(self.edit_constants)  # set probe pos dialog TODO
+        self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)  # robot 'info' button
+        self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select)  # primitive select combobox
+        self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
         self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
-        self.pushButton.clicked.connect(self.on_probing_helper) # todo fix name
+        self.pushButton.clicked.connect(self.on_probing_helper)  # todo fix name
 
         # Set update rate to given value.
-        self.lbl_updaterate.setText(str(round(1/self.controller.update_rate)) + " /s")
+        self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
 
         # Move windows (o3d) to proper tabs
         hwnd = win32gui.FindWindowEx(0, 0, None, "Open3D")
@@ -207,7 +204,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             case 1:  # sphere was selected.
                 if float(self.txt_obj_a.text()) == 0:
-                    self.show_information_box("Enter Required Fields!", "Please enter all required fields before creation!")
+                    self.show_information_box("Enter Required Fields!",
+                                              "Please enter all required fields before creation!")
                     return
                 self.o3d_visualizer.display_primitive(
                     "sphere",
@@ -216,8 +214,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 )
 
             case 2:  # prism was selected.
-                if float(self.txt_obj_a.text()) == 0 or float(self.txt_obj_b.text()) == 0 or float(self.txt_obj_c.text()) == 0:
-                    self.show_information_box("Enter Required Fields!", "Please enter all required fields before creation!")
+                if float(self.txt_obj_a.text()) == 0 or float(self.txt_obj_b.text()) == 0 or float(
+                        self.txt_obj_c.text()) == 0:
+                    self.show_information_box("Enter Required Fields!",
+                                              "Please enter all required fields before creation!")
                     return
                 self.o3d_visualizer.display_primitive(
                     "rectangular prism",
@@ -227,7 +227,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             case 3:  # cylinder was selected.
                 if float(self.txt_obj_a.text()) == 0 or float(self.txt_obj_b.text()) == 0:
-                    self.show_information_box("Enter Required Fields!", "Please enter all required fields before creation!")
+                    self.show_information_box("Enter Required Fields!",
+                                              "Please enter all required fields before creation!")
                     return
                 self.o3d_visualizer.display_primitive(
                     "cylinder",
@@ -257,6 +258,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_thread.quit()
         self.stop_program()
         a0.accept()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

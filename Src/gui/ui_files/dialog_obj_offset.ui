@@ -1,258 +1,258 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>dialog_obj_offset</class>
- <widget class="QDialog" name="dialog_obj_offset">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>529</width>
-    <height>95</height>
-   </rect>
-  </property>
-  <property name="font">
-   <font>
-    <weight>50</weight>
-    <bold>false</bold>
-   </font>
-  </property>
-  <property name="windowTitle">
-   <string>Dialog</string>
-  </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>10</y>
-     <width>81</width>
-     <height>241</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Vertical</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QGroupBox" name="grp_manual">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>351</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Manual Offsets</string>
-   </property>
-   <widget class="QLabel" name="lbl_info_m1">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>20</y>
-      <width>31</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>mm</string>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="txt_obj_a">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>24</x>
-      <y>17</y>
-      <width>62</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>8</x>
-      <y>20</y>
-      <width>16</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>X</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>20</y>
-      <width>16</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Y</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_info_m1_2">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>202</x>
-      <y>20</y>
-      <width>31</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>mm</string>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="txt_obj_a_2">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>136</x>
-      <y>17</y>
-      <width>62</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="txt_obj_a_3">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>254</x>
-      <y>17</y>
-      <width>62</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_info_m1_3">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>320</x>
-      <y>20</y>
-      <width>31</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>mm</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>238</x>
-      <y>20</y>
-      <width>16</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Z</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-  </widget>
- </widget>
- <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>dialog_obj_offset</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>dialog_obj_offset</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+    <class>dialog_obj_offset</class>
+    <widget class="QDialog" name="dialog_obj_offset">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>529</width>
+                <height>95</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <weight>50</weight>
+                <bold>false</bold>
+            </font>
+        </property>
+        <property name="windowTitle">
+            <string>Dialog</string>
+        </property>
+        <widget class="QDialogButtonBox" name="buttonBox">
+            <property name="geometry">
+                <rect>
+                    <x>440</x>
+                    <y>10</y>
+                    <width>81</width>
+                    <height>241</height>
+                </rect>
+            </property>
+            <property name="orientation">
+                <enum>Qt::Vertical</enum>
+            </property>
+            <property name="standardButtons">
+                <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+            </property>
+        </widget>
+        <widget class="QGroupBox" name="grp_manual">
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>20</y>
+                    <width>351</width>
+                    <height>51</height>
+                </rect>
+            </property>
+            <property name="title">
+                <string>Manual Offsets</string>
+            </property>
+            <widget class="QLabel" name="lbl_info_m1">
+                <property name="enabled">
+                    <bool>true</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>90</x>
+                        <y>20</y>
+                        <width>31</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>mm</string>
+                </property>
+            </widget>
+            <widget class="QDoubleSpinBox" name="txt_obj_a">
+                <property name="enabled">
+                    <bool>true</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>24</x>
+                        <y>17</y>
+                        <width>62</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label">
+                <property name="geometry">
+                    <rect>
+                        <x>8</x>
+                        <y>20</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>X</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_2">
+                <property name="geometry">
+                    <rect>
+                        <x>120</x>
+                        <y>20</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Y</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="lbl_info_m1_2">
+                <property name="enabled">
+                    <bool>true</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>202</x>
+                        <y>20</y>
+                        <width>31</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>mm</string>
+                </property>
+            </widget>
+            <widget class="QDoubleSpinBox" name="txt_obj_a_2">
+                <property name="enabled">
+                    <bool>true</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>136</x>
+                        <y>17</y>
+                        <width>62</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QDoubleSpinBox" name="txt_obj_a_3">
+                <property name="enabled">
+                    <bool>false</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>254</x>
+                        <y>17</y>
+                        <width>62</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QLabel" name="lbl_info_m1_3">
+                <property name="enabled">
+                    <bool>true</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>320</x>
+                        <y>20</y>
+                        <width>31</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>mm</string>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_3">
+                <property name="geometry">
+                    <rect>
+                        <x>238</x>
+                        <y>20</y>
+                        <width>16</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Z</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+        </widget>
+    </widget>
+    <resources/>
+    <connections>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>accepted()</signal>
+            <receiver>dialog_obj_offset</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>248</x>
+                    <y>254</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>157</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>rejected()</signal>
+            <receiver>dialog_obj_offset</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>316</x>
+                    <y>260</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>286</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
 </ui>

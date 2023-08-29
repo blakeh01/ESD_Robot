@@ -1,15 +1,14 @@
 # testcase class for motion planning
+import os
+import time
+
+import numpy as np
 import pybullet as p
 import pybullet_planning as pp
-import time
-import os
-import numpy as np
-
 from src.sim.sim_constants import SIM_ROBOT_OFFSET, SIM_ROBOT_ORN, SIM_SCALE
 
 DATA_DIR = os.path.join(os.path.abspath('../..'), "data", "sim")
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
-
 
 pp.connect(use_gui=True)
 
@@ -18,10 +17,10 @@ p.resetBasePositionAndOrientation(robot, SIM_ROBOT_OFFSET, p.getQuaternionFromEu
 
 rbt_joints = [0, 2, 3, 4, 5]
 
-
 p.addUserDebugPoints([[0.1, 0, 0.5]], [[1, 0, 0]], 5)
 
 pp.set_camera_pose(tuple(np.array((0, 0.1, 0)) + np.array([0.25, -0.25, 0.25])), (0, 0.1, 0))
+
 
 def create_path_plan():
     startPos = pp.get_joint_positions(robot, rbt_joints)
@@ -42,6 +41,7 @@ def create_path_plan():
 
     return s_gen
 
+
 input("a")
 
 s_gen = create_path_plan()
@@ -55,6 +55,6 @@ while 1:
         s_gen = create_path_plan()
 
     p.stepSimulation()
-    time.sleep(1./60)
+    time.sleep(1. / 60)
 
 p.disconnect()

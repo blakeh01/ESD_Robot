@@ -1,7 +1,6 @@
 import roboticstoolbox as rtb
-import swift
 import spatialgeometry as geo
-
+import swift
 from src.deprecated.maneuver_handler import *
 from src.deprecated.models.rx200_modified import rx200Modified
 
@@ -54,7 +53,6 @@ if getch() == chr(0x1b):
 
 asynchronousGoHome(packetHandler, portHandler)
 
-
 # Initialize RBT
 robot = rx200Modified()
 pointer = geo.Sphere(radius=.05)
@@ -71,8 +69,8 @@ print("Use WA(X)SD(Y)QZ(Z) to move target point. Press F to submit.")
 
 MOVE_STEP_AMT = 0.05
 
-currentPos = np.zeros(3)                    # Position matrix
-currentPose = pointer.T                     # World matrix todo clean
+currentPos = np.zeros(3)  # Position matrix
+currentPose = pointer.T  # World matrix todo clean
 print(f"Start position: {currentPos}")
 
 while 1:
@@ -105,7 +103,6 @@ while 1:
     pointer.T = currentPose
     env.step()
 
-
 print(f"Solving INVERSE KINEMATICS for point {currentPos}.")
 start = time.process_time_ns()
 
@@ -120,7 +117,7 @@ print(f"IKINE solution tuple: \n{sol}")
 print(inv_traj)
 
 end = time.process_time_ns()
-print(f"Took {(end-start)/1000000} ms to calculate the inverse trajectory.")
+print(f"Took {(end - start) / 1000000} ms to calculate the inverse trajectory.")
 
 print("Press any key to begin trajectory. (or ESC to quit)")
 if getch() == chr(0x1b):
@@ -129,9 +126,8 @@ if getch() == chr(0x1b):
 print("Moving robot to desired end point.")
 for qk in inv_traj.q:  # for each joint configuration on trajectory
     robot.q = qk  # update the robot state
-    #matchSimulatedPosition(packetHandler, portHandler, groupSyncWrite, qk, 50)
+    # matchSimulatedPosition(packetHandler, portHandler, groupSyncWrite, qk, 50)
     env.step()  # update visualization
-
 
 print("Arrived! Press any key to quit...")
 getch()

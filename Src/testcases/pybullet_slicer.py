@@ -7,21 +7,23 @@
 
     REF: https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA
 '''
-import pybullet as p
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
-import numpy as np
-import math
-import time
 from dataclasses import dataclass
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pybullet as p
+from matplotlib.widgets import Slider
+
 
 @dataclass
 class AlignmentData:
     position: list
-    normal:   list
+    normal: list
 
-def generate_slices(filePath, scale, obj_pos=[0,0,0], obj_eorn=[0, 0, 0], obj_center=[0, 0, 0],
-                    object_height=0.01, raycast_distance=0.1, raycast_XY_density=180, raycast_Z_density=30, probe_dist_mm=1,
+
+def generate_slices(filePath, scale, obj_pos=[0, 0, 0], obj_eorn=[0, 0, 0], obj_center=[0, 0, 0],
+                    object_height=0.01, raycast_distance=0.1, raycast_XY_density=180, raycast_Z_density=30,
+                    probe_dist_mm=1,
                     plot=False):
     ## CONNECT TO PYBULLET
     client = p.connect(p.GUI)
@@ -38,9 +40,9 @@ def generate_slices(filePath, scale, obj_pos=[0,0,0], obj_eorn=[0, 0, 0], obj_ce
     ## REF: https://en.wikipedia.org/wiki/Cylindrical_coordinate_system
     assert raycast_XY_density * raycast_Z_density <= p.MAX_RAY_INTERSECTION_BATCH_SIZE
 
-    rho         = raycast_distance
-    phi_space   =  np.linspace(0, 2*np.pi, num=raycast_XY_density, endpoint=False)
-    z_space     = np.linspace(0, object_height, num=raycast_Z_density)
+    rho = raycast_distance
+    phi_space = np.linspace(0, 2 * np.pi, num=raycast_XY_density, endpoint=False)
+    z_space = np.linspace(0, object_height, num=raycast_Z_density)
 
     ## CREATE ARRAY OF START POSITIONS IN CARTESIAN COORDINATES
     raycast_start_arr = []
@@ -48,10 +50,10 @@ def generate_slices(filePath, scale, obj_pos=[0,0,0], obj_eorn=[0, 0, 0], obj_ce
 
     for phi in phi_space:
         for z in z_space:
-            raycast_start_arr.append((rho*np.cos(phi), rho*np.sin(phi), z))
+            raycast_start_arr.append((rho * np.cos(phi), rho * np.sin(phi), z))
             raycast_end_arr.append((obj_center[0], obj_center[1], z))
 
-    p.addUserDebugPoints(raycast_start_arr, [[255, 0, 0]]*len(raycast_start_arr), 2)
+    p.addUserDebugPoints(raycast_start_arr, [[255, 0, 0]] * len(raycast_start_arr), 2)
 
     ## BATCH CAST RAYS, FILTER, CREATE ALIGNMENT POINT DATA.
     results = p.rayTestBatch(raycast_start_arr, raycast_end_arr, numThreads=0)
@@ -63,7 +65,7 @@ def generate_slices(filePath, scale, obj_pos=[0,0,0], obj_eorn=[0, 0, 0], obj_ce
             hit_pos = r[3]
             hit_norm = r[4]
 
-            offset_pos = np.add(hit_pos, np.dot(hit_norm, probe_dist_mm/1000))
+            offset_pos = np.add(hit_pos, np.dot(hit_norm, probe_dist_mm / 1000))
             alignment_points.append(AlignmentData(offset_pos, hit_norm))
 
     slices = slice(alignment_points)
@@ -102,11 +104,11 @@ def slice(alignment_points, tolerance=0.001):
 def plot_slices(sliced_dict):
     # Create a figure and axes for the plot and slider
     fig, ax = plt.subplots()
-    plt.subplots_adjust(bottom=0.25) # Adjust the bottom margin to make space for the slider
-    slider_ax = plt.axes([0.2, 0.1, 0.6, 0.05]) # Define the location and size of the slider axes
+    plt.subplots_adjust(bottom=0.25)  # Adjust the bottom margin to make space for the slider
+    slider_ax = plt.axes([0.2, 0.1, 0.6, 0.05])  # Define the location and size of the slider axes
 
     # Create a slider widget for the slice index
-    slice_slider = Slider(slider_ax, 'Slice Index', 0, len(sliced_dict)-1, valinit=0, valstep=1, facecolor='#cc7000')
+    slice_slider = Slider(slider_ax, 'Slice Index', 0, len(sliced_dict) - 1, valinit=0, valstep=1, facecolor='#cc7000')
 
     # Define a function to update the plot when the slider value changes
     def update_plot(val):

@@ -1,6 +1,3 @@
-import random
-
-import numpy as np
 import pybullet as p
 import pybullet_planning as pp
 from Src.sim.sim_constants import *
@@ -8,10 +5,10 @@ from Src.util.math_util import *
 
 
 def get_object_point_cloud(draw_cloud=False, draw_normals=False, draw_ray_start=False, line_thickness=1, numThreads=0,
-                                 z_limits=Z_LIMITS, z_density=Z_DENSITY,
-                                 xz_offset=XZ_OFFSET,
-                                 resolution=RESOLUTION, scan_center=SCAN_CENTER,
-                                 norm_length=NORM_LENGTH, probe_dist=PROBE_DIST):
+                           z_limits=Z_LIMITS, z_density=Z_DENSITY,
+                           xz_offset=XZ_OFFSET,
+                           resolution=RESOLUTION, scan_center=SCAN_CENTER,
+                           norm_length=NORM_LENGTH, probe_dist=PROBE_DIST):
     '''
 
     :param draw_cloud:
@@ -29,7 +26,7 @@ def get_object_point_cloud(draw_cloud=False, draw_normals=False, draw_ray_start=
     '''
 
     z_space = np.linspace(start=z_limits[0], stop=z_limits[1], num=z_density, endpoint=True)
-    phi_space = np.linspace(start=0, stop=2*np.pi, num=resolution, endpoint=False) # no endpoint as 0 = 2pi
+    phi_space = np.linspace(start=0, stop=2 * np.pi, num=resolution, endpoint=False)  # no endpoint as 0 = 2pi
     rho = xz_offset
 
     ray_start = []
@@ -43,10 +40,10 @@ def get_object_point_cloud(draw_cloud=False, draw_normals=False, draw_ray_start=
                 z
             )
 
-            ray_start.append([x,y,z])
+            ray_start.append([x, y, z])
             ray_end.append([scan_center[0], scan_center[1], z])
 
-    if draw_ray_start: p.addUserDebugPoints(ray_start, [[255, 0, 0]]*len(ray_start), 5)
+    if draw_ray_start: p.addUserDebugPoints(ray_start, [[255, 0, 0]] * len(ray_start), 5)
 
     if len(ray_start) > p.MAX_RAY_INTERSECTION_BATCH_SIZE:
         print("[SIM] Attempted raycast beyond bounded limit!")
@@ -75,6 +72,7 @@ class AlignmentPoint:
         Stores a point, a normal, and a isMeasured field. Will be used when probing the robot.
 
     '''
+
     def __init__(self, pos, direction):
         self.pos = pos
         self.direction = direction
@@ -100,9 +98,9 @@ class PointCloud:
         for ap in self.alignment_points:
             pts.append(rot_matrix @ ap.pos)
         if self.debug_point is None:
-            self.debug_point = p.addUserDebugPoints(pts, [color]*len(pts), size)
+            self.debug_point = p.addUserDebugPoints(pts, [color] * len(pts), size)
         else:
-            p.addUserDebugPoints(pts, [color]*len(pts), size, replaceItemUniqueId=self.debug_point)
+            p.addUserDebugPoints(pts, [color] * len(pts), size, replaceItemUniqueId=self.debug_point)
 
     def delete_cloud(self):
         p.removeUserDebugItem(self.debug_point)

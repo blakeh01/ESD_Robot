@@ -1,10 +1,8 @@
 import os.path
 
+import Src.sim.simhelper as simhelper
 import pybullet as p
 import pybullet_planning as pp
-import Src.sim.simhelper as simhelper
-import signal
-
 from Src.sim.sim_constants import *
 
 # Paths for URDF files.
@@ -14,7 +12,9 @@ URDF_PLANE = os.path.join(DATA_DIR, "urdf", "plane.urdf")
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 URDF_OBJECT = os.path.join(DATA_DIR, "urdf", "object.urdf")
-#URDF_CHAMBER = os.path.join(DATA_DIR, "urdf", "chamber.urdf")
+
+
+# URDF_CHAMBER = os.path.join(DATA_DIR, "urdf", "chamber.urdf")
 # URDF_SCANNER = os.path.join(DATA_DIR, "urdf", "scanner.urdf")
 
 
@@ -43,7 +43,7 @@ class Simulation:
         # Simulation ref
         self.robot_joints = [0, 2, 3, 4, 5]
         self.current_point_cloud = None
-        self.probe_vector = [0, 0, 0] # describes the vector to line up platform for probing. todos
+        self.probe_vector = [0, 0, 0]  # describes the vector to line up platform for probing. todos
         self.plat_rot = 0
 
         # Debug stuff
@@ -63,7 +63,7 @@ class Simulation:
         p.setTimeStep(self.time_step)
 
         # Load ground plane into environment.
-        #pp.load_pybullet(URDF_PLANE)
+        # pp.load_pybullet(URDF_PLANE)
 
         # Add robot into PyBullet environment
         self.sim_robot = pp.load_pybullet(URDF_RBT, fixed_base=True, scale=SIM_SCALE)
@@ -100,8 +100,8 @@ class Simulation:
 
         # create 3 lines with unique IDs for probe tip axis.
         self.tip_ref_axes = [p.addUserDebugLine([0, 0, 0], [0, 0, 0]),
-                        p.addUserDebugLine([0, 0, 0], [0, 0, 0]),
-                        p.addUserDebugLine([0, 0, 0], [0, 0, 0])]
+                             p.addUserDebugLine([0, 0, 0], [0, 0, 0]),
+                             p.addUserDebugLine([0, 0, 0], [0, 0, 0])]
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 

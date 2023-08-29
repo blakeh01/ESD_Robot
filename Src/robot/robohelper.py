@@ -1,4 +1,3 @@
-
 '''
 
     robohelper.py implements various functions to communicate with the dynamixel_sdk and ultimately with the modified
@@ -11,10 +10,12 @@
 
 '''
 
-from dynamixel_sdk import *
-from Src.robot.rbt_constants import *
 import os
+
 import numpy as np
+from Src.robot.rbt_constants import *
+from dynamixel_sdk import *
+
 
 def dxlToRadians(value, radian_offset):
     '''
@@ -25,6 +26,7 @@ def dxlToRadians(value, radian_offset):
     :return: rotational position from dynamixel position
     '''
     return np.radians(value * 0.087890625) + radian_offset
+
 
 def radiansToDxlUnits(value):
     '''
@@ -46,6 +48,7 @@ def writeGoalPosition(packet_handler, port_handler: PortHandler, id, position):
     :param position: position (in dynamixel units) to set the goal to
     '''
     packet_handler.write4ByteTxRx(port_handler, id, ADDR_GOAL_POSITION, position)
+
 
 def setTorques(packet_handler, port_handler, dxl_ids, torque):
     '''
@@ -87,6 +90,7 @@ def addGroupParameter(groupSyncWrite, dxl_id, data):
     if not dxl_addparam_result:
         print(f"[ID:{dxl_id}] groupSyncWrite addparam failed")
         quit()
+
 
 def statusCheck(packet_handler, comm_result, error):
     '''

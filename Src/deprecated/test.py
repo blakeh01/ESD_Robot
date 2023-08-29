@@ -1,13 +1,14 @@
+import logging
 import os
 import time
-import logging
 
 import pybullet as p
 import pybullet_planning as pp
-#import pybulletX as pX
-
 from src.sim.sim_constants import *
 from src.sim.simhelper import get_normal_point_cloud
+
+
+# import pybulletX as pX
 
 
 # temp class for refactoring code, also notetaking revert
@@ -37,7 +38,6 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
-
 ## define some paths, first path can be put in somekind of configuration perhaps?
 
 DATA_DIR = os.path.join(os.path.abspath('../..'), "data", "sim")
@@ -48,7 +48,6 @@ URDF_PLAT = os.path.join(DATA_DIR, "urdf", "rot_base.urdf")
 URDF_CHAMBER = os.path.join(DATA_DIR, "urdf", "chamber.urdf")
 
 SIM_SCALE = 2  # every 1 meter in real life is 2 meters in sim.
-
 
 ## connect
 sim_id = pp.connect(use_gui=True)
@@ -78,12 +77,11 @@ refY = p.addUserDebugLine([0, 0, 0], [0, 0, 0])
 refZ = p.addUserDebugLine([0, 0, 0], [0, 0, 0])
 
 # draw joint names
-#for i in range(p.getNumJoints(sim_robot)):
+# for i in range(p.getNumJoints(sim_robot)):
 #    pp.draw_link_name(sim_robot, i)
 
 vals = get_normal_point_cloud()
 
-while(1):
-
+while (1):
     p.stepSimulation()
-    time.sleep(1./120)
+    time.sleep(1. / 120)

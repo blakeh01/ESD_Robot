@@ -1,8 +1,9 @@
 import random
 import tkinter as tk
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
+
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.figure import Figure
+
 
 # Main Control window, needs lots of work.
 class TestGui:
@@ -24,7 +25,7 @@ class TestGui:
         self.init_main()
 
     def init_main(self):
-        self.main_window.protocol("WM_DELETE_WINDOW", self.disable_event) # Disable the closing of the main window.
+        self.main_window.protocol("WM_DELETE_WINDOW", self.disable_event)  # Disable the closing of the main window.
         self.main_window.geometry("300x400")
 
         self.lbl_time = tk.Label(master=self.main_window, text="Time Elapsed: 0")
@@ -59,9 +60,6 @@ class TestGui:
         self.lbl_mode.pack()
         self.btn_shadow.pack()
         self.btn_exit.pack()
-
-
-
 
     def update_gui(self, t=0, dt=0):
         self.main_window.update()

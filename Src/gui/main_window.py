@@ -421,7 +421,8 @@ class Ui_MainWindow(object):
         self.lbl_info_updaterate.setText(_translate("MainWindow", "Update Rate:"))
         self.lbl_updaterate.setText(_translate("MainWindow", "120 /s"))
         self.btn_shutdown_program.setText(_translate("MainWindow", "Shutdown"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_pybullet), _translate("MainWindow", "Simulation"))
+        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_pybullet),
+                                           _translate("MainWindow", "Simulation"))
         self.cb_primitive_select.setItemText(0, _translate("MainWindow", "Select Primitive..."))
         self.cb_primitive_select.setItemText(1, _translate("MainWindow", "Sphere"))
         self.cb_primitive_select.setItemText(2, _translate("MainWindow", "Rectangular Prism"))
@@ -433,12 +434,14 @@ class Ui_MainWindow(object):
         self.lbl_info_a.setText(_translate("MainWindow", "Radius:"))
         self.lbl_info_b.setText(_translate("MainWindow", "Height: (Z)"))
         self.lbl_info_c.setText(_translate("MainWindow", "Height: (Z)"))
-        self.tabObjectMode.setTabText(self.tabObjectMode.indexOf(self.tab_obj_primitives), _translate("MainWindow", "Primitives"))
+        self.tabObjectMode.setTabText(self.tabObjectMode.indexOf(self.tab_obj_primitives),
+                                      _translate("MainWindow", "Primitives"))
         self.btn_obj_import_lookup.setText(_translate("MainWindow", "..."))
         self.lbl_info_obj_import_path.setText(_translate("MainWindow", "Object Path:"))
         self.btn_obj_import.setText(_translate("MainWindow", "Import"))
         self.lbl_info_obj_import_scale.setText(_translate("MainWindow", "Object Scale:"))
-        self.tabObjectMode.setTabText(self.tabObjectMode.indexOf(self.tab_obj_import), _translate("MainWindow", "Import"))
+        self.tabObjectMode.setTabText(self.tabObjectMode.indexOf(self.tab_obj_import),
+                                      _translate("MainWindow", "Import"))
         self.btn_scan_start.setText(_translate("MainWindow", "Start Scan"))
         self.grp_scan_dims.setTitle(_translate("MainWindow", "Object Dimensions"))
         self.lbl_info_m1_3.setText(_translate("MainWindow", "mm"))
@@ -449,5 +452,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "Z"))
         self.tabObjectMode.setTabText(self.tabObjectMode.indexOf(self.tab_obj_scan), _translate("MainWindow", "Scan"))
         self.btn_obj_send_to_sim.setText(_translate("MainWindow", "Send To Simulation"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_open3d), _translate("MainWindow", "Object Visualizer"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_data_visualizer), _translate("MainWindow", "Data Visualizer"))
+        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_open3d),
+                                           _translate("MainWindow", "Object Visualizer"))
+        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_data_visualizer),
+                                           _translate("MainWindow", "Data Visualizer"))

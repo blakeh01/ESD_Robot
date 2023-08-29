@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QDialog
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 
+
 class UIDialogObjectOffset(object):
     def setupUi(self, dialog_obj_offset):
         dialog_obj_offset.setObjectName("dialog_obj_offset")
@@ -27,7 +28,7 @@ class UIDialogObjectOffset(object):
         self.buttonBox = QtWidgets.QDialogButtonBox(dialog_obj_offset)
         self.buttonBox.setGeometry(QtCore.QRect(440, 10, 81, 241))
         self.buttonBox.setOrientation(QtCore.Qt.Vertical)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.grp_manual = QtWidgets.QGroupBox(dialog_obj_offset)
         self.grp_manual.setGeometry(QtCore.QRect(20, 20, 351, 51))
@@ -94,8 +95,8 @@ class UIDialogObjectOffset(object):
         self.label_3.setObjectName("label_3")
 
         self.retranslateUi(dialog_obj_offset)
-        self.buttonBox.accepted.connect(dialog_obj_offset.accept) # type: ignore
-        self.buttonBox.rejected.connect(dialog_obj_offset.reject) # type: ignore
+        self.buttonBox.accepted.connect(dialog_obj_offset.accept)  # type: ignore
+        self.buttonBox.rejected.connect(dialog_obj_offset.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(dialog_obj_offset)
 
     def retranslateUi(self, dialog_obj_offset):
@@ -121,14 +122,14 @@ class DialogOffsetObject(QDialog):
         self.ui.buttonBox.clicked.connect(self.on_done)
 
     def on_done(self):
-        (x, y, z) = (float(self.ui.txt_obj_a.text())/1000,
-                     float(self.ui.txt_obj_a_2.text())/1000, float(self.ui.txt_obj_a_3.text())/1000)
+        (x, y, z) = (float(self.ui.txt_obj_a.text()) / 1000,
+                     float(self.ui.txt_obj_a_2.text()) / 1000, float(self.ui.txt_obj_a_3.text()) / 1000)
         URDF_OFFSET_LINE_NUM = 77
 
         with open(URDF_PLAT, 'r') as file:
             content = file.readlines()
             str_write = f'    <origin xyz="{x} {y} 0.175"/>\n'
-            content[URDF_OFFSET_LINE_NUM-1] = str_write  # replace contents with modified offset.
+            content[URDF_OFFSET_LINE_NUM - 1] = str_write  # replace contents with modified offset.
 
         with open(URDF_PLAT, 'w') as file:
             file.writelines(content)

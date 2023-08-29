@@ -14,9 +14,9 @@
 
 '''
 
-import serial
 import time
 
+import serial
 from Src.robot.rbt_constants import *
 
 

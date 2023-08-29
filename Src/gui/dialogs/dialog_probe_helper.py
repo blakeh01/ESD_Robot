@@ -12,14 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
 from Src.Controller import Controller
 from Src.sim import simhelper, sim_constants
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from PIL import Image
-import matplotlib.animation as animation
 
-import numpy as np
-import heapq
-import networkx as nx
 
 class UiDialogProbeHelper(object):
 
@@ -147,9 +140,9 @@ class DialogProbeHelper(QDialog):
 
     def generate_normals(self):
         cloud = simhelper.get_object_point_cloud(
-            probe_dist=(float(self.ui.sbox_probe_distance.text())/1000)*sim_constants.SIM_SCALE,
+            probe_dist=(float(self.ui.sbox_probe_distance.text()) / 1000) * sim_constants.SIM_SCALE,
             resolution=(int(float(self.ui.sbox_scan_resolution.text()))),
-            z_density=(int(float(self.ui.sbox_scan_z.text()))*sim_constants.SIM_SCALE)*10
+            z_density=(int(float(self.ui.sbox_scan_z.text())) * sim_constants.SIM_SCALE) * 10
         )
 
         if self.controller_instance.simulation_instance.current_point_cloud is not None:

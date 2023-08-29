@@ -1,7 +1,6 @@
 import roboticstoolbox as rtb
-import swift
 import spatialgeometry as geo
-
+import swift
 from src.deprecated.maneuver_handler import *
 from src.deprecated.models.rx200_modified import rx200Modified
 
@@ -57,10 +56,9 @@ asynchronousGoHome(packetHandler, portHandler)
 # Initialize RBT
 robot = rx200Modified()
 test_shape = geo.Cylinder(radius=.1, length=.25)
-test_shape.T = sm.SE3(0, 0, .25/2)  # setting the 'pose' of the object. in essence, this is just the position
+test_shape.T = sm.SE3(0, 0, .25 / 2)  # setting the 'pose' of the object. in essence, this is just the position
 print(robot)
 print(test_shape)
-
 
 env = swift.Swift()
 env.launch(realtime=True)
@@ -116,9 +114,9 @@ while 1:
             wrist_pos = readCurrentPosition(packetHandler, portHandler, DXL_ID_05)
 
             waist_rot = positionUnitToRadians(waist_pos) - np.pi
-            shoulder_rot = positionUnitToRadians(shoulder_pos-DXL_HOME[DXL_ID_02])
-            elbow_rot = positionUnitToRadians(elbow_pos-DXL_HOME[DXL_ID_04])
-            wrist_rot = positionUnitToRadians(-wrist_pos+DXL_HOME[DXL_ID_05])
+            shoulder_rot = positionUnitToRadians(shoulder_pos - DXL_HOME[DXL_ID_02])
+            elbow_rot = positionUnitToRadians(elbow_pos - DXL_HOME[DXL_ID_04])
+            wrist_rot = positionUnitToRadians(-wrist_pos + DXL_HOME[DXL_ID_05])
 
             print(f"Mocking joint rotations: \n{waist_pos} -> {waist_rot} rad"
                   f"\n{shoulder_pos} -> {shoulder_rot} rad"
@@ -126,13 +124,10 @@ while 1:
 
             pose = np.array([waist_rot, shoulder_rot, -elbow_rot, wrist_rot])
             robot.q = pose
-            env.step(MODE_MOCK_STEP/1000)
+            env.step(MODE_MOCK_STEP / 1000)
 
     elif given == chr(0x1b):
         break
-
-
-
 
 # Disable Dynamixel Torque
 setTorque(packetHandler, portHandler, DXL_ID_01, TORQUE_DISABLE)

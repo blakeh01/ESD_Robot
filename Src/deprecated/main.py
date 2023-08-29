@@ -2,18 +2,16 @@ import sys
 
 import pyqtgraph as pg
 import src.sim.Command as cmd
-
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow
 )
-from PyQt5.QtCore import QTimer
-
-from src.gui.main_window import Ui_MainWindow
-from src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
-from src.gui.dialogs.dialog_choose_object import DialogChooseObject  # todo maybe? put into a single dialogs class
-from src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from src.Controller import Controller
-from src.robot.RobotHandler import RobotHandler
+from src.gui.dialogs.dialog_choose_object import DialogChooseObject  # todo maybe? put into a single dialogs class
+from src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
+from src.gui.dialogs.dialog_robot_info import DialogRobotInfo
+from src.gui.main_window import Ui_MainWindow
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
@@ -39,7 +37,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Program Button Events:
         self.btn_start_program.clicked.connect(self.start_program)
         self.btn_edit_consts.clicked.connect(lambda: self.send_command("cmd_test"))
-        #self.btn_edit_consts.clicked.connect(self.edit_constants)
+        # self.btn_edit_consts.clicked.connect(self.edit_constants)
         self.btn_shutdown_program.clicked.connect(self.stop_program)
         self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)
 
@@ -49,11 +47,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Command Handling:
         self.cmd_timeout_timer = QTimer()
+
         def chk_timeout():
             if self.controller.current_command is not None:
                 print("[CMD] Command Timed Out! This could be dangerous!")
                 self.controller.current_command = None
                 self.cmd_timeout_timer.stop()
+
         self.cmd_timeout_timer.timeout.connect(chk_timeout)
 
         self.command_list = [
@@ -69,13 +69,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Graph setup
         pen = pg.mkPen(color=(255, 0, 0))
-        #self.widget_graph_dt.setLabel("left", "Process Time (s)", **{"color": "#f00", "font-size": "10px"})
+        # self.widget_graph_dt.setLabel("left", "Process Time (s)", **{"color": "#f00", "font-size": "10px"})
         self.data_line = self.widget_graph_dt.plot([0], [0], pen=pen)
-       # self.widget_graph_dt.addLegend()
+        # self.widget_graph_dt.addLegend()
         self.widget_graph_dt.showGrid(x=False, y=True)
 
         # Set update rate to given value.
-        self.lbl_updaterate.setText(str(round(1/self.controller.update_rate)) + " /s")
+        self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -145,8 +145,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def dialog_rbt_info(self):
         _dlg = DialogRobotInfo(self)
         _dlg.exec()
-
-
 
 
 # class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):

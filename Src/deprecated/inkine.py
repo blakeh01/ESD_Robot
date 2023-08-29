@@ -1,12 +1,11 @@
-import pybullet as p
 import time
 
+import pybullet as p
 import pybullet_data
-
-from src.robot.RobotHandler import RobotHandler
-from src.sim.sim_constants import *
 from pybullet_planning import set_camera_pose, inverse_kinematics_helper, \
     get_movable_joints, set_joint_positions, wait_for_user
+from src.robot.RobotHandler import RobotHandler
+from src.sim.sim_constants import *
 
 p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -26,9 +25,9 @@ print(f"Initialized robot with ID: {sim_robot_id}")
 set_camera_pose(tuple(np.array((0, 0.1, 0)) + np.array([0.25, -0.25, 0.25])), (0, 0.1, 0))
 
 # Add center platform AND OBJECT into PyBullet environment
-#sim_platform_id = p.loadURDF("pantex/urdf/rot_base.urdf", SIM_PLATFORM_OFFSET, p.getQuaternionFromEuler([0,0,0]))
-#p.resetBasePositionAndOrientation(sim_platform_id, SIM_PLATFORM_OFFSET, p.getQuaternionFromEuler([0,0,0]))
-#print(f"Initialized platform with ID: {sim_platform_id}")
+# sim_platform_id = p.loadURDF("pantex/urdf/rot_base.urdf", SIM_PLATFORM_OFFSET, p.getQuaternionFromEuler([0,0,0]))
+# p.resetBasePositionAndOrientation(sim_platform_id, SIM_PLATFORM_OFFSET, p.getQuaternionFromEuler([0,0,0]))
+# print(f"Initialized platform with ID: {sim_platform_id}")
 
 #############
 
@@ -76,13 +75,12 @@ def get_sim_joint_states():
 
 for i in range(0, 5):
     set_joint_positions(sim_robot_id, get_movable_joints(sim_robot_id),
-                    inverse_kinematics_helper(sim_robot_id, 6,
-                                              ([0, 0.05, 0.3], p.getQuaternionFromEuler([0, 0, -np.pi / 2]))))
+                        inverse_kinematics_helper(sim_robot_id, 6,
+                                                  ([0, 0.05, 0.3], p.getQuaternionFromEuler([0, 0, -np.pi / 2]))))
 
 print("WARNING: MATCH JOINT POSITIONS AS YOU SEE..")
 wait_for_user()
 robot_instance = RobotHandler()
-
 
 t = 0
 while (1):

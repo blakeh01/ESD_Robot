@@ -46,8 +46,8 @@ class ManeuverHandler:
 
         self.previous_maneuver = maneuver
         print(f"[ID:{maneuver.dxl_id}] Maneuver sent to DXL!")
-        setVelocityProfile(self.packet_handler, self.port_handler, maneuver.dxl_id, VELOCITY_LIMIT_DEF)     # Reset velocity
-
+        setVelocityProfile(self.packet_handler, self.port_handler, maneuver.dxl_id,
+                           VELOCITY_LIMIT_DEF)  # Reset velocity
 
     def addManeuver(self, maneuver):
         self.maneuver_list.append(maneuver)

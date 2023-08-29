@@ -103,7 +103,6 @@ class RobotHandler:
         if self.i % 2 == 0:
             self.getRobotPositionArray()
 
-
         self.time_alive = time_alive
         self.stepper_handler.update_interpolated_positions(step)
 
@@ -116,14 +115,14 @@ class RobotHandler:
             print("Tried to write an invalid joint state!")
             return
 
-        #self.stepper_handler.write_3axis(rail_states)
+        # self.stepper_handler.write_3axis(rail_states)
 
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
         waist_pos = radiansToDxlUnits(joint_state[1] + np.pi)
         shoulder_pos = radiansToDxlUnits(joint_state[2] + np.pi)
         elbow_pos = radiansToDxlUnits(joint_state[3] + np.pi)
         wrist_pos = radiansToDxlUnits(joint_state[4] + np.pi)
-        waist_pos = 2005 # todo care
+        waist_pos = 2005  # todo care
 
         # add a group write parameter containing the positional data to the DXLs
         addGroupParameter(self.pos_group_writer, DXL_ID_01, byteIntegerTransform(int(waist_pos)))
@@ -134,7 +133,8 @@ class RobotHandler:
 
         # Syncwrite goal position
         self.pos_group_writer.txPacket()  # begins motion of the DXLs
-        self.stepper_handler.linear_rail_motor.add_position_to_queue(1000 * joint_state[0])  # begins motion of the stepper motor
+        self.stepper_handler.linear_rail_motor.add_position_to_queue(
+            1000 * joint_state[0])  # begins motion of the stepper motor
 
         # Clear syncwrite parameter storage
         self.pos_group_writer.clearParam()

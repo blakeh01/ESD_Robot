@@ -1,6 +1,6 @@
+import matplotlib
 import pybullet as p
 import pybullet_data
-import matplotlib
 from src.robot.robohelper import *
 
 matplotlib.use("TkAgg")
@@ -46,13 +46,12 @@ p.addUserDebugPoints([box_max], [[255, 0, 0]], pointSize=10)
 points = []
 
 for i in range(0, num_x):
-    if i%2==0:
+    if i % 2 == 0:
         for k in range(0, num_z):
             points.append([interval_x[i], box_max[1], interval_z[k]])
     else:
-        for k in range(num_z-1, 0, -1):
+        for k in range(num_z - 1, 0, -1):
             points.append([interval_x[i], box_max[1], interval_z[k]])
-
 
 # index 0: linear actuator, index 2: waist, index 3: shoulder
 # index 4: elbow, index 5: wrist
@@ -106,7 +105,7 @@ plt.show()
 
 while 1:
     p.stepSimulation()
-    time.sleep(1./SIM_FPS)
+    time.sleep(1. / SIM_FPS)
 
 
 def movementLoop(jointPoses, tolerance):
@@ -135,6 +134,7 @@ def movementLoop(jointPoses, tolerance):
         updateVars()
         drawProbeRay()
 
+
 # Returns the 'needy' joint states. That is, ones that are required in inverse kinematic calculations.
 def getNeedyStates():
     return [p.getJointState(robotId, 0), p.getJointState(robotId, 2), p.getJointState(robotId, 3),
@@ -146,6 +146,7 @@ def drawProbeRay():
     p.addUserDebugLine(probe_affector_pos, [probe_affector_pos[0], -1, probe_affector_pos[2] - 0.02], lifeTime=0.05,
                        lineColorRGB=[1, 0, 0], lineWidth=2.5)
 
+
 def updateVars():
     p.stepSimulation()
     time.sleep(1. / SIM_FPS)
@@ -155,10 +156,10 @@ while 1:
     updateVars()
     drawProbeRay()
 
-    movementLoop(p.calculateInverseKinematics(robotId, 5, [0, objStartPos[1] + 0.8, objStartPos[2]], p.getQuaternionFromEuler([0, 0, 0])), 0.0001)
+    movementLoop(p.calculateInverseKinematics(robotId, 5, [0, objStartPos[1] + 0.8, objStartPos[2]],
+                                              p.getQuaternionFromEuler([0, 0, 0])), 0.0001)
 
     for pose in jointPoses:
         movementLoop(pose, 0.0001)
-
 
 p.disconnect()

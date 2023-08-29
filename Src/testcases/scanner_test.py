@@ -7,13 +7,10 @@
         - Display points in Open3D
 '''
 import math
-import random
-import time
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
-from serial import Serial, STOPBITS_ONE, PARITY_NONE, EIGHTBITS
-from functools import reduce
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+from serial import Serial, PARITY_NONE, EIGHTBITS
 
 PORT = "COM3"
 BAUD = 9600

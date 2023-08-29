@@ -1,7 +1,8 @@
-import serial
 import time
 
+import serial
 from src.robot.rbt_constants import *
+
 
 # A class that stores information about the stepper motor.
 class StepperHandler:
@@ -46,7 +47,7 @@ class StepperHandler:
 
     def write_position(self, rot):
         return
-        if rot > self.max_pos or rot < 0 or rot == self.goal_pos: # Ensure we do not write an unreachable rotation
+        if rot > self.max_pos or rot < 0 or rot == self.goal_pos:  # Ensure we do not write an unreachable rotation
             return
 
         self.current_pos = rot
@@ -54,23 +55,21 @@ class StepperHandler:
 
     def write_3axis(self, pos):
         code = bytes(str(f"G1 X{round(pos[0])} Y{round(pos[1])} Z{round(pos[2])} F250"), "ASCII")
-        self.stepper_serial.write(code+b'\r\n')
-        #print(code)
+        self.stepper_serial.write(code + b'\r\n')
+        # print(code)
 
     def spin_plat(self):
         self.spin_amt += 4.1
         code = bytes(str(f"G1 A{self.spin_amt} F25"), "ASCII")
-        self.stepper_serial.write(code+b'\r\n')
+        self.stepper_serial.write(code + b'\r\n')
 
     def generate_g_code(self, rot):
         rot_code = bytes(str(rot), "ASCII")
         feed_code = bytes(str(self.feed_rate), "ASCII")
-        return b'G1 Y'+rot_code+b' F'+feed_code+b'\r\n'
+        return b'G1 Y' + rot_code + b' F' + feed_code + b'\r\n'
 
     def close(self):
         print(f"[RAIL] Exiting... going home.")
         self.stepper_serial.write(self.generate_g_code(self.home_pos))
         self.stepper_serial.write(bytes(str(f"G1 X0 Y0 Z0 F250"), "ASCII"))
         self.stepper_serial.close()
-
-

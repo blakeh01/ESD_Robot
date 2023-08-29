@@ -1,11 +1,9 @@
-import pybullet as p
 import time
 
+import pybullet as p
 import pybullet_data
-
-from src.sim.sim_constants import *
-
 from pybullet_planning import inverse_kinematics_helper
+from src.sim.sim_constants import *
 
 
 # Testcase Takeaways:

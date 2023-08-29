@@ -1,13 +1,8 @@
-import pybullet as p
-import pybullet_planning as pp
-import time
-
-from Src.sim.sim_constants import *
+import nidaqmx
+import nidaqmx.system
 from Src.robot.RobotHandler import *
 from Src.sim.simulation import *
 
-import nidaqmx
-import nidaqmx.system
 
 class Controller:
     """
@@ -70,7 +65,7 @@ class Controller:
         # Update robot/simulation
         # self.robot_instance.update_robot()
         self.simulation_instance.update_simulation(self.time_elapsed)
-        #self.maneuver_handler.update()
+        # self.maneuver_handler.update()
 
         # Collision check
         dist_list = []

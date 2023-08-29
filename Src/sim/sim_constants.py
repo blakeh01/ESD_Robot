@@ -15,7 +15,7 @@ SIM_PLATFORM_OFFSET = np.dot(SIM_SCALE, [0, 0, 0])
 SIM_PLATFORM_ORN = [0, 0, 0]
 
 SIM_CHAMBER_OFFSET = np.dot(SIM_SCALE, [0, 0, 0])
-SIM_CHAMBER_ORN = [0, 0, np.pi/2]
+SIM_CHAMBER_ORN = [0, 0, np.pi / 2]
 
 SIM_SCANNER_OFFSET = np.dot(SIM_SCALE, [-0.2, -0.27, 0])
 SIM_SCANNER_ORN = [0, 0, 0]
