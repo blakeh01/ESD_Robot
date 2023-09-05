@@ -71,10 +71,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Program Signals:
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
         self.btn_edit_consts.clicked.connect(self.edit_constants)  # set probe pos dialog TODO
-        self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)  # robot 'info' button
+        self.btn_rbt_info.clicked.connect(self.test_probe)  # robot 'info' button
         self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select)  # primitive select combobox
         self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
         self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
+        self.btn_scan_start.clicked.connect(self.start_obj_scan)
         self.pushButton.clicked.connect(self.on_probing_helper)  # todo fix name
 
         # Set update rate to given value.
@@ -91,6 +92,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
+
+
+    def start_obj_scan(self):
+        pass
+
+    def test_probe(self):
+        self.controller.simulation_instance.probe_enable = True
 
     def update_gui(self):
         # Update simulation isRunning label

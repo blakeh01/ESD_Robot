@@ -86,7 +86,36 @@ class PointCloud:
 
     def __init__(self, alignment_points: AlignmentPoint):
         self.alignment_points = alignment_points
+        self.sliced_points = None
         self.debug_point = None
+
+        self.sliced_points = self.group_points(self.alignment_points, tolerance=0.0025)
+
+    def group_points(self, points, tolerance):
+        grouped_dict = {}
+
+        for point in points:
+            z_value = point.pos[2]
+            grouped_key = None
+
+            # Find a suitable key in the dictionary based on tolerance
+            for key in grouped_dict:
+                if abs(z_value - key) <= tolerance:
+                    grouped_key = key
+                    break
+
+            # If no suitable key found, create a new one
+            if grouped_key is None:
+                grouped_key = z_value
+
+            if grouped_key in grouped_dict:
+                grouped_dict[grouped_key].append(point)
+            else:
+                grouped_dict[grouped_key] = [point]
+
+        grouped_dict = dict(sorted(grouped_dict.items(), key=lambda item: item[0], reverse=True))
+
+        return grouped_dict
 
     def get_num_points(self):
         return len(self.alignment_points)

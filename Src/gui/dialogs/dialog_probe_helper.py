@@ -151,8 +151,5 @@ class DialogProbeHelper(QDialog):
 
         self.controller_instance.simulation_instance.current_point_cloud = cloud
 
-        points = []
-        for ap in cloud.alignment_points:
-            points.append(ap.pos)
-
         self.ui.lbl_probe_points.setText(str(cloud.get_num_points()))
+        self.close()

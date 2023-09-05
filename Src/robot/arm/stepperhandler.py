@@ -48,8 +48,26 @@ class StepperHandler:
     def update_interpolated_positions(self, dt):
         self.linear_rail_motor.update(dt)
 
-    def write_3axis(self, pos):
-        code = bytes(str(f"G1 X{round(pos[0])} Y{round(pos[1])} Z{round(pos[2])} F500"), "ASCII")
+    def write_x(self, pos):
+        code = bytes(str(f"G1 X{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
+
+    def write_y(self, pos):
+        code = bytes(str(f"G1 Y{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
+
+    def write_z(self, pos, feed):
+        code = bytes(str(f"G1 Z{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
+
+    def write_3axis(self, pos, feed):
+        code = bytes(str(f"G1 X{round(pos[0])} Y{round(pos[1])} Z{round(pos[2])} F{round(feed)}"), "ASCII")
         self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
         print(code)
@@ -58,7 +76,6 @@ class StepperHandler:
         print(f"[RAIL] Exiting... going home.")
         self.stepper_serial.write(generate_g_code('A', 0, 500))
         self.stepper_serial.close()
-
 
 class LinearRail:
 

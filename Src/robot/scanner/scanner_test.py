@@ -28,6 +28,8 @@ class LaserScanner():
     def __init__(self, port, baud):
         self.laser = Serial(port=port, baudrate=baud, bytesize=EIGHTBITS, parity=PARITY_NONE)
 
+        scanner.tx_rx(0x52, 0x40, 0x06, True) # generate test packet
+
     def read_distance(self):
         # begin read sequence by handshaking with laser TODO
         reply = self.tx_rx(CMD_WRITE, 0x00, 0x01)
@@ -40,16 +42,16 @@ class LaserScanner():
         if distance_mm & 0x8000: distance_mm = distance_mm - 0x10000
         distance_mm += 5000  # add 5000 to make laser range 0-10000 (0-100mm)
 
-        print(distance_mm)
+        return distance_mm
 
-    def tx_rx(self, command, data_1, data_2):
+    def tx_rx(self, command, data_1, data_2, verbose=False):
         # generate bit checksum
         bcc = hex(command ^ data_1 ^ data_2)
-        print("calculated BCC: ", bcc)
+        if verbose: print("calculated BCC: ", bcc)
 
         # construct packet and send out serially
         data_packet = bytes(hex(STX) + hex(command) + hex(data_1) + hex(data_2) + hex(ETX) + bcc, 'ASCII')
-        print("sending out: ", data_packet)
+        if verbose: print("sending out: ", data_packet)
         self.laser.write(data_packet)
 
         # wait for reply

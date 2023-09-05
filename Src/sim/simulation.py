@@ -1,9 +1,12 @@
 import os.path
 
 import Src.sim.simhelper as simhelper
+import numpy as np
 import pybullet as p
 import pybullet_planning as pp
 from Src.sim.sim_constants import *
+
+import math
 
 # Paths for URDF files.
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
@@ -108,6 +111,10 @@ class Simulation:
         self.debug_point = p.addUserDebugPoints([[0, 0, 0]], [[255, 0, 0]], 0)
         self.current_point_cloud = None
 
+        self.probe_enable = False
+        self.slice_idx = 0
+        self.point_idx = 0
+
         print("[SIM] Successfully initialized PyBullet environment...")
 
     def update_simulation(self, time_elapsed):
@@ -118,7 +125,11 @@ class Simulation:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
         if self.current_point_cloud is not None:
-            self.current_point_cloud.draw_point_cloud(rotation=p.getJointState(self.sim_platform, 0)[0])
+
+            if self.probe_enable:
+                self.do_probing()
+            else:
+                self.idx_slice = 0
 
         # Sync with the main instance and therefore real robot.
         self.time_elapsed = time_elapsed
@@ -126,6 +137,14 @@ class Simulation:
         # Step the simulation
         p.stepSimulation()
 
+
+    def do_probing(self):
+        _slices = list(self.current_point_cloud.sliced_points.items())
+
+        if 0 <= self.slice_idx < len(_slices):
+            z_value, points = _slices[self.slice_idx]
+
+        self.probe_enable = False
     def write_joint_states(self, joint_state):
         if joint_state == self.get_sim_joint_states():
             return
