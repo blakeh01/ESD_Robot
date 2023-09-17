@@ -17,7 +17,7 @@
 import time
 
 import serial
-from Src.robot.rbt_constants import *
+from Src.robot.arm.rbt_constants import *
 
 
 # A class that stores information about the stepper motor.
@@ -31,9 +31,6 @@ class StepperHandler:
         print(f"[RAIL] Connecting to serial port: {self.stepper_port}, baud rate:{self.baud_rate}")
         self.stepper_serial = serial.Serial(self.stepper_port, self.baud_rate)
 
-        print(f"[RAIL] Creating robot linear rail instance...")
-        self.linear_rail_motor = LinearRail()
-
         self.initialized = False
         self.initialize_motor()
 
@@ -45,74 +42,40 @@ class StepperHandler:
         print("[RAIL] Current position is home.")
         self.initialized = True
 
-    def update_interpolated_positions(self, dt):
-        self.linear_rail_motor.update(dt)
-
-    def write_x(self, pos):
+    def write_x(self, pos, feed=100):
         code = bytes(str(f"G1 X{round(pos[2])} F{round(feed)}"), "ASCII")
         self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
         print(code)
 
-    def write_y(self, pos):
+    def write_y(self, pos, feed=100):
         code = bytes(str(f"G1 Y{round(pos[2])} F{round(feed)}"), "ASCII")
         self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
         print(code)
 
-    def write_z(self, pos, feed):
+    def write_z(self, pos, feed=100):
         code = bytes(str(f"G1 Z{round(pos[2])} F{round(feed)}"), "ASCII")
         self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
         print(code)
 
-    def write_3axis(self, pos, feed):
-        code = bytes(str(f"G1 X{round(pos[0])} Y{round(pos[1])} Z{round(pos[2])} F{round(feed)}"), "ASCII")
+    def write_a(self, pos, feed=100):
+        code = bytes(str(f"G1 A{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
+
+    def write_b(self, pos, feed=100):
+        code = bytes(str(f"G1 B{round(pos[2])} F{round(feed)}"), "ASCII")
         self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
         print(code)
 
     def close(self):
         print(f"[RAIL] Exiting... going home.")
-        self.stepper_serial.write(generate_g_code('A', 0, 500))
+        print("[RAIL] I did nothing... please implement me :]")
         self.stepper_serial.close()
-
-class LinearRail:
-
-    def __init__(self):
-        self.feed_rate = 20
-        self.position = 0
-        self.target_position = None
-
-        self.position_queue = []
-
-    def add_position_to_queue(self, target_position):
-        self.position_queue.append(target_position)
-
-    def update(self, dt):
-        if self.target_position is None and len(self.position_queue) > 0:
-            self.target_position = self.position_queue.pop()
-            # send g code
-
-        if self.target_position is not None:
-            distance = self.feed_rate * dt
-            if self.position < self.target_position:
-                self.position = min(self.position + distance, self.target_position)
-            else:
-                self.position = max(self.position - distance, self.target_position)
-
-            if self.position == self.target_position:
-                self.target_position = None
-                print("Movement Completed")
-            # else:
-            #     print(f"Movement Progress: {self.position:.2f}")
-
-    def get_position(self):
-        return self.position
-
-    def set_feed_rate(self, feed_rate):
-        self.feed_rate = feed_rate
-
 
 def generate_g_code(axis, goal_position, feed_rate):
     rot_code = bytes(str(goal_position), "ASCII")

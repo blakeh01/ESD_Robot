@@ -1,6 +1,6 @@
 import nidaqmx
 import nidaqmx.system
-from Src.robot.RobotHandler import *
+from Src.robot.arm.RobotHandler import *
 from Src.sim.simulation import *
 
 
@@ -32,17 +32,17 @@ class Controller:
         self.time_ref = 0
         self.time_elapsed = 0
 
+        l = LDS()
+
         # Instance management todo: disabled robot handler... enable to do actual tests...
-        # self.robot_instance = RobotHandler()
-        # self.maneuver_handler = ManeuverHandler(self.robot_instance)
         self.simulation_instance = Simulation()
         self.main_instance = main_instance
 
         # NIDAQ probing
-        print("Connecting to NI-DAQ @ Dev1/ai0...")
-        self.nidaq_vTask = nidaqmx.Task()
-        self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
-        self.probe_voltage = 0
+        print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
+        # self.nidaq_vTask = nidaqmx.Task()
+        # self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+        # self.probe_voltage = 0
 
         # Program mode
         self.canRun = True
@@ -51,11 +51,6 @@ class Controller:
         self.obj_distance = 0
 
     def send_update(self):
-        """
-            A synchronized update function:
-                - Keeps track of 'real' time elapsed
-                - Sleeps at some arbitrary update rate.
-        """
         if not self.canRun:
             return
 
@@ -63,21 +58,17 @@ class Controller:
         self.time_ref = time.time()
 
         # Update robot/simulation
-        # self.robot_instance.update_robot()
-        self.simulation_instance.update_simulation(self.time_elapsed)
-        # self.maneuver_handler.update()
+        self.simulation_instance.update(self.time_elapsed)
 
         # Collision check
-        dist_list = []
-        for point in p.getClosestPoints(self.simulation_instance.sim_robot, self.simulation_instance.sim_platform, 0.2):
-            dist_list.append(point[8])
-        if len(dist_list) > 0:
-            self.obj_distance = min(dist_list)
+        closest_points = p.getClosestPoints(self.simulation_instance.sim_robot, self.simulation_instance.sim_platform, 0.2)
+        if closest_points:
+            self.obj_distance = min(point[8] for point in closest_points)
         else:
             self.obj_distance = 0.2
 
         # Retrieve probe voltage
-        self.probe_voltage = self.nidaq_vTask.read()
+        # TODO UNCOMMENT: self.probe_voltage = self.nidaq_vTask.read()
 
         # Time management ('Tok')
         time.sleep(self.update_rate)

@@ -6,6 +6,8 @@ import pybullet as p
 import pybullet_planning as pp
 from Src.sim.sim_constants import *
 
+from Src.robot.arm.RobotHandler import RobotHandler
+
 import math
 
 # Paths for URDF files.
@@ -14,12 +16,7 @@ DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 URDF_PLANE = os.path.join(DATA_DIR, "urdf", "plane.urdf")
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
-URDF_OBJECT = os.path.join(DATA_DIR, "urdf", "object.urdf")
-
-
 # URDF_CHAMBER = os.path.join(DATA_DIR, "urdf", "chamber.urdf")
-# URDF_SCANNER = os.path.join(DATA_DIR, "urdf", "scanner.urdf")
-
 
 class Simulation:
     """
@@ -31,6 +28,9 @@ class Simulation:
     """
 
     def __init__(self, time_step=1. / UPDATE_RATE):
+        self.robot_instance = RobotHandler()
+        self.goal_conf = []
+
         # Time management
         self.time_elapsed = 0
         self.time_step = time_step
@@ -39,20 +39,13 @@ class Simulation:
         self.sim_id = -1
         self.sim_robot = -1
         self.sim_platform = -1
-        self.sim_object = -1
         self.sim_chamber = -1
-        self.sim_scanner = -1
 
         # Simulation ref
-        self.robot_joints = [0, 2, 3, 4, 5]
         self.current_point_cloud = None
-        self.probe_vector = [0, 0, 0]  # describes the vector to line up platform for probing. todos
-        self.plat_rot = 0
 
         # Debug stuff
         self.tip_ref_axes = []
-        self.debug_point = None
-        self.debug_point_cloud = None
 
         # Initialization stuff
         self.can_run = True
@@ -93,10 +86,10 @@ class Simulation:
 
         # Disable chamber collisions
         # p.setCollisionFilterGroupMask(self.sim_chamber, -1, 0, 0)
-        p.setCollisionFilterPair(self.sim_chamber, self.sim_robot, -1, -1, 0)
-        p.setCollisionFilterPair(self.sim_chamber, self.sim_platform, -1, -1, 0)
+        # p.setCollisionFilterPair(self.sim_chamber, self.sim_robot, -1, -1, 0)
+        # p.setCollisionFilterPair(self.sim_chamber, self.sim_platform, -1, -1, 0)
 
-        pp.set_camera_pose(tuple(np.array((0, 0, 0.1)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.1))
+        pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
 
         if not PYBULLET_SHOW_GUI:
             simhelper.draw_world_axis(1 * SIM_SCALE, 5)
@@ -108,28 +101,24 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        self.debug_point = p.addUserDebugPoints([[0, 0, 0]], [[255, 0, 0]], 0)
-        self.current_point_cloud = None
-
-        self.probe_enable = False
-        self.slice_idx = 0
-        self.point_idx = 0
+        pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_instance.read_cur_conf())
+        self.goal_conf = pp.get_configuration(self.sim_robot)
+        print("current conf: ", self.goal_conf)
 
         print("[SIM] Successfully initialized PyBullet environment...")
 
-    def update_simulation(self, time_elapsed):
+    def update(self, time_elapsed):
         if not self.can_run:
             return
 
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        if self.current_point_cloud is not None:
+        pp.control_joints(self.sim_robot, [1,2,3,4,5], pp.inverse_kinematics_helper(self.sim_robot, 6, ([0, 0.15, 0.5],
+                                                      p.getQuaternionFromEuler([0, 0, 0]))))
 
-            if self.probe_enable:
-                self.do_probing()
-            else:
-                self.idx_slice = 0
+        if self.time_elapsed > 5:
+            self.robot_instance.set_goal_conf(pp.get_configuration(self.sim_robot))
 
         # Sync with the main instance and therefore real robot.
         self.time_elapsed = time_elapsed
@@ -137,33 +126,5 @@ class Simulation:
         # Step the simulation
         p.stepSimulation()
 
-
-    def do_probing(self):
-        _slices = list(self.current_point_cloud.sliced_points.items())
-
-        if 0 <= self.slice_idx < len(_slices):
-            z_value, points = _slices[self.slice_idx]
-
-        self.probe_enable = False
-    def write_joint_states(self, joint_state):
-        if joint_state == self.get_sim_joint_states():
-            return
-
-        p.resetJointState(self.sim_robot, 0, joint_state[0])
-        for i in range(2, 6):
-            p.resetJointState(self.sim_robot, i,
-                              joint_state[i - 1])
-
-    def get_sim_joint_states(self):
-        """
-            Returns the 'important' joint states.
-
-            Revolute joints are defined on -pi -> pi, bounded by min/max rotations set in URDF file. (radians)
-            Prismatic joints are defined purely based on the bounds in the min/max positions in the URDF file. (meters)
-
-            return joint state indexes:
-            0 -> linear actuator  ,  1->waist  ,   2->shoulder   ,   3->elbow    ,   4-> wrist
-        """
-        return [p.getJointState(self.sim_robot, 0)[0], p.getJointState(self.sim_robot, 2)[0],
-                p.getJointState(self.sim_robot, 3)[0], p.getJointState(self.sim_robot, 4)[0],
-                p.getJointState(self.sim_robot, 5)[0]]
+    def move_toward_goal(self):
+        pass

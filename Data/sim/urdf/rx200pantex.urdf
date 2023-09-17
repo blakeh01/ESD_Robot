@@ -33,7 +33,7 @@
 	</collision>
 	<inertial>
       <origin xyz="0 0 0"/>
-      <mass value="20"/>
+      <mass value="1"/>
       <inertia ixx="0.0033530000" iyy="0.0013570000" izz="0.0041110000" ixy="-0.0001246000" ixz="0.0000110600" iyz="0.0002103000" />
 	</inertial>
   </link>
@@ -229,7 +229,7 @@
   </link>
 
 <joint name="probe_ref_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.18 0.01 0.017"/>
+    <origin rpy="0 0 0" xyz="0.18 0.01 0.016"/>
     <parent link="rx200/wrist_link"/>
     <child link="rx200/probe_tip_ref"/>
 </joint>

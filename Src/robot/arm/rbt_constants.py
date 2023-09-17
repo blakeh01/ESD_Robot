@@ -14,7 +14,7 @@ PROTOCOL_VERSION = 2
 
 # Default vars
 BAUDRATE = 1000000
-DEVICENAME = "COM3"  # Check which port is being used on your controller
+DEVICENAME = "COM6"  # Check which port is being used on your controller
 
 TORQUE_ENABLE = 1  # Value for enabling the torque
 TORQUE_DISABLE = 0  # Value for disabling the torque
@@ -23,6 +23,8 @@ COMM_SUCCESS = 0  # Communication Success result value
 COMM_TX_FAIL = -1001  # Communication Tx Failed
 
 UNIT_POS_TO_DEG = 0.087891  # 1 unit pos = 0.087891 degrees.
+
+DXL_IDS = [1, 2, 3, 4, 5]
 
 ### STEPPER MOTORS ###
 STEPPER_PORT = "COM8"

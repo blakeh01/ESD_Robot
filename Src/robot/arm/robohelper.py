@@ -13,7 +13,7 @@
 import os
 
 import numpy as np
-from Src.robot.rbt_constants import *
+from Src.robot.arm.rbt_constants import *
 from dynamixel_sdk import *
 
 
@@ -50,7 +50,7 @@ def writeGoalPosition(packet_handler, port_handler: PortHandler, id, position):
     packet_handler.write4ByteTxRx(port_handler, id, ADDR_GOAL_POSITION, position)
 
 
-def setTorques(packet_handler, port_handler, dxl_ids, torque):
+def setTorques(packet_handler, port_handler, id, torque):
     '''
         Set the torque control on a specified dynamixel id (or ids)
 
@@ -59,11 +59,10 @@ def setTorques(packet_handler, port_handler, dxl_ids, torque):
     :param dxl_ids: id of the dynamnixel to set torque
     :param torque: 1 - torque on, 0 - torque off (USE RBTCONTS CLASS)
     '''
-    for id in dxl_ids:
-        dxl_comm_result, dxl_error = packet_handler.write1ByteTxRx(port_handler, id, ADDR_TORQUE_ENABLE, torque)
-        if not statusCheck(packet_handler, dxl_comm_result, dxl_error):
-            print(f"Failed to enable torque on DXL ID{id}!")
-            quit()
+    dxl_comm_result, dxl_error = packet_handler.write1ByteTxRx(port_handler, id, ADDR_TORQUE_ENABLE, torque)
+    if not statusCheck(packet_handler, dxl_comm_result, dxl_error):
+        print(f"Failed to enable torque on DXL ID{id}!")
+        quit()
 
 
 def byteIntegerTransform(number):
