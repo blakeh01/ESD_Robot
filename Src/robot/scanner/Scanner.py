@@ -4,6 +4,9 @@ import time
 from serial import Serial, PARITY_NONE, EIGHTBITS
 from Src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
 
+
+# possibly useful article if 3D board does NOT repsond 'OK' after a move is completed:
+# https://forum.duet3d.com/topic/18282/tighter-control-for-waiting-for-motion-commands-to-complete/2
 class Scanner:
 
     def __init__(self, StepperHandler: stepper_board):
@@ -24,8 +27,6 @@ class Scanner:
         self.z_feed = 500
 
         self.step = 1
-
-        self.flag = True  # this needs the value of the LDS read into it then converted based on the displacement to origin
 
         self.degree = 45
         self.rotations = 360 / self.degree
