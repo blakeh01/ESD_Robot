@@ -32,9 +32,7 @@ class Controller:
         self.time_ref = 0
         self.time_elapsed = 0
 
-        l = LDS()
-
-        # Instance management todo: disabled robot handler... enable to do actual tests...
+        # Instance management
         self.simulation_instance = Simulation()
         self.main_instance = main_instance
 
