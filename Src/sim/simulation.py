@@ -28,7 +28,7 @@ class Simulation:
     """
 
     def __init__(self, time_step=1. / UPDATE_RATE):
-        self.robot_instance = RobotHandler()
+        #self.robot_instance = RobotHandler()
         self.goal_conf = []
 
         # Time management
@@ -101,9 +101,9 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_instance.read_cur_conf())
-        self.goal_conf = pp.get_configuration(self.sim_robot)
-        print("current conf: ", self.goal_conf)
+        #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_instance.read_cur_conf())
+        #self.goal_conf = pp.get_configuration(self.sim_robot)
+       #print("current conf: ", self.goal_conf)
 
         print("[SIM] Successfully initialized PyBullet environment...")
 
@@ -114,11 +114,11 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        pp.control_joints(self.sim_robot, [1,2,3,4,5], pp.inverse_kinematics_helper(self.sim_robot, 6, ([0, 0.15, 0.5],
-                                                      p.getQuaternionFromEuler([0, 0, 0]))))
-
-        if self.time_elapsed > 5:
-            self.robot_instance.set_goal_conf(pp.get_configuration(self.sim_robot))
+        # pp.control_joints(self.sim_robot, [1,2,3,4,5], pp.inverse_kinematics_helper(self.sim_robot, 6, ([0, 0.15, 0.5],
+        #                                               p.getQuaternionFromEuler([0, 0, 0]))))
+        #
+        # if self.time_elapsed > 5:
+        #     self.robot_instance.set_goal_conf(pp.get_configuration(self.sim_robot))
 
         # Sync with the main instance and therefore real robot.
         self.time_elapsed = time_elapsed

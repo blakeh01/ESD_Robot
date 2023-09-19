@@ -18,8 +18,8 @@ from PyQt5.QtWidgets import (
 from Src.Controller import Controller
 from Src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
 from Src.gui.dialogs.dialog_obj_offset import DialogOffsetObject
-from Src.gui.dialogs.dialog_probe_helper import DialogProbeHelper
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
+from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from Src.gui.main_window import Ui_MainWindow
 
 
@@ -76,7 +76,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
         self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
         self.btn_scan_start.clicked.connect(self.start_obj_scan)
-        self.pushButton.clicked.connect(self.on_probing_helper)  # todo fix name
+        self.pushButton.clicked.connect(self.dialog_normal_generator)  # todo fix name
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
@@ -154,8 +154,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         _dlg = DialogSetProbePosition(self)
         _dlg.exec()
 
-    def on_probing_helper(self):
-        _dlg = DialogProbeHelper(self)
+    def dialog_normal_generator(self):
+        _dlg = DialogNormalGenerator(self)
         _dlg.exec()
 
     def on_primitive_select(self, index):
