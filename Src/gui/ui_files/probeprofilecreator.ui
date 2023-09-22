@@ -30,7 +30,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>201</width>
+     <width>251</width>
      <height>22</height>
     </rect>
    </property>
@@ -52,7 +52,7 @@
     <rect>
      <x>10</x>
      <y>40</y>
-     <width>201</width>
+     <width>251</width>
      <height>221</height>
     </rect>
    </property>
@@ -64,7 +64,7 @@
      <rect>
       <x>10</x>
       <y>19</y>
-      <width>181</width>
+      <width>231</width>
       <height>191</height>
      </rect>
     </property>
@@ -72,7 +72,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lbl_max_speed">
        <property name="text">
-        <string>Probe Max Speed:</string>
+        <string>Probe Max Speed (mm/s):</string>
        </property>
       </widget>
      </item>
@@ -82,7 +82,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="lbl_plat_feedrate">
        <property name="text">
-        <string>Rotator Feedrate:</string>
+        <string>Rotator Feedrate (deg/min):</string>
        </property>
       </widget>
      </item>
@@ -92,7 +92,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="lbl_grouding_interval">
        <property name="text">
-        <string>Grounding Interval:</string>
+        <string>Grounding Interval (s):</string>
        </property>
       </widget>
      </item>
@@ -102,7 +102,7 @@
      <item row="3" column="0">
       <widget class="QLabel" name="lbl_measuring_time">
        <property name="text">
-        <string>Measuring Time:</string>
+        <string>Measuring Time (ms):</string>
        </property>
       </widget>
      </item>
@@ -128,9 +128,9 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>270</x>
      <y>10</y>
-     <width>151</width>
+     <width>101</width>
      <height>251</height>
     </rect>
    </property>

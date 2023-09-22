@@ -1,6 +1,6 @@
 '''
 
-    main.py creates the update thread and GUI for the program.
+    maingui.py creates the update thread and GUI for the program.
     Run this file to start the program...
 
 '''
@@ -20,6 +20,8 @@ from Src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
 from Src.gui.dialogs.dialog_obj_offset import DialogOffsetObject
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
+from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
+from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 from Src.gui.main_window import Ui_MainWindow
 
 
@@ -52,7 +54,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("Controller")
 
         # Update our GUI to keep up with the controller flags
-        self._gui_timer = QTimer()
+        self._gui_timer = QTimer(self)
         self._gui_timer.timeout.connect(self.update_gui)
 
         # New controller that is stored within our main window.
@@ -76,7 +78,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
         self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
         self.btn_scan_start.clicked.connect(self.start_obj_scan)
-        self.pushButton.clicked.connect(self.dialog_normal_generator)  # todo fix name
+        self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
+        self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
@@ -92,9 +95,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
-
-    def start_obj_scan(self):
-        pass
 
     def update_gui(self):
         # Update simulation isRunning label
@@ -128,6 +128,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # If there is no current mesh, disable the 'send to sim' button
         self.btn_obj_send_to_sim.setEnabled(not self.o3d_visualizer.cur_mesh is None)
 
+        # If there are normals, allow for probe flow generation
+        self.btn_probe_setup.setEnabled(not self.controller.simulation_instance.normal_point_cloud is None)
+
+        # if theere is a probe plan, allow to execute
+        self.btn_start_probing.setEnabled(not self.controller.simulation_instance.cur_probe_flow is None)
+
     def embed_pysim(self):
         hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
         self.window = QtGui.QWindow.fromWinId(hwnd)
@@ -135,8 +141,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowcontainer.setMinimumSize(1220, 900)
 
     def edit_constants(self):
-        self.controller.restart_sim()
-        pass
+        _dlg = DialogChargeObject(self)
+        _dlg.exec()
 
     def stop_program(self):
         print("[MAIN] Stopping Program!")
@@ -145,6 +151,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.controller.shutdown()
         self.o3d_visualizer.visualizer.destroy_window()
         exit()
+
+    def start_obj_scan(self):
+        pass
+
+    def dialog_probe_setup(self):
+        _dlg = DialogProbeProfile(self)
+        _dlg.exec()
 
     def dialog_rbt_info(self):
         _dlg = DialogRobotInfo(self)

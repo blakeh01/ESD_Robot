@@ -28,7 +28,7 @@ class Simulation:
     """
 
     def __init__(self, time_step=1. / UPDATE_RATE):
-        #self.robot_instance = RobotHandler()
+        self.robot_handler = RobotHandler()
         self.goal_conf = []
 
         # Time management
@@ -42,7 +42,9 @@ class Simulation:
         self.sim_chamber = -1
 
         # Simulation ref
-        self.current_point_cloud = None
+        self.normal_point_cloud = None
+        self.cur_probe_flow = None
+        self.can_execute_flow = False
 
         # Debug stuff
         self.tip_ref_axes = []
@@ -101,7 +103,7 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_instance.read_cur_conf())
+        #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_handler.read_cur_conf())
         #self.goal_conf = pp.get_configuration(self.sim_robot)
        #print("current conf: ", self.goal_conf)
 
@@ -118,10 +120,13 @@ class Simulation:
         #                                               p.getQuaternionFromEuler([0, 0, 0]))))
         #
         # if self.time_elapsed > 5:
-        #     self.robot_instance.set_goal_conf(pp.get_configuration(self.sim_robot))
+        #     self.robot_handler.set_goal_conf(pp.get_configuration(self.sim_robot))
 
         # Sync with the main instance and therefore real robot.
         self.time_elapsed = time_elapsed
+
+        if self.can_execute_flow and self.cur_probe_flow:
+            self.cur_probe_flow.update()
 
         # Step the simulation
         p.stepSimulation()

@@ -4,7 +4,7 @@ from Src.sim.sim_constants import *
 from Src.util.math_util import *
 
 
-def get_object_point_cloud(draw_cloud=False, draw_normals=False, draw_ray_start=False, line_thickness=1, numThreads=0,
+def get_normal_point_cloud(draw_cloud=True, draw_normals=False, draw_ray_start=False, line_thickness=1, numThreads=0,
                            z_limits=Z_LIMITS, z_density=Z_DENSITY,
                            xz_offset=XZ_OFFSET,
                            resolution=RESOLUTION, scan_center=SCAN_CENTER,
@@ -84,38 +84,9 @@ class PointCloud:
         Stores a list of alignment points and draws them with platform rotation.
     '''
 
-    def __init__(self, alignment_points: AlignmentPoint):
+    def __init__(self, alignment_points):
         self.alignment_points = alignment_points
-        self.sliced_points = None
-        self.debug_point = None
-
-        self.sliced_points = self.group_points(self.alignment_points, tolerance=0.0025)
-
-    def group_points(self, points, tolerance):
-        grouped_dict = {}
-
-        for point in points:
-            z_value = point.pos[2]
-            grouped_key = None
-
-            # Find a suitable key in the dictionary based on tolerance
-            for key in grouped_dict:
-                if abs(z_value - key) <= tolerance:
-                    grouped_key = key
-                    break
-
-            # If no suitable key found, create a new one
-            if grouped_key is None:
-                grouped_key = z_value
-
-            if grouped_key in grouped_dict:
-                grouped_dict[grouped_key].append(point)
-            else:
-                grouped_dict[grouped_key] = [point]
-
-        grouped_dict = dict(sorted(grouped_dict.items(), key=lambda item: item[0], reverse=True))
-
-        return grouped_dict
+        self.disp_pc_points = None # used in drawing points
 
     def get_num_points(self):
         return len(self.alignment_points)
@@ -126,13 +97,13 @@ class PointCloud:
 
         for ap in self.alignment_points:
             pts.append(rot_matrix @ ap.pos)
-        if self.debug_point is None:
-            self.debug_point = p.addUserDebugPoints(pts, [color] * len(pts), size)
+        if self.disp_pc_points is None:
+            self.disp_pc_points = p.addUserDebugPoints(pts, [color] * len(pts), size)
         else:
-            p.addUserDebugPoints(pts, [color] * len(pts), size, replaceItemUniqueId=self.debug_point)
+            p.addUserDebugPoints(pts, [color] * len(pts), size, replaceItemUniqueId=self.disp_pc_points)
 
     def delete_cloud(self):
-        p.removeUserDebugItem(self.debug_point)
+        p.removeUserDebugItem(self.disp_pc_points)
 
 
 def rotate_point_cloud(point_cloud, rot):

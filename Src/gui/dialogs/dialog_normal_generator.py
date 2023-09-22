@@ -11,6 +11,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
 
+from Src.sim.simhelper import *
+from Src.sim.sim_constants import *
 
 class UiDialogNormalGenerator(object):
     def setupUi(self, NormalGenerator):
@@ -66,17 +68,17 @@ class UiDialogNormalGenerator(object):
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.lbl_info_probe_distance)
         self.sbox_scan_resolution = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
         self.sbox_scan_resolution.setMaximum(720.0)
-        self.sbox_scan_resolution.setProperty("value", 180.0)
+        self.sbox_scan_resolution.setProperty("value", 45.0)
         self.sbox_scan_resolution.setObjectName("sbox_scan_resolution")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sbox_scan_resolution)
         self.sbox_scan_z = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
         self.sbox_scan_z.setProperty("value", 1.0)
         self.sbox_scan_z.setObjectName("sbox_scan_z")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sbox_scan_z)
-        self.sbox_probe_distance_2 = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
-        self.sbox_probe_distance_2.setProperty("value", 10.0)
-        self.sbox_probe_distance_2.setObjectName("sbox_probe_distance_2")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sbox_probe_distance_2)
+        self.sbox_probe_distance = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+        self.sbox_probe_distance.setProperty("value", 10.0)
+        self.sbox_probe_distance.setObjectName("sbox_probe_distance")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sbox_probe_distance)
         self.btn_generate_normals = QtWidgets.QPushButton(NormalGenerator)
         self.btn_generate_normals.setGeometry(QtCore.QRect(10, 150, 261, 23))
         self.btn_generate_normals.setObjectName("btn_generate_normals")
@@ -108,17 +110,13 @@ class DialogNormalGenerator(QDialog):
         self.ui.btn_generate_normals.clicked.connect(self.generate_normals)
 
     def generate_normals(self):
-        cloud = simhelper.get_object_point_cloud(
-            probe_dist=(float(self.ui.sbox_probe_distance.text()) / 1000) * sim_constants.SIM_SCALE,
+        cloud = get_normal_point_cloud(
+            probe_dist=(float(self.ui.sbox_probe_distance.text()) / 1000) * SIM_SCALE,
             resolution=(int(float(self.ui.sbox_scan_resolution.text()))),
-            z_density=(int(float(self.ui.sbox_scan_z.text())) * sim_constants.SIM_SCALE) * 10
+            z_density=(int(float(self.ui.sbox_scan_z.text())) * SIM_SCALE) * 10
         )
 
-        if self.controller_instance.simulation_instance.current_point_cloud is not None:
-            self.controller_instance.simulation_instance.current_point_cloud.delete_cloud()
-            self.controller_instance.simulation_instance.current_point_cloud = None
-
-        self.controller_instance.simulation_instance.current_point_cloud = cloud
+        self.controller_instance.simulation_instance.normal_point_cloud = cloud
 
         self.ui.lbl_probe_points.setText(str(cloud.get_num_points()))
         self.close()
