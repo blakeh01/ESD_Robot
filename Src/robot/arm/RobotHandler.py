@@ -39,7 +39,7 @@ class RobotHandler:
         self.motors = []
         for i in DXL_IDS:
             m = DXL_Motor(i, self.packet_handler, self.port_handler)
-            m.set_torque(TORQUE_ENABLE)
+            m.set_torque(TORQUE_DISABLE)
             self.motors.append(m)
 
         for i in range(1, 6):
@@ -90,7 +90,7 @@ class RobotHandler:
             )
 
         # convert to joint states, remove shadow joint
-        conf = [dxlToRadians(pos, -np.pi) for pos in conf]
+        conf = [dxlToRadians(pos, np.pi) for pos in conf]
         del conf[2]
 
         # todo read stepper motor position
