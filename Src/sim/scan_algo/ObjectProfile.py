@@ -25,6 +25,8 @@ from Src.sim.simulation import Simulation
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+import numpy as np
+
 class ObjectProfile():
 
     def __init__(self, simulation: Simulation, flow, flow_args):
@@ -126,7 +128,7 @@ class RectangularPrisms(ObjectProfile):
         super(RectangularPrisms, self).__init__(simulation, flow, flow_args)
 
         self.normal_slices = {}
-        self.tolernace = 0.9
+        self.tolerance = 0.9
         self.min_points = 5
 
         self.initialize()
@@ -143,7 +145,7 @@ class RectangularPrisms(ObjectProfile):
 
             for existing_dir, points_list in self.normal_slices.items():
                 similarity = calculate_cosine_similarity(direction, existing_dir)
-                if similarity >= tolerance:
+                if similarity >= self.tolerance:
                     points_list.append(point)
                     added_to_existing_slice = True
                     break
@@ -168,9 +170,6 @@ class RectangularPrisms(ObjectProfile):
                     del self.normal_slices[direction]
 
         fig = plt.figure()
-        manager = plt.get_current_fig_manager()
-        manager.full_screen_toggle()
-
         ax = fig.add_subplot(111, projection='3d')
 
         colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']

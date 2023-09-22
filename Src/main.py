@@ -80,6 +80,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_scan_start.clicked.connect(self.start_obj_scan)
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
+        self.btn_start_probing.clicked.connect(self.begin_probe_flow)
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
@@ -154,6 +155,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def start_obj_scan(self):
         pass
+
+    def begin_probe_flow(self):
+        self.controller.simulation_instance.can_execute_flow = True
 
     def dialog_probe_setup(self):
         _dlg = DialogProbeProfile(self)
