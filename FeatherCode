@@ -1,0 +1,36 @@
+import time
+import board
+import serial as ser
+import pwmio
+from adafruit_motor import servo
+import microcontroller
+from analogio import AnalogIn
+
+# Replace 'COMx' with the actual COM port name, e.g., 'COM1', 'COM2', etc.
+com_port = 'COM5'
+baud_rate = 115200  # Set the baud rate according to your device settings
+
+# create a PWMOut object on Pin A2.
+pwm = pwmio.PWMOut(board.D5, duty_cycle=2 ** 15, frequency=50)
+
+# Create a servo object, my_servo.
+my_servo = servo.Servo(pwm)
+data = ser.readline().decode('utf-8').strip()  # Read and decode data
+
+def update(impact, data, relay):
+    if data >= 3 or data <= 3:
+        impact = True
+        time.sleep(1)
+    else:
+        impact = False
+
+    while Grounding:
+        relay = True # 5V thing-a-majig
+        my_servo.angle = 180
+        time.sleep(3)
+        ser.write(True)
+        time.sleep(.5)
+        ser.write(False)
+        my_servo.angle = 0
+        time.sleep(5)
+
