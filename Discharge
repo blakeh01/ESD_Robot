@@ -1,0 +1,43 @@
+import numpy as np
+import time
+#
+# def Discharge():
+
+# def scanner_points(self):
+xc = np.array([])
+yc = np.array([])
+zc = np.array([])
+ca = np.array([])
+
+print('Enter X-coordinate to discharge at')
+x_discharge = input()
+print('Enter z-coordinate to discharge at')
+z_discharge = input()
+print('Enter z-coordinate to discharge at')
+y_discharge = input()
+yorn = input()
+
+# Need an input in the GUI for the above point as well as the length to the tip of the discharge probefrom the base. 
+
+# the start/end below need to be the offset away from the point as well.
+# start_p = y_discharge - 100
+# end_p = y_discharge - 4
+
+# x_offest & z_offset needed to be measured
+# x_offest = 5
+# z_offest = 5
+
+if yorn = 'y':
+    for i in range(start_p, end_p):
+        # move_servo_x(x_discharge + x_offset)
+        # move_servo_z(z_discharge + z_offset)
+        time.sleep(5)
+        y_pos = i
+        # move_servo_y(y_pos - step)
+        time.sleep(5)
+        #move_servo_y(start_p) 
+        print('Discharged')
+else:
+    print('')
+    
+# return    
