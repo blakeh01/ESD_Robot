@@ -1,0 +1,135 @@
+import numpy as np
+import time
+
+def PrimitiveScan():
+
+    # def scanner_points(self):
+    xc = np.array([])
+    yc = np.array([])
+    zc = np.array([])
+    ca = np.array([])
+
+    # MUST START AT SERVO HOME FOR THIS TO WORK
+    if Primitive = RectPrism:
+        edge_1 = 101.5 - val/2 # Take data from inputted face and /2 to put you a little edge
+        edge_2 = 101.5 + val/2 # Same as above but other direction
+        edge_3 = 101.5 - val_2/2 # Ditto
+        edge_4 = 101.5 + val_2/2 # Ditto
+        offset_1 = 0 # Read in value of LDS and subtract offset based off center for the first side
+        offset_2 = 0 # Read in value of LDS and subtract offset based off center for the second side
+        edge_actual_1 = 0
+        edge_actual_2 = 0
+        for h in range(0, 2): # Just measure two sides
+            # move platform to 0 degrees
+            # move_servo_x(edge_1 -5)
+            # move_servo_z(z_start + 5)
+
+                for i in range(edge_1 - 5, edge_2 + 5):
+                    x_pos = i
+
+                    if True:
+                        if yc < 7777 and edge_actual_1 == 0:
+                            xc = np.append(xc, [x_pos])
+                            # zc = np.append(yc, [z_pos])
+                            # yc = np.append(zc, [y_pos]) # change this to the adjusted read in value from the sensor
+                            edge_actual_1 = xc
+                            offset_1 = edge_1 - edge_actual_1
+                        elif yc > 7777 and edge_actual_2 == 0:
+                            xc = np.append(xc, [x_pos])
+                            # zc = np.append(yc, [z_pos])
+                            # yc = np.append(zc, [y_pos]) # change this to the adjusted read in value from the sensor
+                            edge_actual_2 = xc
+                            offset_2 = edge_2 - edge_actual_2
+                    if x_pos == edge_2 + 5:
+                        pass
+                        # move_servo_x(x_start)
+                        # time.sleep(1)  # Wait for motor to reset to beginning of loop
+                    else:
+                        pass
+                        # move_servo_x(x_pos + step)
+                        # time.sleep(.00001)  # change this to just longer than feed rate
+
+        # time.sleep(1)
+        # rotate center platform by 90 degrees and start again
+        # return the xc, yc, zc, and ca to point verification
+        return(edge_actual_1, edge_actual_2, offset_1, offset_2)
+    elif Primitive = Cylinder:
+        radius_1 = 101.5 - val/2
+        radius_2 = 101.5 + val/2
+        offset_1 = 0 # Read in value of LDS and subtract offset based off center for the first side
+        offset_2 = 0 # Read in value of LDS and subtract offset based off center for the second side
+        radius_actual_1 = 0
+        radius_actual_2 = 0
+        for h in range(0, 2): # Just measure two sides
+            # move platform to 0 degrees
+            # move_servo_x(radius_1 - 5)
+            # move_servo_z(z_start + 5)
+
+                for i in range(radius_1 - 5, radius_2 + 5):
+                    x_pos = i
+
+                    if True:
+                        xc = np.append(xc, [x_pos])
+                        #zc = np.append(yc, [z_pos])
+                        #yc = np.append(zc, [y_pos]) # change this to the adjusted read in value from the sensor
+                        if h == 0 and i >= radius_2:
+                            radius_actual_1 = min(yc)
+                            offset_1 = radius_1 - radius_actual_1
+                            yc = np.array([])
+                        else:
+                            radius_actual_2 = min(yc)
+                            offset_2 = radius_2 - radius_actual_2
+                    if x_pos == radius_2 + 4:
+                        pass
+                        # move_servo_x(x_start)
+                        # time.sleep(1)  # Wait for motor to reset to beginning of loop
+                    else:
+                        pass
+                        # move_servo_x(x_pos + step)
+                        # time.sleep(.00001)  # change this to just longer than feed rate
+
+        # time.sleep(1)
+        # rotate center platform by 90 degrees and start again
+        # return the xc, yc, zc, and ca to point verification
+        return(radius_actual_1, radius_actual_2, offset_1, offset_2)
+    elif Primitive = Sphere:
+        radius_1 = 101.5 - val / 2
+        radius_2 = 101.5 + val / 2
+        offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
+        offset_2 = 0  # Read in value of LDS and subtract offset based off center for the second side
+        radius_actual_1 = 0
+        radius_actual_2 = 0
+        for h in range(0, 2):  # Just measure two sides
+            # move platform to 0 degrees
+            # move_servo_x(radius_1 - 5)
+            # move_servo_z(val/2 - height off platform we set) # Center of platform
+
+            for i in range(radius_1 - 5, radius_2 + 5):
+                x_pos = i
+
+                if True:
+                    xc = np.append(xc, [x_pos])
+                    # zc = np.append(yc, [z_pos])
+                    # yc = np.append(zc, [y_pos]) # change this to the adjusted read in value from the sensor
+                    if h == 0 and i >= radius_2:
+                        radius_actual_1 = min(yc)
+                        offset_1 = radius_1 - radius_actual_1
+                        yc = np.array([])
+                    else:
+                        radius_actual_2 = min(yc)
+                        offset_2 = radius_2 - radius_actual_2
+                if x_pos == radius_2 + 4:
+                    pass
+                    # move_servo_x(x_start)
+                    # time.sleep(1)  # Wait for motor to reset to beginning of loop
+                else:
+                    pass
+                    # move_servo_x(x_pos + step)
+                    # time.sleep(.00001)  # change this to just longer than feed rate
+
+        # time.sleep(1)
+        # rotate center platform by 90 degrees and start again
+        # return the xc, yc, zc, and ca to point verification
+        return (radius_actual_1, radius_actual_2, offset_1, offset_2)
+    else:
+        print("Primitive Object scan was not properly called")
