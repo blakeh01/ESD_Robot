@@ -1,43 +1,58 @@
 import numpy as np
 import time
-#
-# def Discharge():
 
-# def scanner_points(self):
-xc = np.array([])
-yc = np.array([])
-zc = np.array([])
-ca = np.array([])
+from serial import Serial, PARITY_NONE, EIGHTBITS
+from Src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
 
-print('Enter X-coordinate to discharge at')
-x_discharge = input()
-print('Enter z-coordinate to discharge at')
-z_discharge = input()
-print('Enter z-coordinate to discharge at')
-y_discharge = input()
-yorn = input()
+class Discharge:
 
-# Need an input in the GUI for the above point as well as the length to the tip of the discharge probefrom the base. 
+    def __init__(self,stepper_board):
 
-# the start/end below need to be the offset away from the point as well.
-# start_p = y_discharge - 100
-# end_p = y_discharge - 4
+        self.LDS = LDS()
+        self.stepper_board = stepper_board
 
-# x_offest & z_offset needed to be measured
-# x_offest = 5
-# z_offest = 5
+        # def scanner_points(self):
+        self.x_feed = 1500
+        self.y_feed = 1500 # This needs to be changed to the equivalent of 50mm/s
+        self.z_feed = 1500
+        self.step = 1
+        
+        print('Enter X-coordinate to discharge at')
+        self.x_discharge = input()
+        print('Enter y-coordinate to discharge at')
+        self.y_discharge = input()
+        print('Enter z-coordinate to discharge at')
+        self.z_discharge = input()
+        print('You entered ' + self.x_discharge + ' as your X-coordinate,  ' 
+              + self.y_discharge + ' as your Y-coordinate,  '+ self.z_discharge + ' as your Z-coordinate. Is this correct? (y/n)')
+        yorn = input()
 
-if yorn = 'y':
-    for i in range(start_p, end_p):
-        # move_servo_x(x_discharge + x_offset)
-        # move_servo_z(z_discharge + z_offset)
-        time.sleep(5)
-        y_pos = i
-        # move_servo_y(y_pos - step)
-        time.sleep(5)
-        #move_servo_y(start_p) 
-        print('Discharged')
-else:
-    print('')
-    
-# return    
+        # x_offest & z_offset needed to be measured
+        print('Enter X-offset (Enter 6* , ONLY use another value if the mounting apparatus was changed!)')
+        self.x_offset = input()
+        print('Enter Z-offset (Enter 10* , ONLY use another value if the mounting apparatus was changed!)')
+        self.z_offset = input()
+        print('Enter the length from tip of discharge geometry to base of attachment point. (Flush with the mounted LDS)')
+        self.y_offset = input()
+        # Need an input in the GUI for the above point as well as the length to the tip of the discharge probe from the base.
+        
+        # the 100 below need to be the offset away from the point as well.
+        
+        if yorn = 'y':
+            self.stepper_board.write_a(0, F=1800)
+            self.stepper_board.write_z(self.x_discharge + self.x_offset, self.z_feed)
+            self.stepper_board.write_x(self.z_discharge + self.z_offset, self.x_feed)
+            self.stepper_board.write_y(self.y_discharge - self.y_offset, self.y_feed)
+            time.sleep(10)
+            for i in range(100, 4):
+                y_pos = i
+                self.stepper_board.write_z(y_pos - self.step, self.y_feed)
+                self.stepper_board.read_data()
+                if i == 4:
+                    time.sleep(.5)
+                    self.stepper_board.write_z(y_pos - self.step, self.y_feed)
+                    self.stepper_board.read_data()
+                    print('Discharged')
+                    time.sleep(5)
+        else:
+            print('')
