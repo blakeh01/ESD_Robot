@@ -27,7 +27,8 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, time_step=1. / UPDATE_RATE):
+    def __init__(self, parent, time_step=1. / UPDATE_RATE):
+        self.parent = parent
         self.robot_handler = RobotHandler()
         self.goal_conf = []
 
@@ -117,7 +118,8 @@ class Simulation:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
         if self.time_elapsed > 1:
-            pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_handler.read_cur_conf())
+            conf = self.robot_handler.read_cur_conf()
+            if(conf): pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], conf)
         # pp.control_joints(self.sim_robot, [1,2,3,4,5], pp.inverse_kinematics_helper(self.sim_robot, 6, ([0, 0.15, 0.5],
         #                                               p.getQuaternionFromEuler([0, 0, 0]))))
         #
@@ -128,10 +130,10 @@ class Simulation:
         self.time_elapsed = time_elapsed
 
         if self.can_execute_flow and self.cur_probe_flow:
-            self.cur_probe_flow.update()
+            self.cur_probe_flow.update(time_elapsed)
 
         # Step the simulation
-        p.stepSimulation()
+        if p.isConnected(): p.stepSimulation()
 
     def move_toward_goal(self):
         pass

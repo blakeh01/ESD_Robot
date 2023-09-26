@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QInputDialog, QErrorMessage
 
 from Src.sim.scan_algo.ObjectProfile import *
+from Src.sim.scan_algo.ObjectProfile import Discharge, Charge, Wait, Probe
 
 class Ui_CreateProbeProfile(object):
     def setupUi(self, CreateProbeProfile):
@@ -172,20 +173,32 @@ class DialogProbeProfile(QDialog):
         except:
             return # error handling for all this. PLEASE
 
+        flow_arr = []
+
+        for i in range(self.ui.list_probe_flow.count()):
+            item = self.ui.list_probe_flow.item(i).text()
+
+            data = item.split(':')
+
+            # yikes... works but yikess...
+            if len(data) > 1:
+                flow_arr.append(Wait(int(data[1].split(' ')[1])))
+            else:
+                if(len(item) == 9): flow_arr.append(Discharge())
+                if(len(item) == 6): flow_arr.append(Charge())
+                if(len(item) == 5): flow_arr.append(Probe())
 
         match self.ui.cmb_object_profile.currentIndex():
             case 0: # rot symm
                 self.controller_instance.simulation_instance.cur_probe_flow = RotationallySymmetric(
-                    self.controller_instance.simulation_instance,
-                    [self.ui.list_probe_flow.item(x) for x in range(self.ui.list_probe_flow.count())],
+                    self.controller_instance.simulation_instance, flow_arr,
                     [self.ui.txt_max_speed.text(), self.ui.txt_rotator_feedrate.text(),
                      self.ui.txt_grounding_interval.text(), self.ui.txt_measuring_time.text()]
                 )
 
             case 1: # rect
                 self.controller_instance.simulation_instance.cur_probe_flow = RectangularPrisms(
-                    self.controller_instance.simulation_instance,
-                    [self.ui.list_probe_flow.item(x) for x in range(self.ui.list_probe_flow.count())],
+                    self.controller_instance.simulation_instance, flow_arr,
                     [self.ui.txt_max_speed.text(), self.ui.txt_rotator_feedrate.text(),
                      self.ui.txt_grounding_interval.text(), self.ui.txt_measuring_time.text()]
                 )

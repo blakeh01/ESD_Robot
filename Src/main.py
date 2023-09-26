@@ -142,8 +142,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowcontainer.setMinimumSize(1220, 900)
 
     def edit_constants(self):
-        _dlg = DialogChargeObject(self)
-        _dlg.exec()
+        pass
 
     def stop_program(self):
         print("[MAIN] Stopping Program!")

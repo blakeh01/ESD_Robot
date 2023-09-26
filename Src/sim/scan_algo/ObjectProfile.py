@@ -27,6 +27,11 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import numpy as np
 
+from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
+
 class ObjectProfile():
 
     def __init__(self, simulation: Simulation, flow, flow_args):
@@ -35,6 +40,10 @@ class ObjectProfile():
         self.robot = simulation.robot_handler
         self.flow = flow
 
+        self.cur_flow_idx = 0
+
+        self.can_run = True
+
         # retrieve flow arguments
         self.rbt_max_speed = flow_args[0]
         self.rotator_feedrate = flow_args[1]
@@ -42,8 +51,6 @@ class ObjectProfile():
         self.measuring_time = flow_args[3]
 
         self.ground_flag = False # set to true when robot should ground after completed movement
-
-        print("Generating object profile...")
 
     def initialize(self):
         pass
@@ -122,6 +129,37 @@ class RotationallySymmetric(ObjectProfile):
 
         print("Generated " + str(len(self.z_slices.keys())) + " slices!")
 
+    def update(self, time_elasped):
+        if not self.can_run:
+            return
+
+        if self.cur_flow_idx+1 > len(self.flow):
+            print("Probe flow completed!")
+            self.can_run = False
+            return
+
+        cur_flow = self.flow[self.cur_flow_idx]
+
+        if isinstance(cur_flow, Wait):
+            if(cur_flow.end_time == 0 and cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
+
+            if(cur_flow.end_time <= time_elasped):
+                print("Waiting completed... moving to next step!")
+                self.cur_flow_idx += 1
+        elif isinstance(cur_flow, Charge):
+            if(cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                print("CHARGE!")
+        elif isinstance(cur_flow, Discharge):
+            if(cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                print("DISCHARGE!")
+        elif isinstance(cur_flow, Probe):
+            if(cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+
 class RectangularPrisms(ObjectProfile):
 
     def __init__(self, simulation: Simulation, flow, flow_args):
@@ -188,3 +226,30 @@ class RectangularPrisms(ObjectProfile):
         plt.title('Slices Visualization')
         ax.legend(loc='upper right')
         plt.show()
+
+class Charge():
+    def __init__(self):
+        self.start_time = 0
+        self.end_time = 0
+
+class Discharge():
+
+    def __init__(self):
+        self.start_time = 0
+        self.end_time = 0
+
+class Probe():
+
+    def __init__(self):
+        self.start_time = 0
+        self.end_time = 0
+
+        self.measured_points = []
+
+class Wait():
+
+    def __init__(self, wait_time):
+        self.wait_time = wait_time
+
+        self.start_time = 0
+        self.end_time = 0

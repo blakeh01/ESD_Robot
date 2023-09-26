@@ -12,11 +12,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QDialog
 
-
 class Ui_dialog_charge_object(object):
     def setupUi(self, dialog_charge_object):
         dialog_charge_object.setObjectName("dialog_charge_object")
-        dialog_charge_object.resize(700, 150)
         self.lbl_charge = QtWidgets.QLabel(dialog_charge_object)
         self.lbl_charge.setGeometry(QtCore.QRect(20, 10, 660, 100))
         font = QtGui.QFont()
@@ -33,7 +31,6 @@ class Ui_dialog_charge_object(object):
         self.btn_done.setObjectName("btn_done")
 
         self.retranslateUi(dialog_charge_object)
-        QtCore.QMetaObject.connectSlotsByName(dialog_charge_object)
 
     def retranslateUi(self, dialog_charge_object):
         _translate = QtCore.QCoreApplication.translate
@@ -57,7 +54,8 @@ class DialogChargeObject(QDialog):
         self.timer.start(500)  # Toggle every 500 milliseconds (half a second)
 
     def charge_complete(self):
-        # set some flag?
+        self.timer.stop()
+        self.setParent(None)
 
         self.close()
 

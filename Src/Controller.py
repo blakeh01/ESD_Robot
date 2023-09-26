@@ -33,8 +33,8 @@ class Controller:
         self.time_elapsed = 0
 
         # Instance management
-        self.simulation_instance = Simulation()
         self.main_instance = main_instance
+        self.simulation_instance = Simulation(main_instance)
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
@@ -79,7 +79,7 @@ class Controller:
             IF this is not called at end of program life, then the robot will NOT return to home position.
         """
         # self.robot_instance.terminateRobot()
-        p.disconnect()
+        if p.isConnected(): p.disconnect()
         print("Shutdown!")
         self.canRun = False
 
