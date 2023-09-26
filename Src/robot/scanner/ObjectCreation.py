@@ -7,88 +7,157 @@ This file will read in the points from the pathing loop and figure out and delet
 import numpy as np
 import open3d as o3d
 
-# import the # of axis for determining the degrees to add by
+from serial import Serial, PARITY_NONE, EIGHTBITS
+from Src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
 
-degree = 45  # Hardcoded degree for now and will stay with it going forward
+class ScannedObjectCreation:
+    def __init__(self,stepper_board):
 
-#  from Src.loop import ScannerPoints (eventually call from another file)
-
-#  Example points
-xc = np.array([0, 5, 10, 0, 5, 10, 0, 5, 10, 30])
-yc = np.array([0, 0, 0, 10, 10, 10, 5, 5, 5, 25])
-zc = np.array([0, 0, 0, 10, 10, 10, 0, 0, 0, 10])
-ca = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3])
-
-xr1 = np.array([]); yr1 = np.array([]); zr1 = np.array([])
-xr2 = np.array([]); yr2 = np.array([]); zr2 = np.array([])
-xr3 = np.array([]); yr3 = np.array([]); zr3 = np.array([])
-xr4 = np.array([]); yr4 = np.array([]); zr4 = np.array([])
-xr5 = np.array([]); yr5 = np.array([]); zr5 = np.array([])
-xr6 = np.array([]); yr6 = np.array([]); zr6 = np.array([])
-xr7 = np.array([]); yr7 = np.array([]); zr7 = np.array([])
-xr8 = np.array([]); yr8 = np.array([]); zr8 = np.array([])
-
-# Categorize the different scanned point into their correct scanned angle
-for a in range(0, (np.size(ca))):
-    if ca[a] == 0:
-        xr1 = np.append(xr1, xc[a]); yr1 = np.append(yr1, yc[a]); zr1 = np.append(zr1, zc[a])
-    elif ca[a] == 1:
-        xr2 = np.append(xr2, xc[a]); yr2 = np.append(yr2, yc[a]); zr2 = np.append(zr2, zc[a])
-    elif ca[a] == 2:
-        xr3 = np.append(xr3, xc[a]); yr3 = np.append(yr3, yc[a]); zr3 = np.append(zr3, zc[a])
-    elif ca[a] == 3:
-        xr4 = np.append(xr4, xc[a]); yr4 = np.append(yr4, yc[a]); zr4 = np.append(zr4, zc[a])
-    elif ca[a] == 4:
-        xr5 = np.append(xr5, xc[a]); yr5 = np.append(yr5, yc[a]); zr5 = np.append(zr5, zc[a])
-    elif ca[a] == 5:
-        xr6 = np.append(xr6, xc[a]); yr6 = np.append(yr6, yc[a]); zr6 = np.append(zr6, zc[a])
-    elif ca[a] == 6:
-        xr7 = np.append(xr7, xc[a]); yr7 = np.append(yr7, yc[a]); zr7 = np.append(zr7, zc[a])
-    else:
-        xr8 = np.append(xr8, xc[a]); yr8 = np.append(yr8, yc[a]); zr8 = np.append(zr8, zc[a])
-
-# Generate some n x 3 matrix using a variant of sync function for each degree scan.
-xyz1 = np.zeros((np.size(xr1), 3))
-xyz1[:, 0] = np.reshape(xr1, -1); xyz1[:, 1] = np.reshape(yr1, -1); xyz1[:, 2] = np.reshape(zr1, -1)
-xyz2 = np.zeros((np.size(xr2), 3))
-xyz2[:, 0] = np.reshape(xr2, -1); xyz2[:, 1] = np.reshape(yr2, -1); xyz2[:, 2] = np.reshape(zr2, -1)
-xyz3 = np.zeros((np.size(xr3), 3))
-xyz3[:, 0] = np.reshape(xr3, -1); xyz3[:, 1] = np.reshape(yr3, -1); xyz3[:, 2] = np.reshape(zr3, -1)
-xyz4 = np.zeros((np.size(xr4), 3))
-xyz4[:, 0] = np.reshape(xr4, -1); xyz4[:, 1] = np.reshape(yr4, -1); xyz4[:, 2] = np.reshape(zr4, -1)
-xyz5 = np.zeros((np.size(xr5), 3))
-xyz5[:, 0] = np.reshape(xr5, -1); xyz5[:, 1] = np.reshape(yr5, -1); xyz5[:, 2] = np.reshape(zr5, -1)
-xyz6 = np.zeros((np.size(xr6), 3))
-xyz6[:, 0] = np.reshape(xr6, -1); xyz6[:, 1] = np.reshape(yr6, -1); xyz6[:, 2] = np.reshape(zr6, -1)
-xyz7 = np.zeros((np.size(xr7), 3))
-xyz7[:, 0] = np.reshape(xr7, -1); xyz7[:, 1] = np.reshape(yr7, -1); xyz7[:, 2] = np.reshape(zr7, -1)
-xyz8 = np.zeros((np.size(xr8), 3))
-xyz8[:, 0] = np.reshape(xr8, -1); xyz8[:, 1] = np.reshape(yr8, -1); xyz8[:, 2] = np.reshape(zr8, -1)
-
-# Create the pcd for each scanned angle
-pcd = o3d.geometry.PointCloud(); pcd.points = o3d.utility.Vector3dVector(xyz1)
-pcd2 = o3d.geometry.PointCloud(); pcd2.points = o3d.utility.Vector3dVector(xyz2)
-pcd3 = o3d.geometry.PointCloud(); pcd3.points = o3d.utility.Vector3dVector(xyz3)
-pcd4 = o3d.geometry.PointCloud(); pcd4.points = o3d.utility.Vector3dVector(xyz4)
-pcd5 = o3d.geometry.PointCloud(); pcd5.points = o3d.utility.Vector3dVector(xyz5)
-pcd6 = o3d.geometry.PointCloud(); pcd6.points = o3d.utility.Vector3dVector(xyz6)
-pcd7 = o3d.geometry.PointCloud(); pcd7.points = o3d.utility.Vector3dVector(xyz7)
-pcd8 = o3d.geometry.PointCloud(); pcd8.points = o3d.utility.Vector3dVector(xyz8)
-
-# Perform the necessary rotation for each degree scan
-R1 = pcd.get_rotation_matrix_from_xyz((0, 0, 0)); pcd.rotate(R1).translate((0, 50, 0))
-R2 = pcd2.get_rotation_matrix_from_xyz((0, np.pi / 4, 0)); pcd2.rotate(R2).translate((0, 50, 0))
-R3 = pcd3.get_rotation_matrix_from_xyz((0, np.pi / 2, 0)); pcd3.rotate(R3).translate((0, 50, 0))
-R4 = pcd4.get_rotation_matrix_from_xyz((0, 3 * np.pi / 4, 0)); pcd4.rotate(R4).translate((0, 50, 0))
-R5 = pcd5.get_rotation_matrix_from_xyz((0, np.pi, 0)); pcd5.rotate(R5).translate((0, 50, 0))
-R6 = pcd6.get_rotation_matrix_from_xyz((0, 5 * np.pi / 4, 0)); pcd6.rotate(R6).translate((0, 50, 0))
-R7 = pcd7.get_rotation_matrix_from_xyz((0, 3 * np.pi / 2, 0)); pcd7.rotate(R7).translate((0, 50, 0))
-R8 = pcd8.get_rotation_matrix_from_xyz((0, 7 * np.pi / 4, 0)); pcd8.rotate(R8).translate((0, 50, 0))
-
-
-
-
-# Convert Open3D.o3d.geometry.PointCloud to numpy array.
-o3d.visualization.draw([pcd, pcd3])
-xyz_converted = np.asarray(pcd.points)
-
+        self.LDS = LDS()
+        self.stepper_board = stepper_board
+        
+        self.xc = np.array([])
+        self.yc = np.array([])
+        self.zc = np.array([])
+        self.ca = np.array([])
+        self.degree = 45
+    
+        # Testing points (Comment these out or delete)
+        # self.xc = np.array([0, 5, 10, 0, 5, 10, 0, 5, 10, 10])
+        # self.yc = np.array([0, 5, 10, 10, 10, 30, 30, 30, 40, 40])
+        # self.zc = np.array([0, 25, 25, 25, 25, 25, 25, 25, 25, 25])
+        # self.ca = np.array([0, 1, 2, 3, 4, 5, 6, 7, 7, 0])
+    
+        # Initialize the arrays
+        self.xr1 = np.array([]); self.yr1 = np.array([]); self.zr1 = np.array([])
+        self.xr2 = np.array([]); self.yr2 = np.array([]); self.zr2 = np.array([])
+        self.xr3 = np.array([]); self.yr3 = np.array([]); self.zr3 = np.array([])
+        self.xr4 = np.array([]); self.yr4 = np.array([]); self.zr4 = np.array([])
+        self.xr5 = np.array([]); self.yr5 = np.array([]); self.zr5 = np.array([])
+        self.xr6 = np.array([]); self.yr6 = np.array([]); self.zr6 = np.array([])
+        self.xr7 = np.array([]); self.yr7 = np.array([]); self.zr7 = np.array([])
+        self.xr8 = np.array([]); self.yr8 = np.array([]); self.zr8 = np.array([])
+    
+        # Categorize the different scanned points into their correct scanned angle
+        for a in range(0, (np.size(self.ca))):
+            if self.ca[a] == 0:
+                self.xr1 = np.append(self.xr1, self.xc[a])
+                self.yr1 = np.append(self.yr1, self.yc[a])
+                self.zr1 = np.append(self.zr1, self.zc[a])
+            elif self.ca[a] == 1:
+                self.xr2 = np.append(self.xr2, self.xc[a])
+                self.yr2 = np.append(self.yr2, self.yc[a])
+                self.zr2 = np.append(self.zr2, self.zc[a])
+            elif self.ca[a] == 2:
+                self.xr3 = np.append(self.xr3, self.xc[a])
+                self.yr3 = np.append(self.yr3, self.yc[a])
+                self.zr3 = np.append(self.zr3, self.zc[a])
+            elif self.ca[a] == 3:
+                self.xr4 = np.append(self.xr4, self.xc[a])
+                self.yr4 = np.append(self.yr4, self.yc[a])
+                self.zr4 = np.append(self.zr4, self.zc[a])
+            elif self.ca[a] == 4:
+                self.xr5 = np.append(self.xr5, self.xc[a])
+                self.yr5 = np.append(self.yr5, self.yc[a])
+                self.zr5 = np.append(self.zr5, self.zc[a])
+            elif self.ca[a] == 5:
+                self.xr6 = np.append(self.xr6, self.xc[a])
+                self.yr6 = np.append(self.yr6, self.yc[a])
+                self.zr6 = np.append(self.zr6, self.zc[a])
+            elif self.ca[a] == 6:
+                self.xr7 = np.append(self.xr7, self.xc[a])
+                self.yr7 = np.append(self.yr7, self.yc[a])
+                self.zr7 = np.append(self.zr7, self.zc[a])
+            else:
+                self.xr8 = np.append(self.xr8, self.xc[a])
+                self.yr8 = np.append(self.yr8, self.yc[a])
+                self.zr8 = np.append(self.zr8, self.zc[a])
+    
+        # Generate some n x 3 matrix by organizing the x, y, and z coordinates
+        self.xyz1 = np.zeros((np.size(self.xr1), 3))
+        self.xyz1[:, 0] = np.reshape(self.xr1, -1)
+        self.xyz1[:, 1] = np.reshape(self.yr1, -1)
+        self.xyz1[:, 2] = np.reshape(self.zr1, -1)
+        
+        self.xyz2 = np.zeros((np.size(self.xr2), 3))
+        self.xyz2[:, 0] = np.reshape(self.xr2, -1)
+        self.xyz2[:, 1] = np.reshape(self.yr2, -1)
+        self.xyz2[:, 2] = np.reshape(self.zr2, -1)
+        
+        self.xyz3 = np.zeros((np.size(self.xr3), 3))
+        self.xyz3[:, 0] = np.reshape(self.xr3, -1)
+        self.xyz3[:, 1] = np.reshape(self.yr3, -1)
+        self.xyz3[:, 2] = np.reshape(self.zr3, -1)
+        
+        self.xyz4 = np.zeros((np.size(self.xr4), 3))
+        self.xyz4[:, 0] = np.reshape(self.xr4, -1)
+        self.xyz4[:, 1] = np.reshape(self.yr4, -1)
+        self.xyz4[:, 2] = np.reshape(self.zr4, -1)
+        
+        self.xyz5 = np.zeros((np.size(self.xr5), 3))
+        self.xyz5[:, 0] = np.reshape(self.xr5, -1)
+        self.xyz5[:, 1] = np.reshape(self.yr5, -1)
+        self.xyz5[:, 2] = np.reshape(self.zr5, -1)
+        
+        self.xyz6 = np.zeros((np.size(self.xr6), 3))
+        self.xyz6[:, 0] = np.reshape(self.xr6, -1)
+        self.xyz6[:, 1] = np.reshape(self.yr6, -1)
+        self.xyz6[:, 2] = np.reshape(self.zr6, -1)
+        
+        self.xyz7 = np.zeros((np.size(self.xr7), 3))
+        self.xyz7[:, 0] = np.reshape(self.xr7, -1)
+        self.xyz7[:, 1] = np.reshape(self.yr7, -1)
+        self.xyz7[:, 2] = np.reshape(self.zr7, -1)
+        
+        self.xyz8 = np.zeros((np.size(self.xr8), 3))
+        self.xyz8[:, 0] = np.reshape(self.xr8, -1)
+        self.xyz8[:, 1] = np.reshape(self.yr8, -1)
+        self.xyz8[:, 2] = np.reshape(self.zr8, -1)
+    
+        # Create the pcd for each scanned angle
+        self.pcd = o3d.geometry.PointCloud(); self.pcd.points = o3d.utility.Vector3dVector(self.xyz1)
+        self.pcd2 = o3d.geometry.PointCloud(); self.pcd2.points = o3d.utility.Vector3dVector(self.xyz2)
+        self.pcd3 = o3d.geometry.PointCloud(); self.pcd3.points = o3d.utility.Vector3dVector(self.xyz3)
+        self.pcd4 = o3d.geometry.PointCloud(); self.pcd4.points = o3d.utility.Vector3dVector(self.xyz4)
+        self.pcd5 = o3d.geometry.PointCloud(); self.pcd5.points = o3d.utility.Vector3dVector(self.xyz5)
+        self.pcd6 = o3d.geometry.PointCloud(); self.pcd6.points = o3d.utility.Vector3dVector(self.xyz6)
+        self.pcd7 = o3d.geometry.PointCloud(); self.pcd7.points = o3d.utility.Vector3dVector(self.xyz7)
+        self.pcd8 = o3d.geometry.PointCloud(); self.pcd8.points = o3d.utility.Vector3dVector(self.xyz8)
+    
+        # Calculate the necessary rotation for each angle of scan
+        self.pcd.rotate(self.pcd.get_rotation_matrix_from_xyz((0, 0, 0)), center=(0, 0, 0))
+        self.pcd2.rotate(self.pcd2.get_rotation_matrix_from_xyz((0, np.pi / 4, 0)), center=(0, 0, 0))
+        self.pcd3.rotate(self.pcd3.get_rotation_matrix_from_xyz((0, np.pi / 2, 0)), center=(0, 0, 0))
+        self.pcd4.rotate(self.pcd4.get_rotation_matrix_from_xyz((0, 3 * np.pi / 4, 0)), center=(0, 0, 0))
+        self.pcd5.rotate(self.pcd5.get_rotation_matrix_from_xyz((0, np.pi, 0)), center=(0, 0, 0))
+        self.pcd6.rotate(self.pcd6.get_rotation_matrix_from_xyz((0, 5 * np.pi / 4, 0)), center=(0, 0, 0))
+        self.pcd7.rotate(self.pcd7.get_rotation_matrix_from_xyz((0, 3 * np.pi / 2, 0)), center=(0, 0, 0))
+        self.pcd8.rotate(self.pcd8.get_rotation_matrix_from_xyz((0, 7 * np.pi / 4, 0)), center=(0, 0, 0))
+    
+        # Initialized a pcd for integrating all pcds into one
+        self.pcd_combined = o3d.geometry.PointCloud()
+    
+        for i in range(9):
+            if i == 0:
+                self.pcd_combined += self.pcd
+            elif i == 1:
+                self.pcd_combined += self.pcd2
+            elif i == 2:
+                self.pcd_combined += self.pcd3
+            elif i == 3:
+                self.pcd_combined += self.pcd4
+            elif i == 4:
+                self.pcd_combined += self.pcd5
+            elif i == 5:
+                self.pcd_combined += self.pcd6
+            elif i == 6:
+                self.pcd_combined += self.pcd7
+            else:
+                self.pcd_combined += self.pcd8
+    
+        # This works around repeat points by creating a small radius voxel around each point and combining them into a singular point
+        self.pcd_final = self.pcd.voxel_down_sample(voxel_size=0.05)  # Adjust Voxel size as needed
+    
+        # Convert Open3D.o3d.geometry.PointCloud to numpy array.
+        o3d.visualization.draw([self.pcd_combined])
+        self.xyz_converted = np.asarray(self.pcd_combined.points)
