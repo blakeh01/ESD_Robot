@@ -5,6 +5,7 @@ import numpy as np
 import pybullet as p
 import pybullet_planning as pp
 from Src.sim.sim_constants import *
+from Src.sim.Command import *
 
 from Src.robot.arm.RobotHandler import RobotHandler
 
@@ -30,7 +31,9 @@ class Simulation:
     def __init__(self, parent, time_step=1. / UPDATE_RATE):
         self.parent = parent
         self.robot_handler = RobotHandler()
-        self.goal_conf = []
+
+        self.pos_command = None
+        self.arrived = False
 
         # Time management
         self.time_elapsed = 0
@@ -104,9 +107,9 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_handler.read_cur_conf())
-        self.goal_conf = pp.get_configuration(self.sim_robot)
-        print("current conf: ", self.goal_conf)
+        #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_handler.read_cur_conf())
+        # self.goal_conf = pp.get_configuration(self.sim_robot)
+        # print("current conf: ", self.goal_conf)
 
         print("[SIM] Successfully initialized PyBullet environment...")
 
@@ -114,17 +117,11 @@ class Simulation:
         if not self.can_run:
             return
 
+        if not self.pos_command: self.pos_command = ProbePositionSetter(self, pp.get_link_pose(self.sim_robot, 6)[0])
+        self.pos_command.onUpdate()
+
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
-
-        if self.time_elapsed > 1:
-            conf = self.robot_handler.read_cur_conf()
-            if(conf): pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], conf)
-        # pp.control_joints(self.sim_robot, [1,2,3,4,5], pp.inverse_kinematics_helper(self.sim_robot, 6, ([0, 0.15, 0.5],
-        #                                               p.getQuaternionFromEuler([0, 0, 0]))))
-        #
-        # if self.time_elapsed > 5:
-        #     self.robot_handler.set_goal_conf(pp.get_configuration(self.sim_robot))
 
         # Sync with the main instance and therefore real robot.
         self.time_elapsed = time_elapsed
@@ -134,6 +131,3 @@ class Simulation:
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
-
-    def move_toward_goal(self):
-        pass

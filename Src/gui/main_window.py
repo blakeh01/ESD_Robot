@@ -15,8 +15,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1720, 967)
-        MainWindow.setMinimumSize(QtCore.QSize(1720, 967))
-        MainWindow.setMaximumSize(QtCore.QSize(1720, 967))
+        MainWindow.setMinimumSize(QtCore.QSize(865, 600))
+        MainWindow.setMaximumSize(QtCore.QSize(99999, 99999))
         MainWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -339,6 +339,9 @@ class Ui_MainWindow(object):
         self.tab_data_visualizer = QtWidgets.QWidget()
         self.tab_data_visualizer.setObjectName("tab_data_visualizer")
         self.widget_window_tabs.addTab(self.tab_data_visualizer, "")
+        self.widget_slice_disp = PlotWidget(self.centralwidget)
+        self.widget_slice_disp.setGeometry(QtCore.QRect(10, 380, 440, 440))
+        self.widget_slice_disp.setObjectName("widget_slice_disp")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -409,4 +412,4 @@ class Ui_MainWindow(object):
         self.btn_obj_send_to_sim.setText(_translate("MainWindow", "Send To Simulation"))
         self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_open3d), _translate("MainWindow", "Object Visualizer"))
         self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_data_visualizer), _translate("MainWindow", "Data Visualizer"))
-
+from pyqtgraph import PlotWidget

@@ -19,6 +19,9 @@
         - Would be cool to have an system for users to extend functionality with a script..?
 '''
 
+import pybullet as p
+import pybullet_planning as pp
+
 from Src.robot.arm.RobotHandler import RobotHandler
 from Src.sim.simulation import Simulation
 
@@ -31,6 +34,9 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
+
+from scipy.sparse.csgraph import dijkstra
+from scipy.spatial.distance import cdist
 
 class ObjectProfile():
 
@@ -64,6 +70,8 @@ class RotationallySymmetric(ObjectProfile):
         super(RotationallySymmetric, self).__init__(simulation, flow, flow_args)
 
         self.z_slices = {}
+        self.z_sil_index = 0
+        self.cur_slice = None
         self.tolerance = 0.005
         self.min_points_slice = 5
         self.visualize = True
@@ -127,7 +135,8 @@ class RotationallySymmetric(ObjectProfile):
             # Show the plot
             plt.show()
 
-        print("Generated " + str(len(self.z_slices.keys())) + " slices!")
+        self.z_slices = sort_and_convert_to_list(self.z_slices)
+        print("Generated " + str(len(self.z_slices)) + " slices!")
 
     def update(self, time_elasped):
         if not self.can_run:
@@ -151,14 +160,37 @@ class RotationallySymmetric(ObjectProfile):
         elif isinstance(cur_flow, Charge):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
-                print("CHARGE!")
+                input("CHARGE!")
+                self.cur_flow_idx += 1
         elif isinstance(cur_flow, Discharge):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
-                print("DISCHARGE!")
+                input("DISCHARGE!")
+                self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
+                self.z_sil_index = 0
+                print("PROBING! Sending robot home...")
+            else:
+
+                if(self.z_sil_index >= len(self.z_slices)-1):
+                    print("Probing Completed!")
+                    cur_flow.end_time = time_elasped
+                    self.cur_flow_idx += 1
+                    return
+
+                if not self.cur_slice:
+                    self.cur_slice = self.z_slices[self.z_sil_index]
+                    print("Starting probe on Z-slice: ", self.z_sil_index, " Z-val: ", self.cur_slice[0])
+                    #self.sim.parent.plot_slice(self.cur_slice[1])
+                    print("Selecting point closest to robot!")
+                    self.cur_slice = self.cur_slice[1]
+
+
+
+                    self.sim.parent.plot_slice(self.cur_slice, paths)
+
 
 class RectangularPrisms(ObjectProfile):
 
@@ -253,3 +285,19 @@ class Wait():
 
         self.start_time = 0
         self.end_time = 0
+
+def sort_and_convert_to_list(z_slices):
+    sorted_slices = sorted(z_slices.items(), key=lambda item: item[0], reverse=True)
+    return sorted_slices
+
+def find_closest_point(slice_points, target_point):
+    closest_point = None
+    closest_distance = float('inf')
+
+    for point in slice_points:
+        distance = np.linalg.norm(np.array(point.pos) - np.array(target_point))
+        if distance < closest_distance:
+            closest_distance = distance
+            closest_point = point
+
+    return closest_point

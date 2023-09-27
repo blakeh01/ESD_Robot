@@ -8,6 +8,9 @@
 import sys
 import time
 
+import pybullet_planning as pp
+import pybullet as p
+
 import Src.sim.ObjectVisualizer
 import win32gui
 from PyQt5 import QtGui
@@ -23,6 +26,8 @@ from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 from Src.gui.main_window import Ui_MainWindow
+
+import pyqtgraph as pg
 
 
 class UpdateThread(QThread):
@@ -93,7 +98,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
-        self.embed_pysim()
+        #self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -135,13 +140,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # if theere is a probe plan, allow to execute
         self.btn_start_probing.setEnabled(not self.controller.simulation_instance.cur_probe_flow is None)
 
+        self.scatter_item = pg.ScatterPlotItem()
+        self.widget_slice_disp.addItem(self.scatter_item)
+
     def embed_pysim(self):
         hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
         self.window = QtGui.QWindow.fromWinId(hwnd)
         self.windowcontainer = self.createWindowContainer(self.window, self.widget_pybullet)
         self.windowcontainer.setMinimumSize(1220, 900)
 
+    def plot_slice(self, slice, path, active_idx=0):
+        x_values = [point.pos[0] for point in slice]
+        y_values = [point.pos[1] for point in slice]
+
+        # Set color of a specific point (e.g., the first point)
+        color = (255, 0, 0, 255)  # Red color (RGBA format)
+        point_index_to_color = active_idx  # Change the color of the first point
+        size = 10  # Point size
+
+        self.scatter_item.setData(x=x_values, y=y_values, size=size, pxMode=True, symbol='o', pen=None, brush=color)
+        self.scatter_item.addPoints([{'pos': (x_values[i], y_values[i]), 'data': i} for i in range(len(x_values))])
+
+        for path in self.paths:
+            path_x = [point.pos[0] for point in path]
+            path_y = [point.pos[1] for point in path]
+            self.widget_slice_disp.plot(path_x, path_y, pen=pg.mkPen(color=(0, 0, 255), width=2))
+
     def edit_constants(self):
+        pp.control_joints(0, [1, 2, 3, 4, 5],
+                          pp.inverse_kinematics_helper(0, 6, ([0, 0.15, 0.5], p.getQuaternionFromEuler([0, 0, 0]))))
         pass
 
     def stop_program(self):
