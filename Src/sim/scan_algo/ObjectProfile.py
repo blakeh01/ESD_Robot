@@ -35,8 +35,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 
-from scipy.sparse.csgraph import dijkstra
-from scipy.spatial.distance import cdist
+from Src.util.math_util import *
 
 class ObjectProfile():
 
@@ -183,13 +182,14 @@ class RotationallySymmetric(ObjectProfile):
                 if not self.cur_slice:
                     self.cur_slice = self.z_slices[self.z_sil_index]
                     print("Starting probe on Z-slice: ", self.z_sil_index, " Z-val: ", self.cur_slice[0])
-                    #self.sim.parent.plot_slice(self.cur_slice[1])
                     print("Selecting point closest to robot!")
-                    self.cur_slice = self.cur_slice[1]
+
+                    closest = find_closest_point(self.cur_slice[1], pp.get_link_pose(self.sim.sim_robot, 6)[0])
+
+                    path = nearest_neighbor(closest.pos, [point.pos for point in self.cur_slice[1]])
+                    self.sim.parent.plot_slice(self.cur_slice[1], path)
 
 
-
-                    self.sim.parent.plot_slice(self.cur_slice, paths)
 
 
 class RectangularPrisms(ObjectProfile):
@@ -289,15 +289,3 @@ class Wait():
 def sort_and_convert_to_list(z_slices):
     sorted_slices = sorted(z_slices.items(), key=lambda item: item[0], reverse=True)
     return sorted_slices
-
-def find_closest_point(slice_points, target_point):
-    closest_point = None
-    closest_distance = float('inf')
-
-    for point in slice_points:
-        distance = np.linalg.norm(np.array(point.pos) - np.array(target_point))
-        if distance < closest_distance:
-            closest_distance = distance
-            closest_point = point
-
-    return closest_point

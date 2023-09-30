@@ -155,16 +155,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Set color of a specific point (e.g., the first point)
         color = (255, 0, 0, 255)  # Red color (RGBA format)
-        point_index_to_color = active_idx  # Change the color of the first point
         size = 10  # Point size
 
         self.scatter_item.setData(x=x_values, y=y_values, size=size, pxMode=True, symbol='o', pen=None, brush=color)
         self.scatter_item.addPoints([{'pos': (x_values[i], y_values[i]), 'data': i} for i in range(len(x_values))])
 
-        for path in self.paths:
-            path_x = [point.pos[0] for point in path]
-            path_y = [point.pos[1] for point in path]
-            self.widget_slice_disp.plot(path_x, path_y, pen=pg.mkPen(color=(0, 0, 255), width=2))
+        if len(path) > 1:
+            for i in range(len(path) - 1):
+                self.widget_slice_disp.plot(x=[path[i][0], path[i + 1][0]], y=[path[i][1], path[i + 1][1]], pen='b')
+                text = pg.TextItem(f'{i}', anchor=(0, 0), color=(255, 255, 255),
+                                   fill=(0, 0, 0, 0))  # Set color and transparent background
+                text.setPos((path[i][0] + path[i + 1][0]) / 2, (path[i][1] + path[i + 1][1]) / 2)
+                self.widget_slice_disp.addItem(text)
 
     def edit_constants(self):
         pp.control_joints(0, [1, 2, 3, 4, 5],

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from scipy.spatial import cKDTree
 
 RAD_TO_DEG = 57.2957795
@@ -56,3 +57,33 @@ def get_rotation_to_vector(static_vector, rotatable_vector):
     # calculate the angle between the two vectors using the inverse cosine function
     angle = np.arccos(dot_product)
     return angle
+
+def euclidean_distance(point1, point2):
+    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+def nearest_neighbor(point, points):
+    remaining_points = np.array(points)
+    path = [point]
+
+    while len(remaining_points) > 0:
+        distances = np.linalg.norm(remaining_points - point, axis=1)
+        nearest_idx = np.argmin(distances)
+        nearest_point = remaining_points[nearest_idx]
+
+        path.append(tuple(nearest_point))
+        remaining_points = np.delete(remaining_points, nearest_idx, axis=0)
+        point = nearest_point
+
+    return path
+
+def find_closest_point(slice_points, target_point):
+    closest_point = None
+    closest_distance = float('inf')
+
+    for point in slice_points:
+        distance = np.linalg.norm(np.array(point.pos) - np.array(target_point))
+        if distance < closest_distance:
+            closest_distance = distance
+            closest_point = point
+
+    return closest_point
