@@ -8,6 +8,7 @@ from Src.sim.sim_constants import *
 from Src.sim.Command import *
 
 from Src.robot.arm.RobotHandler import RobotHandler
+from Src.util.math_util import *
 
 import math
 
@@ -32,8 +33,8 @@ class Simulation:
         self.parent = parent
         self.robot_handler = RobotHandler()
 
-        self.pos_command = None
-        self.arrived = False
+        self.pos_probe_command = None
+        self.pos_plat_command = None
 
         # Time management
         self.time_elapsed = 0
@@ -49,6 +50,7 @@ class Simulation:
         self.normal_point_cloud = None
         self.cur_probe_flow = None
         self.can_execute_flow = False
+        self.platform_normal = [-1, 0, 0]
 
         # Debug stuff
         self.tip_ref_axes = []
@@ -56,6 +58,9 @@ class Simulation:
         # Initialization stuff
         self.can_run = True
         self.initialize_sim()
+
+        self.platform_normal_line = p.addUserDebugLine([0, 0, 0], [0, 1, 0], [255, 0, 0], 5)
+
 
     def initialize_sim(self):
         # Instantiate and start a PyBullet physics client
@@ -117,8 +122,11 @@ class Simulation:
         if not self.can_run:
             return
 
-        if not self.pos_command: self.pos_command = ProbePositionSetter(self, pp.get_link_pose(self.sim_robot, 6)[0])
-        self.pos_command.onUpdate()
+        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, pp.get_link_pose(self.sim_robot, 6)[0])
+        self.pos_probe_command.onUpdate()
+
+        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(self.sim_platform, 1))
+        self.pos_plat_command.onUpdate()
 
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
@@ -128,6 +136,9 @@ class Simulation:
 
         if self.can_execute_flow and self.cur_probe_flow:
             self.cur_probe_flow.update(time_elapsed)
+
+        self.platform_normal = rotate_3d_vector([-1, 0, 0], [0, 0, pp.get_joint_position(self.sim_platform, 1)])
+        p.addUserDebugLine([0, 0, 0], self.platform_normal, [255, 0, 0], 5, replaceItemUniqueId=self.platform_normal_line)
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()

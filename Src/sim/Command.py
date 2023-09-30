@@ -57,3 +57,26 @@ class ProbePositionSetter():
         p.setJointMotorControl2(self.sim.sim_robot, joints[4],
                                 controlMode=p.POSITION_CONTROL,
                                 targetPosition=joint_pos[4])
+
+class PlatformPositionSetter():
+
+    def __init__(self, sim, goal_rot, timeout=0):
+        self.sim = sim
+        self.goal_rot = goal_rot
+        self.complete = False
+
+    def onUpdate(self):
+        if self.complete:
+            return
+
+        if(abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.005):
+            print("Done!")
+            self.complete = True
+
+        p.setJointMotorControl2(self.sim.sim_platform, 1,
+                                controlMode=p.POSITION_CONTROL,
+                                targetPosition=self.goal_rot,
+                                force=1000,
+                                positionGain=1,
+                                velocityGain=1,
+                                maxVelocity=0.5)

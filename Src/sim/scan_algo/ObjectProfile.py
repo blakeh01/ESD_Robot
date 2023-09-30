@@ -24,6 +24,7 @@ import pybullet_planning as pp
 
 from Src.robot.arm.RobotHandler import RobotHandler
 from Src.sim.simulation import Simulation
+from Src.sim.Command import *
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -74,6 +75,9 @@ class RotationallySymmetric(ObjectProfile):
         self.tolerance = 0.005
         self.min_points_slice = 5
         self.visualize = True
+
+        self.cur_path = None
+        self.path_index = 0
 
         self.initialize()
 
@@ -170,6 +174,7 @@ class RotationallySymmetric(ObjectProfile):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
+                self.path_index = 0
                 print("PROBING! Sending robot home...")
             else:
 
@@ -182,14 +187,19 @@ class RotationallySymmetric(ObjectProfile):
                 if not self.cur_slice:
                     self.cur_slice = self.z_slices[self.z_sil_index]
                     print("Starting probe on Z-slice: ", self.z_sil_index, " Z-val: ", self.cur_slice[0])
-                    print("Selecting point closest to robot!")
 
+                    print("Selecting point closest to robot!")
                     closest = find_closest_point(self.cur_slice[1], pp.get_link_pose(self.sim.sim_robot, 6)[0])
 
-                    path = nearest_neighbor(closest.pos, [point.pos for point in self.cur_slice[1]])
-                    self.sim.parent.plot_slice(self.cur_slice[1], path)
-
-
+                    self.cur_path = find_alignment_point_path(closest, self.cur_slice[1])
+                    self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
+                    print("Completed plotting slices! Beginning movements!")
+                else:
+                    if self.sim.pos_plat_command.complete:
+                        # for i in self.cur_path:
+                        #     i.pos = i.pos @ rotation_matrix_z(self.)
+                        pass
+                        #self.path_index += 1
 
 
 class RectangularPrisms(ObjectProfile):

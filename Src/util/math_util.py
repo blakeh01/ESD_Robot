@@ -58,20 +58,41 @@ def get_rotation_to_vector(static_vector, rotatable_vector):
     angle = np.arccos(dot_product)
     return angle
 
-def euclidean_distance(point1, point2):
-    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+def rotate_3d_vector(vector, angles_rad):
+    rotation_x = np.array([[1, 0, 0],
+                           [0, np.cos(angles_rad[0]), -np.sin(angles_rad[0])],
+                           [0, np.sin(angles_rad[0]), np.cos(angles_rad[0])]])
 
-def nearest_neighbor(point, points):
-    remaining_points = np.array(points)
+    rotation_y = np.array([[np.cos(angles_rad[1]), 0, np.sin(angles_rad[1])],
+                           [0, 1, 0],
+                           [-np.sin(angles_rad[1]), 0, np.cos(angles_rad[1])]])
+
+    rotation_z = np.array([[np.cos(angles_rad[2]), -np.sin(angles_rad[2]), 0],
+                           [np.sin(angles_rad[2]), np.cos(angles_rad[2]), 0],
+                           [0, 0, 1]])
+
+    rotated_vector = np.dot(rotation_x, np.dot(rotation_y, np.dot(rotation_z, vector)))
+    return rotated_vector
+def angle_between_vectors(vector1, vector2):
+    dot_product = np.dot(vector1, vector2)
+    cross_product = np.cross(vector1, vector2)
+    angle_rad = np.arctan2(cross_product, dot_product)
+    return angle_rad
+
+def euclidean_distance(point1, point2):
+    return np.linalg.norm(np.array(point1.pos) - np.array(point2.pos))
+
+def find_alignment_point_path(point, alignment_points):
+    remaining_points = alignment_points.copy()
     path = [point]
 
-    while len(remaining_points) > 0:
-        distances = np.linalg.norm(remaining_points - point, axis=1)
+    while remaining_points:
+        distances = [euclidean_distance(point, candidate_point) for candidate_point in remaining_points]
         nearest_idx = np.argmin(distances)
         nearest_point = remaining_points[nearest_idx]
 
-        path.append(tuple(nearest_point))
-        remaining_points = np.delete(remaining_points, nearest_idx, axis=0)
+        path.append(nearest_point)
+        remaining_points.remove(nearest_point)
         point = nearest_point
 
     return path

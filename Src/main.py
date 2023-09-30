@@ -162,10 +162,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if len(path) > 1:
             for i in range(len(path) - 1):
-                self.widget_slice_disp.plot(x=[path[i][0], path[i + 1][0]], y=[path[i][1], path[i + 1][1]], pen='b')
+                self.widget_slice_disp.plot(x=[path[i].pos[0], path[i + 1].pos[0]], y=[path[i].pos[1], path[i + 1].pos[1]], pen='b')
                 text = pg.TextItem(f'{i}', anchor=(0, 0), color=(255, 255, 255),
                                    fill=(0, 0, 0, 0))  # Set color and transparent background
-                text.setPos((path[i][0] + path[i + 1][0]) / 2, (path[i][1] + path[i + 1][1]) / 2)
+                text.setPos((path[i].pos[0] + path[i + 1].pos[0]) / 2, (path[i].pos[1] + path[i + 1].pos[1]) / 2)
                 self.widget_slice_disp.addItem(text)
 
     def edit_constants(self):
