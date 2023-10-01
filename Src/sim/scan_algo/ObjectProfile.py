@@ -52,10 +52,10 @@ class ObjectProfile():
         self.can_run = True
 
         # retrieve flow arguments
-        self.rbt_max_speed = flow_args[0]
-        self.rotator_feedrate = flow_args[1]
-        self.grounding_interval = flow_args[2]
-        self.measuring_time = flow_args[3]
+        self.rbt_max_speed = float(flow_args[0])
+        self.rotator_feedrate = float(flow_args[1])
+        self.grounding_interval = float(flow_args[2])
+        self.measuring_time = float(flow_args[3])
 
         self.ground_flag = False # set to true when robot should ground after completed movement
 
@@ -79,6 +79,8 @@ class RotationallySymmetric(ObjectProfile):
 
         self.cur_path = None
         self.cur_point_index = 0
+
+        self.next_groud_time = 0
 
         self.initialize()
 
@@ -172,6 +174,7 @@ class RotationallySymmetric(ObjectProfile):
                 input("DISCHARGE!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
+
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
@@ -203,7 +206,12 @@ class RotationallySymmetric(ObjectProfile):
                         self.cur_slice = None
                         return
 
-                    if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete:
+                    if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+
+                        if self.next_groud_time == 0:
+                            self.next_groud_time = self.grounding_interval + time_elasped
+                            print("Setting next ground time to: ", self.next_groud_time)
+
                         print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
                               self.cur_point_index)
                         # get point from current index
@@ -224,7 +232,21 @@ class RotationallySymmetric(ObjectProfile):
                         self.cur_path = temp
                         self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
 
+                        print("BEEP PROBE VOLTAGE!")
+
                         self.cur_point_index += 1
+
+        if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
+            print("Time to ground! Raising flag!")
+            self.ground_flag = True
+            self.next_groud_time = 0
+
+        if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete:
+            new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+
+            new_point = np.add(new_point, [-.1, 0, 0]) # offset probe
+            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
+            self.ground_flag = False
 
 
 

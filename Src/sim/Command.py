@@ -69,7 +69,7 @@ class PlatformPositionSetter():
         if self.complete:
             return
 
-        if(abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.005):
+        if(abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.00005):
             print("Done!")
             self.complete = True
 
