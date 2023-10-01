@@ -28,7 +28,7 @@ from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 from Src.gui.main_window import Ui_MainWindow
 
 import pyqtgraph as pg
-
+import numpy as np
 
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_thread = UpdateThread(self.controller)
         self.update_thread.update_frame.connect(self.update)
         self.update_thread.start()  # start controller thread
-        self._gui_timer.start(16)  # start GUI update thread ~ 60 FPS
+        self._gui_timer.start(32)  # start GUI update thread ~ 60 FPS
 
         # Program Signals:
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
@@ -99,6 +99,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
         #self.embed_pysim()
+
+        self.scatter_item = pg.ScatterPlotItem()
+        self.widget_slice_disp.addItem(self.scatter_item)
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -140,9 +143,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # if theere is a probe plan, allow to execute
         self.btn_start_probing.setEnabled(not self.controller.simulation_instance.cur_probe_flow is None)
 
-        self.scatter_item = pg.ScatterPlotItem()
-        self.widget_slice_disp.addItem(self.scatter_item)
-
     def embed_pysim(self):
         hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
         self.window = QtGui.QWindow.fromWinId(hwnd)
@@ -150,23 +150,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowcontainer.setMinimumSize(1220, 900)
 
     def plot_slice(self, slice, path, active_idx=0):
-        x_values = [point.pos[0] for point in slice]
-        y_values = [point.pos[1] for point in slice]
+        x_values = [point.pos[0] for point in path]
+        y_values = [point.pos[1] for point in path]
 
-        # Set color of a specific point (e.g., the first point)
-        color = (255, 0, 0, 255)  # Red color (RGBA format)
-        size = 10  # Point size
+        self.widget_slice_disp.plot(x=x_values, y=y_values, pen='r', symbol='o', symbolPen='r', symbolBrush=(0, 0, 255), symbolSize=10)
 
-        self.scatter_item.setData(x=x_values, y=y_values, size=size, pxMode=True, symbol='o', pen=None, brush=color)
-        self.scatter_item.addPoints([{'pos': (x_values[i], y_values[i]), 'data': i} for i in range(len(x_values))])
+        for i, point in enumerate(path):
+            x, y, z = point.pos
+            angle = np.arctan2(point.direction[1], point.direction[0])
+            x_end = x + 0.025 * np.cos(angle)
+            y_end = y + 0.025 * np.sin(angle)
+            self.widget_slice_disp.plot([x, x_end], [y, y_end], pen='b')
 
-        if len(path) > 1:
-            for i in range(len(path) - 1):
-                self.widget_slice_disp.plot(x=[path[i].pos[0], path[i + 1].pos[0]], y=[path[i].pos[1], path[i + 1].pos[1]], pen='b')
-                text = pg.TextItem(f'{i}', anchor=(0, 0), color=(255, 255, 255),
-                                   fill=(0, 0, 0, 0))  # Set color and transparent background
-                text.setPos((path[i].pos[0] + path[i + 1].pos[0]) / 2, (path[i].pos[1] + path[i + 1].pos[1]) / 2)
-                self.widget_slice_disp.addItem(text)
+            text = pg.TextItem(f'{i}', anchor=(0, 1), color=(255, 255, 255), fill=(0, 0, 0, 0))
+            text.setPos(x, y)
+            self.widget_slice_disp.addItem(text)
 
     def edit_constants(self):
         pp.control_joints(0, [1, 2, 3, 4, 5],

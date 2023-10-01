@@ -47,37 +47,10 @@ def unify_points(points, tolerance):
             new_points.append(new_point)
     return new_points
 
-
-def get_rotation_to_vector(static_vector, rotatable_vector):
-    # normalize the vectors
-    static_vector = static_vector / np.linalg.norm(static_vector)
-    rotatable_vector = rotatable_vector / np.linalg.norm(rotatable_vector)
-    # calculate the dot product of the two normalized vectors
-    dot_product = np.dot(static_vector, rotatable_vector)
-    # calculate the angle between the two vectors using the inverse cosine function
-    angle = np.arccos(dot_product)
-    return angle
-
-def rotate_3d_vector(vector, angles_rad):
-    rotation_x = np.array([[1, 0, 0],
-                           [0, np.cos(angles_rad[0]), -np.sin(angles_rad[0])],
-                           [0, np.sin(angles_rad[0]), np.cos(angles_rad[0])]])
-
-    rotation_y = np.array([[np.cos(angles_rad[1]), 0, np.sin(angles_rad[1])],
-                           [0, 1, 0],
-                           [-np.sin(angles_rad[1]), 0, np.cos(angles_rad[1])]])
-
-    rotation_z = np.array([[np.cos(angles_rad[2]), -np.sin(angles_rad[2]), 0],
-                           [np.sin(angles_rad[2]), np.cos(angles_rad[2]), 0],
-                           [0, 0, 1]])
-
-    rotated_vector = np.dot(rotation_x, np.dot(rotation_y, np.dot(rotation_z, vector)))
-    return rotated_vector
-def angle_between_vectors(vector1, vector2):
-    dot_product = np.dot(vector1, vector2)
-    cross_product = np.cross(vector1, vector2)
-    angle_rad = np.arctan2(cross_product, dot_product)
-    return angle_rad
+def angle_between(v1, v2):
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 def euclidean_distance(point1, point2):
     return np.linalg.norm(np.array(point1.pos) - np.array(point2.pos))

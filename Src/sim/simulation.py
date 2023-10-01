@@ -50,7 +50,7 @@ class Simulation:
         self.normal_point_cloud = None
         self.cur_probe_flow = None
         self.can_execute_flow = False
-        self.platform_normal = [-1, 0, 0]
+        self.lineup_normal = [-1, 0, 0] # direction of the normal vector that 'lines up' the platform to the robot.
 
         # Debug stuff
         self.tip_ref_axes = []
@@ -59,7 +59,9 @@ class Simulation:
         self.can_run = True
         self.initialize_sim()
 
-        self.platform_normal_line = p.addUserDebugLine([0, 0, 0], [0, 1, 0], [255, 0, 0], 5)
+        p.addUserDebugLine([0, 0, 0], self.lineup_normal, [255, 0, 0], 5)
+
+        # self.debug_platform_normal_line = p.addUserDebugLine([0, 0, 0], [0, 1, 0], [255, 0, 0], 5)
 
 
     def initialize_sim(self):
@@ -137,8 +139,8 @@ class Simulation:
         if self.can_execute_flow and self.cur_probe_flow:
             self.cur_probe_flow.update(time_elapsed)
 
-        self.platform_normal = rotate_3d_vector([-1, 0, 0], [0, 0, pp.get_joint_position(self.sim_platform, 1)])
-        p.addUserDebugLine([0, 0, 0], self.platform_normal, [255, 0, 0], 5, replaceItemUniqueId=self.platform_normal_line)
+        # self.platform_normal = rotate_3d_vector([-1, 0, 0], [0, 0, pp.get_joint_position(self.sim_platform, 1)])
+        # p.addUserDebugLine([0, 0, 0], self.platform_normal, [255, 0, 0], 5, replaceItemUniqueId=self.debug_platform_normal_line)
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()

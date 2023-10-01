@@ -24,6 +24,7 @@ import pybullet_planning as pp
 
 from Src.robot.arm.RobotHandler import RobotHandler
 from Src.sim.simulation import Simulation
+from Src.sim.simhelper import *
 from Src.sim.Command import *
 
 import matplotlib.pyplot as plt
@@ -77,7 +78,7 @@ class RotationallySymmetric(ObjectProfile):
         self.visualize = True
 
         self.cur_path = None
-        self.path_index = 0
+        self.cur_point_index = 0
 
         self.initialize()
 
@@ -174,7 +175,7 @@ class RotationallySymmetric(ObjectProfile):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
-                self.path_index = 0
+                self.cur_point_index = 0
                 print("PROBING! Sending robot home...")
             else:
 
@@ -195,11 +196,29 @@ class RotationallySymmetric(ObjectProfile):
                     self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
                     print("Completed plotting slices! Beginning movements!")
                 else:
-                    if self.sim.pos_plat_command.complete:
-                        # for i in self.cur_path:
-                        #     i.pos = i.pos @ rotation_matrix_z(self.)
-                        pass
-                        #self.path_index += 1
+                    if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete:
+                        print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
+                              self.cur_point_index)
+                        # get point from current index
+                        pt = self.cur_path[self.cur_point_index]
+                        # find angle between point and lineup vector
+                        angle = np.math.atan2(np.linalg.det([pt.direction[0:2],self.sim.lineup_normal[0:2]]),np.dot(pt.direction[0:2],self.sim.lineup_normal[0:2]))
+
+                        # rotate platform to angle
+                        self.sim.pos_plat_command = PlatformPositionSetter(self.sim, angle)
+
+                        # rotate cur path
+                        temp = []
+                        for i in range(len(self.cur_path)):
+                            pos = np.dot(rotation_matrix_z(angle), self.cur_path[i].pos)
+                            dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
+                            temp.append(AlignmentPoint(pos, dir))
+
+                        self.cur_path = temp
+                        self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
+
+                        self.cur_point_index += 1
+
 
 
 class RectangularPrisms(ObjectProfile):
