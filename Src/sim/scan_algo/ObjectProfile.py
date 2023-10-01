@@ -175,7 +175,6 @@ class RotationallySymmetric(ObjectProfile):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
-                self.cur_point_index = 0
                 print("PROBING! Sending robot home...")
             else:
 
@@ -196,6 +195,14 @@ class RotationallySymmetric(ObjectProfile):
                     self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
                     print("Completed plotting slices! Beginning movements!")
                 else:
+
+                    if self.cur_point_index >= len(self.cur_path):
+                        print("Reached end of slice!")
+                        self.z_sil_index += 1
+                        self.cur_point_index = 0
+                        self.cur_slice = None
+                        return
+
                     if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete:
                         print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
                               self.cur_point_index)

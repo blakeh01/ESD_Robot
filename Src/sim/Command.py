@@ -60,9 +60,9 @@ class ProbePositionSetter():
 
 class PlatformPositionSetter():
 
-    def __init__(self, sim, goal_rot, timeout=0):
+    def __init__(self, sim, inc_rot, timeout=0):
         self.sim = sim
-        self.goal_rot = goal_rot
+        self.goal_rot = inc_rot + pp.get_joint_position(self.sim.sim_platform, 1)
         self.complete = False
 
     def onUpdate(self):

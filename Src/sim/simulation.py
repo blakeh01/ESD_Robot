@@ -127,7 +127,7 @@ class Simulation:
         if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, pp.get_link_pose(self.sim_robot, 6)[0])
         self.pos_probe_command.onUpdate()
 
-        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(self.sim_platform, 1))
+        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(self.sim_platform, 1), 0)
         self.pos_plat_command.onUpdate()
 
         if DRAW_TIP_AXES:
