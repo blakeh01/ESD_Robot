@@ -76,7 +76,7 @@ class AlignmentPoint:
     def __init__(self, pos, direction):
         self.pos = pos
         self.direction = direction
-        self.measured = False
+        self.measurement = 0
 
 
 class PointCloud:

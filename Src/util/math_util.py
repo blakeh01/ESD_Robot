@@ -52,8 +52,24 @@ def angle_between(v1, v2):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+def find_corner(points):
+    highest_point = None
+    weight = float('-inf')
+
+    for point in points:
+        x, y, z = point.pos
+        if abs(x) + abs(y) + abs(z) >= weight:
+            highest_point = point
+            weight = abs(x) + abs(y) + abs(z)
+
+    return highest_point
+
 def euclidean_distance(point1, point2):
     return np.linalg.norm(np.array(point1.pos) - np.array(point2.pos))
+
+# two different functions, one for alignment points, one for regular pos.... this is foul im sorry
+def distance(point1, point2):
+    return np.linalg.norm(np.array(point1)[:2] - np.array(point2)[:2])
 
 def find_alignment_point_path(point, alignment_points):
     remaining_points = alignment_points.copy()
@@ -69,6 +85,31 @@ def find_alignment_point_path(point, alignment_points):
         point = nearest_point
 
     return path
+
+def nearest_neighbor_dict_sort(points, start_index=0):
+    sorted_points = [points[start_index]]
+    unvisited_points = list(points[:start_index] + points[start_index+1:])
+
+    while unvisited_points:
+        current_point = sorted_points[-1]
+        nearest_point = min(unvisited_points, key=lambda p: distance(current_point, p))
+        sorted_points.append(nearest_point)
+        unvisited_points.remove(nearest_point)
+
+    return sorted_points
+
+
+def find_nearest_point_index(dictionary, target_point):
+    min_distance = float('inf')
+    nearest_point_index = None
+
+    for i, (point, _) in enumerate(dictionary.items()):
+        d = distance(point, target_point)
+        if d < min_distance:
+            min_distance = d
+            nearest_point_index = i
+
+    return nearest_point_index
 
 def find_closest_point(slice_points, target_point):
     closest_point = None

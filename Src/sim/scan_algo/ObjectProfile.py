@@ -233,6 +233,7 @@ class RotationallySymmetric(ObjectProfile):
                         self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
 
                         print("BEEP PROBE VOLTAGE!")
+                        self.cur_path[self.cur_point_index].measurement = 10
 
                         self.cur_point_index += 1
 
@@ -248,8 +249,6 @@ class RotationallySymmetric(ObjectProfile):
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
             self.ground_flag = False
 
-
-
 class RectangularPrisms(ObjectProfile):
 
     def __init__(self, simulation: Simulation, flow, flow_args):
@@ -258,6 +257,10 @@ class RectangularPrisms(ObjectProfile):
         self.normal_slices = {}
         self.tolerance = 0.9
         self.min_points = 5
+
+        self.cur_path = None
+        self.cur_slice = None
+        self.side_index = 0
 
         self.initialize()
 
@@ -316,6 +319,74 @@ class RectangularPrisms(ObjectProfile):
         plt.title('Slices Visualization')
         ax.legend(loc='upper right')
         plt.show()
+
+        # Sort slices, starting with side nearest to robot, then use a nearest neighbor algorithm to find a good path.
+        point_list = list(self.normal_slices.keys())
+        sorted = nearest_neighbor_dict_sort(point_list, find_nearest_point_index(self.normal_slices, pp.get_link_pose(self.sim.sim_robot, 6)[0]))
+        self.normal_slices = {point: self.normal_slices[point] for point in sorted}
+
+        self.normal_slices = [((x, y, z), data) for (x, y, z), data in self.normal_slices.items()]
+
+        print(self.normal_slices)
+
+    def update(self, time_elasped):
+        if not self.can_run:
+            return
+
+        if self.cur_flow_idx+1 > len(self.flow):
+            print("Probe flow completed!")
+            self.can_run = False
+            return
+
+        cur_flow = self.flow[self.cur_flow_idx]
+
+        if isinstance(cur_flow, Wait):
+            if(cur_flow.end_time == 0 and cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
+
+            if(cur_flow.end_time <= time_elasped):
+                print("Waiting completed... moving to next step!")
+                self.cur_flow_idx += 1
+        elif isinstance(cur_flow, Charge):
+            if(cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                input("CHARGE!")
+                self.cur_flow_idx += 1
+        elif isinstance(cur_flow, Discharge):
+            if(cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                input("DISCHARGE!")
+                self.cur_flow_idx += 1
+        elif isinstance(cur_flow, Probe):
+
+            if(cur_flow.start_time == 0):
+                cur_flow.start_time = time_elasped
+                self.side_index = 0
+                print("PROBING! Sending robot home...")
+            else:
+
+                if not self.cur_slice:
+                    self.cur_slice = self.normal_slices[self.side_index]
+                    print("Starting probing on face i: ", self.side_index, " Side Position: ", self.cur_slice[0])
+
+                    optimal = find_corner(self.cur_slice[1])
+                    self.cur_path = find_alignment_point_path(optimal, self.cur_slice[1])
+
+                    self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
+                    print("Completed plotting slices! Beginning movements!")
+
+        # if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
+        #     print("Time to ground! Raising flag!")
+        #     self.ground_flag = True
+        #     self.next_groud_time = 0
+        #
+        # if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete:
+        #     new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+        #
+        #     new_point = np.add(new_point, [-.1, 0, 0]) # offset probe
+        #     self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
+        #     self.ground_flag = False
 
 class Charge():
     def __init__(self):
