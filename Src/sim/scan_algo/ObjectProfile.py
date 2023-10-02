@@ -260,6 +260,7 @@ class RectangularPrisms(ObjectProfile):
 
         self.cur_path = None
         self.cur_slice = None
+        self.cur_point_index = 0
         self.side_index = 0
 
         self.initialize()
@@ -373,8 +374,48 @@ class RectangularPrisms(ObjectProfile):
                     optimal = find_corner(self.cur_slice[1])
                     self.cur_path = find_alignment_point_path(optimal, self.cur_slice[1])
 
-                    self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
+                    #self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
                     print("Completed plotting slices! Beginning movements!")
+
+                if self.cur_point_index >= len(self.cur_path):
+                    print("Reached end of slice!")
+                    self.side_index += 1
+                    self.cur_point_index = 0
+                    self.cur_slice = None
+                    return
+
+                if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+
+                    # if self.next_groud_time == 0:
+                    #     self.next_groud_time = self.grounding_interval + time_elasped
+                    #     print("Setting next ground time to: ", self.next_groud_time)
+
+                    print("Processing slice i: ", self.side_index, " | Current point index: ",
+                          self.cur_point_index)
+                    # get point from current index
+                    pt = self.cur_path[self.cur_point_index]
+
+                    # find angle between point and lineup vector
+                    angle = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
+                                          np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
+
+                    # rotate platform to angle
+                    self.sim.pos_plat_command = PlatformPositionSetter(self.sim, angle)
+
+                    # rotate cur path
+                    temp = []
+                    for i in range(len(self.cur_path)):
+                        pos = np.dot(rotation_matrix_z(angle), self.cur_path[i].pos)
+                        dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
+                        temp.append(AlignmentPoint(pos, dir))
+
+                    self.cur_path = temp
+                    self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
+
+                    print("BEEP PROBE VOLTAGE!")
+                    self.cur_path[self.cur_point_index].measurement = 10
+
+                    self.cur_point_index += 1
 
         # if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
         #     print("Time to ground! Raising flag!")
