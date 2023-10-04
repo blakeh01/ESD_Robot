@@ -55,7 +55,7 @@ class ObjectProfile():
         self.rbt_max_speed = float(flow_args[0])
         self.rotator_feedrate = float(flow_args[1])
         self.grounding_interval = float(flow_args[2])
-        self.measuring_time = float(flow_args[3])
+        self.measuring_time = float(flow_args[3]) / 1000 # convert to ms
 
         self.ground_flag = False # set to true when robot should ground after completed movement
 

@@ -51,6 +51,7 @@ class Simulation:
         self.cur_probe_flow = None
         self.can_execute_flow = False
         self.lineup_normal = [-1, 0, 0] # direction of the normal vector that 'lines up' the platform to the robot.
+        self.col_flag = False
 
         # Debug stuff
         self.tip_ref_axes = []
@@ -136,8 +137,13 @@ class Simulation:
         # Sync with the main instance and therefore real robot.
         self.time_elapsed = time_elapsed
 
-        if self.can_execute_flow and self.cur_probe_flow:
-            self.cur_probe_flow.update(time_elapsed)
+        if not self.col_flag:
+            if self.can_execute_flow and self.cur_probe_flow:
+                self.cur_probe_flow.update(time_elapsed)
+        else:
+            pass
+            # what i want here: probe collision -> back off probe by offset Y -> send to home -> throw error.
+            #self.pos_probe_command = ProbePositionSetter(self, #homepos)
 
         # self.platform_normal = rotate_3d_vector([-1, 0, 0], [0, 0, pp.get_joint_position(self.sim_platform, 1)])
         # p.addUserDebugLine([0, 0, 0], self.platform_normal, [255, 0, 0], 5, replaceItemUniqueId=self.debug_platform_normal_line)

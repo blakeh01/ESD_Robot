@@ -115,8 +115,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lbl_sim_status.setText("OFF")
 
         # Update collision label
-        if self.controller.obj_distance <= 0:
+        if self.controller.obj_distance <= 0.003:
             self.lbl_distance_rbt_obj.setStyleSheet("background-color: red")
+            self.controller.simulation_instance.col_flag = True
         elif 0 < self.controller.obj_distance < 0.01:
             self.lbl_distance_rbt_obj.setStyleSheet("background-color: orange")
         else:
