@@ -85,6 +85,8 @@ class RotationallySymmetric(ObjectProfile):
         self.action_wait_start = 0
         self.action_wait_end = 0
 
+        self.measure_flag = False
+
         self.initialize()
 
     def initialize(self):
@@ -147,6 +149,13 @@ class RotationallySymmetric(ObjectProfile):
         self.z_slices = sort_and_convert_to_list(self.z_slices)
         print("Generated " + str(len(self.z_slices)) + " slices!")
 
+    '''
+        Do I know what a state machine is? Yes.
+        
+        Do I realize that this would make this code about 10000x cleaner? Yes.
+        
+        But do I have the time to implement a full state machine for clean code? No. (lord forgive me)
+    '''
     def update(self, time_elasped):
         if not self.can_run:
             return
@@ -163,7 +172,7 @@ class RotationallySymmetric(ObjectProfile):
                 cur_flow.start_time = time_elasped
                 cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
 
-            if(cur_flow.end_time <= time_elasped):
+            if(time_elasped >= cur_flow.end_time):
                 print("Waiting completed... moving to next step!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Charge):
@@ -209,7 +218,7 @@ class RotationallySymmetric(ObjectProfile):
                         self.cur_slice = None
                         return
 
-                    if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                    if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
 
                         if self.next_groud_time == 0:
                             self.next_groud_time = self.grounding_interval + time_elasped
@@ -235,10 +244,13 @@ class RotationallySymmetric(ObjectProfile):
                         self.cur_path = temp
                         self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
 
-                        print("BEEP PROBE VOLTAGE!")
-                        self.cur_path[self.cur_point_index].measurement = 10
+                        self.measure_flag = True
 
+                    if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                        print("[FIX] BEEP PROBE VOLTAGE!")
+                        self.cur_path[self.cur_point_index].measurement = 10
                         self.cur_point_index += 1
+                        self.measure_flag = False
 
         if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
             print("Time to ground! Raising flag!")
