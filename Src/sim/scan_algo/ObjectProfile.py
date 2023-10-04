@@ -82,6 +82,9 @@ class RotationallySymmetric(ObjectProfile):
 
         self.next_groud_time = 0
 
+        self.action_wait_start = 0
+        self.action_wait_end = 0
+
         self.initialize()
 
     def initialize(self):
@@ -242,11 +245,15 @@ class RotationallySymmetric(ObjectProfile):
             self.ground_flag = True
             self.next_groud_time = 0
 
-        if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete:
+        if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
             new_point = np.add(new_point, [-.1, 0, 0]) # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
+            self.action_wait_end = time_elasped + 5 # wait 5 seconds to let system ground
+
+        if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
+            self.action_wait_end = 0
             self.ground_flag = False
 
 class RectangularPrisms(ObjectProfile):

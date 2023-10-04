@@ -16,6 +16,9 @@
   <property name="wizardStyle">
    <enum>QWizard::ModernStyle</enum>
   </property>
+  <property name="options">
+   <set>QWizard::HelpButtonOnRight|QWizard::IndependentPages|QWizard::NoCancelButton</set>
+  </property>
   <widget class="QWizardPage" name="wiz_page_method">
    <property name="title">
     <string>Choose Import Method</string>
