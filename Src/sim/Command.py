@@ -22,11 +22,14 @@ class ProbePositionSetter():
         joint_poses = p.calculateInverseKinematics(self.sim.sim_robot, 6, self.goal_pos,
                                                    p.getQuaternionFromEuler([0, 0, 0]))#-np.pi / 2]))
         self.enableMotor(joint_poses, [1, 2, 3, 4, 5])
+        print(joint_poses, self.sim.robot_handler.read_cur_conf())
 
         self.complete = np.linalg.norm(np.array(self.goal_pos) - np.array(pp.get_link_pose(self.sim.sim_robot, 6)[0])) <= self.a_tol
 
     def enableMotor(self, joint_pos, joints):
         # awful code but no better solution atm
+
+        self.sim.robot_handler.set_goal_conf(joint_pos)
 
         # RAIL
         p.setJointMotorControl2(self.sim.sim_robot, joints[0],

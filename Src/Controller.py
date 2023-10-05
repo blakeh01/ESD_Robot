@@ -78,7 +78,7 @@ class Controller:
             Function that will properly disable the robot and disconnect from the simulation.
             IF this is not called at end of program life, then the robot will NOT return to home position.
         """
-        # self.robot_instance.terminateRobot()
+        self.simulation_instance.shutdown()
         if p.isConnected(): p.disconnect()
         print("Shutdown!")
         self.canRun = False

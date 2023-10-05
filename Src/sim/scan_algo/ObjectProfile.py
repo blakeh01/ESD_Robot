@@ -243,7 +243,6 @@ class RotationallySymmetric(ObjectProfile):
 
                         self.cur_path = temp
                         self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
-
                         self.measure_flag = True
 
                     if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:

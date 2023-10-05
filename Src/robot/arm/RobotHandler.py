@@ -39,7 +39,7 @@ class RobotHandler:
         self.motors = []
         for i in DXL_IDS:
             m = DXL_Motor(i, self.packet_handler, self.port_handler)
-            m.set_torque(TORQUE_DISABLE)
+            m.set_torque(TORQUE_ENABLE)
             self.motors.append(m)
 
         for i in range(1, 6):
@@ -51,6 +51,7 @@ class RobotHandler:
 
     def set_goal_conf(self, joint_states):
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
+        print(joint_states)
         waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
         shoulder_pos = radiansToDxlUnits(joint_states[2] + np.pi)
         elbow_pos = radiansToDxlUnits(joint_states[3] + np.pi)
@@ -122,7 +123,7 @@ class RobotHandler:
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
-        self.stepper_handler.close()
+       # self.stepper_handler.close()
 
 class DXL_Motor:
 

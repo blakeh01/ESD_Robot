@@ -95,10 +95,6 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
-        #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.robot_handler.read_cur_conf())
-        # self.goal_conf = pp.get_configuration(self.sim_robot)
-        # print("current conf: ", self.goal_conf)
-
         print("[SIM] Successfully initialized PyBullet environment...")
 
     def update(self, time_elapsed):
@@ -131,3 +127,6 @@ class Simulation:
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
+
+    def shutdown(self):
+        self.robot_handler.terminateRobot()
