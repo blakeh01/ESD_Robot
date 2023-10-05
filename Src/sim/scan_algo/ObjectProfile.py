@@ -48,7 +48,7 @@ class ObjectProfile():
         self.flow = flow
 
         self.cur_flow_idx = 0
-
+        self.probe_percentage = 0
         self.can_run = True
 
         # retrieve flow arguments
@@ -190,6 +190,7 @@ class RotationallySymmetric(ObjectProfile):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
+                self.probe_percentage = 0
                 print("PROBING! Sending robot home...")
             else:
 
@@ -219,6 +220,7 @@ class RotationallySymmetric(ObjectProfile):
                         return
 
                     if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
+                        self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
 
                         if self.next_groud_time == 0:
                             self.next_groud_time = self.grounding_interval + time_elasped

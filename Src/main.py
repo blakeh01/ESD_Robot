@@ -124,18 +124,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Update probe voltage label
         # TODO UNCOMMENT self.lbl_probe_voltage.setText(str(round(self.controller.probe_voltage, 5)))
 
-        # If the user is currently on the visualizer, update it.
-        if self.widget_window_tabs.currentIndex() == 1:
-            self.o3d_visualizer.update_visualizer()
-
-        # If there is no current mesh, disable the 'send to sim' button
-        # self.btn_obj_send_to_sim.setEnabled(not self.o3d_visualizer.cur_mesh is None)
-
         # If there are normals, allow for probe flow generation
         self.btn_probe_setup.setEnabled(not self.controller.simulation_instance.normal_point_cloud is None)
 
         # if theere is a probe plan, allow to execute
         self.btn_start_probing.setEnabled(not self.controller.simulation_instance.cur_probe_flow is None)
+
+        if self.controller.simulation_instance.cur_probe_flow is not None:
+            self.probe_progress_bar.setValue(self.controller.simulation_instance.cur_probe_flow.probe_percentage)
 
     def embed_pysim(self):
         hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
@@ -209,8 +205,10 @@ class ObjectWizard(QWizard):
         self.ui = Ui_ObjectWizard()
         self.ui.setupUi(self)
 
+        # self._gui_timer.start(32)  # start GUI update thread ~ 60 FPS
 
-skip_wiz = False
+
+skip_wiz = True
 
 def show_main_form(data):
     main = MainWindow(data)

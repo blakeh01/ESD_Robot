@@ -1,0 +1,138 @@
+[MAIN] Initializing Controller...
+[DXL] Successfully opened port on COM6!
+[DXL] Successfully set baud rate to 4000000 bps!
+[ROBOT] Created bulk read parameter for motor ID#1. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#2. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#3. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#4. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#5. (Success? True)
+b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
+
+b3Printf: No inertial data for link, using mass=1, localinertiadiagonal = 1,1,1, identity local inertial frame
+b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
+
+b3Printf: rx200/probe_tip_ref
+starting thread 0
+started PhysicsServerCommandProcessorThreadPool thread 0 with threadHandle 0000000000000F2C
+starting thread 1
+started PhysicsServerCommandProcessorThreadPool thread 1 with threadHandle 0000000000000F38
+starting thread 2
+started PhysicsServerCommandProcessorThreadPool thread 2 with threadHandle 0000000000000F48
+starting thread 3
+started PhysicsServerCommandProcessorThreadPool thread 3 with threadHandle 0000000000000F54
+starting thread 4
+started PhysicsServerCommandProcessorThreadPool thread 4 with threadHandle 0000000000000F60
+starting thread 5
+started PhysicsServerCommandProcessorThreadPool thread 5 with threadHandle 0000000000000F6C
+starting thread 6
+started PhysicsServerCommandProcessorThreadPool thread 6 with threadHandle 0000000000000F78
+starting thread 7
+started PhysicsServerCommandProcessorThreadPool thread 7 with threadHandle 0000000000000F84
+starting thread 8
+started PhysicsServerCommandProcessorThreadPool thread 8 with threadHandle 0000000000000F90
+starting thread 9
+started PhysicsServerCommandProcessorThreadPool thread 9 with threadHandle 0000000000000F9C
+starting thread 10
+started PhysicsServerCommandProcessorThreadPool thread 10 with threadHandle 0000000000000FA8
+starting thread 11
+started PhysicsServerCommandProcessorThreadPool thread 11 with threadHandle 0000000000000FB4
+starting thread 12
+started PhysicsServerCommandProcessorThreadPool thread 12 with threadHandle 0000000000000FC0
+starting thread 13
+started PhysicsServerCommandProcessorThreadPool thread 13 with threadHandle 0000000000000FCC
+starting thread 14
+started PhysicsServerCommandProcessorThreadPool thread 14 with threadHandle 0000000000000FD8
+numActiveThreads = 0
+stopping threads
+Thread with taskId 0 with handle 0000000000000E04 exiting
+Thread TERMINATED
+Thread with taskId 0 with handle 0000000000000F2C exiting
+Thread TERMINATED
+Thread with taskId 1 with handle 0000000000000F38 exiting
+Thread TERMINATED
+Thread with taskId 2 with handle 0000000000000F48 exiting
+Thread TERMINATED
+Thread with taskId 3 with handle 0000000000000F54 exiting
+Thread TERMINATED
+Thread with taskId 4 with handle 0000000000000F60 exiting
+Thread TERMINATED
+Thread with taskId 5 with handle 0000000000000F6C exiting
+Thread TERMINATED
+Thread with taskId 6 with handle 0000000000000F78 exiting
+Thread TERMINATED
+Thread with taskId 7 with handle 0000000000000F84 exiting
+Thread TERMINATED
+Thread with taskId 8 with handle 0000000000000F90 exiting
+Thread TERMINATED
+Thread with taskId 9 with handle 0000000000000F9C exiting
+Thread TERMINATED
+Thread with taskId 10 with handle 0000000000000FA8 exiting
+Thread TERMINATED
+Thread with taskId 11 with handle 0000000000000FB4 exiting
+Thread TERMINATED
+Thread with taskId 12 with handle 0000000000000FC0 exiting
+Thread TERMINATED
+Thread with taskId 13 with handle 0000000000000FCC exiting
+Thread TERMINATED
+Thread with taskId 14 with handle 0000000000000FD8 exiting
+Thread TERMINATED
+finished
+numActiveThreads = 0
+btShutDownExampleBrowser stopping threads
+Thread with taskId 0 with handle 0000000000000AC4 exiting
+Thread TERMINATED
+[SIM] Initialized robot with ID: 0
+[SIM] Initialized platform with ID: 1
+[SIM] Successfully initialized PyBullet environment...
+Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]
+[MAIN] Initialized Program! Ready for action...
+Done!
+Grouping probe points by Z-axis with tolerance of  0.005  m!
+Generated 12 slices!
+PROBING! Sending robot home...
+Starting probe on Z-slice:  0  Z-val:  0.468
+Selecting point closest to robot!
+Completed plotting slices! Beginning movements!
+Setting next ground time to:  30.88841962814331
+Processing slice i:  0  | Current point index:  0
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  1
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  2
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  3
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  4
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  5
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  6
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  7
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  8
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  9
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  10
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  11
+Done!
+[FIX] BEEP PROBE VOLTAGE!
+Processing slice i:  0  | Current point index:  12
+Time to ground! Raising flag!
+Done!
+[MAIN] Stopping Program!
+[RBT] Shutting down... TORQUE is now OFF! [Please implement going home :)]
+Shutdown!
