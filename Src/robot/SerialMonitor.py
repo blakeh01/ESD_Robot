@@ -91,6 +91,7 @@ class StepperHandler(SerialMonitor):
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
+    # this is robot linear rail
     def write_b(self, pos, feed=100):
         code = bytes(str(f"G1 B{round(pos)} F{round(feed)}"), "ASCII")
         self.serial_conn.flushInput()

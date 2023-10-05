@@ -1,0 +1,50 @@
+[MAIN] Initializing Controller...
+[DXL] Successfully opened port on COM6!
+[DXL] Successfully set baud rate to 4000000 bps!
+[ROBOT] Created bulk read parameter for motor ID#1. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#2. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#3. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#4. (Success? True)
+[ROBOT] Created bulk read parameter for motor ID#5. (Success? True)
+b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
+
+b3Printf: No inertial data for link, using mass=1, localinertiadiagonal = 1,1,1, identity local inertial frame
+b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
+
+b3Printf: rx200/probe_tip_ref
+[SIM] Initialized robot with ID: 0
+[SIM] Initialized platform with ID: 1
+[SIM] Successfully initialized PyBullet environment...
+Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]
+[MAIN] Initialized Program! Ready for action...
+Done!
+starting thread 0
+started PhysicsServerCommandProcessorThreadPool thread 0 with threadHandle 0000000000000E14
+starting thread 1
+started PhysicsServerCommandProcessorThreadPool thread 1 with threadHandle 0000000000000F4C
+starting thread 2
+started PhysicsServerCommandProcessorThreadPool thread 2 with threadHandle 0000000000000F58
+starting thread 3
+started PhysicsServerCommandProcessorThreadPool thread 3 with threadHandle 0000000000000F64
+starting thread 4
+started PhysicsServerCommandProcessorThreadPool thread 4 with threadHandle 0000000000000F70
+starting thread 5
+started PhysicsServerCommandProcessorThreadPool thread 5 with threadHandle 0000000000000F7C
+starting thread 6
+started PhysicsServerCommandProcessorThreadPool thread 6 with threadHandle 0000000000000F88
+starting thread 7
+started PhysicsServerCommandProcessorThreadPool thread 7 with threadHandle 0000000000000F94
+starting thread 8
+started PhysicsServerCommandProcessorThreadPool thread 8 with threadHandle 0000000000000FA0
+starting thread 9
+started PhysicsServerCommandProcessorThreadPool thread 9 with threadHandle 0000000000000FAC
+starting thread 10
+started PhysicsServerCommandProcessorThreadPool thread 10 with threadHandle 0000000000000FB8
+starting thread 11
+started PhysicsServerCommandProcessorThreadPool thread 11 with threadHandle 0000000000000FC4
+starting thread 12
+started PhysicsServerCommandProcessorThreadPool thread 12 with threadHandle 0000000000000FD0
+starting thread 13
+started PhysicsServerCommandProcessorThreadPool thread 13 with threadHandle 0000000000000FDC
+starting thread 14
+started PhysicsServerCommandProcessorThreadPool thread 14 with threadHandle 0000000000000FE8

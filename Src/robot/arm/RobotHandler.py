@@ -5,7 +5,7 @@ class RobotHandler:
 
     def __init__(self):
         #self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
-        #self.feather0 = SerialMonitor()
+        #self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
 
         # Time management
         self.time_alive = 0

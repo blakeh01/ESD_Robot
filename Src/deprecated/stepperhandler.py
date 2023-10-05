@@ -1,7 +1,23 @@
+'''
+
+    This class needs work.
+
+    StepperHandler keeps track of the linear rail (and maybe 3d axis system) and sends gcode to update position
+
+    The current interpolator is broken, and does not function as intended.
+
+    The position needs to be interpolated as the 3d printer controller does NOT report back the current
+    stepper position.
+
+    Also... Gcode is meant to be preprocessed and execute in parallel with the controls.
+    Which is the ultimate goal, so this class might be obsolete with full control paths.
+
+'''
+
 import time
 
 import serial
-from src.robot.rbt_constants import *
+from Src.robot.arm.rbt_constants import *
 
 
 # A class that stores information about the stepper motor.
@@ -15,17 +31,6 @@ class StepperHandler:
         print(f"[RAIL] Connecting to serial port: {self.stepper_port}, baud rate:{self.baud_rate}")
         self.stepper_serial = serial.Serial(self.stepper_port, self.baud_rate)
 
-        self.arrived = False
-
-        self.home_pos = 0
-        self.current_pos = 0
-        self.max_pos = 2270
-        self.goal_pos = 0
-
-        self.feed_rate = 15000
-
-        self.spin_amt = 0
-
         self.initialized = False
         self.initialize_motor()
 
@@ -37,39 +42,43 @@ class StepperHandler:
         print("[RAIL] Current position is home.")
         self.initialized = True
 
-    def update_motor(self, t=0):
-        # possible fix for multiple write commands:
-        # set goal positon when writing position
-        # if goal position != current positon
-        # increment the current position toward to goal position by some step amount
-        # continue doing that until it reaches goal position.
-        pass
-
-    def write_position(self, rot):
-        return
-        if rot > self.max_pos or rot < 0 or rot == self.goal_pos:  # Ensure we do not write an unreachable rotation
-            return
-
-        self.current_pos = rot
-        self.stepper_serial.write(self.generate_g_code(rot))
-
-    def write_3axis(self, pos):
-        code = bytes(str(f"G1 X{round(pos[0])} Y{round(pos[1])} Z{round(pos[2])} F250"), "ASCII")
+    def write_x(self, pos, feed=100):
+        code = bytes(str(f"G1 X{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
-        # print(code)
+        print(code)
 
-    def spin_plat(self):
-        self.spin_amt += 4.1
-        code = bytes(str(f"G1 A{self.spin_amt} F25"), "ASCII")
+    def write_y(self, pos, feed=100):
+        code = bytes(str(f"G1 Y{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
         self.stepper_serial.write(code + b'\r\n')
+        print(code)
 
-    def generate_g_code(self, rot):
-        rot_code = bytes(str(rot), "ASCII")
-        feed_code = bytes(str(self.feed_rate), "ASCII")
-        return b'G1 Y' + rot_code + b' F' + feed_code + b'\r\n'
+    def write_z(self, pos, feed=100):
+        code = bytes(str(f"G1 Z{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
+
+    def write_a(self, pos, feed=100):
+        code = bytes(str(f"G1 A{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
+
+    def write_b(self, pos, feed=100):
+        code = bytes(str(f"G1 B{round(pos[2])} F{round(feed)}"), "ASCII")
+        self.stepper_serial.flushInput()
+        self.stepper_serial.write(code + b'\r\n')
+        print(code)
 
     def close(self):
         print(f"[RAIL] Exiting... going home.")
-        self.stepper_serial.write(self.generate_g_code(self.home_pos))
-        self.stepper_serial.write(bytes(str(f"G1 X0 Y0 Z0 F250"), "ASCII"))
+        print("[RAIL] I did nothing... please implement me :]")
         self.stepper_serial.close()
+
+def generate_g_code(axis, goal_position, feed_rate):
+    rot_code = bytes(str(goal_position), "ASCII")
+    feed_code = bytes(str(feed_rate), "ASCII")
+    axis = bytes(str(axis), "ASCII")
+    return b'G1 ' + axis + rot_code + b' F' + feed_code + b'\r\n'

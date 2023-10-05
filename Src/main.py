@@ -6,6 +6,7 @@
 '''
 
 import sys
+import os
 import time
 
 import pybullet_planning as pp
@@ -67,8 +68,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.controller = Controller(self)
 
         # Object visualizer
-        print("[MAIN] Creating Open3D Visualizer...")
-        self.o3d_visualizer = Src.sim.ObjectVisualizer.ObjectVisualizer()
+        # print("[MAIN] Creating Open3D Visualizer...")
+        # self.o3d_visualizer = Src.sim.ObjectVisualizer.ObjectVisualizer()
 
         self.update_thread = UpdateThread(self.controller)
         self.update_thread.update_frame.connect(self.update)
@@ -79,10 +80,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
         self.btn_edit_consts.clicked.connect(self.edit_constants)  # set probe pos dialog TODO
         self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)  # robot 'info' button
-        self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select)  # primitive select combobox
-        self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
-        self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
-        self.btn_scan_start.clicked.connect(self.start_obj_scan)
+        # self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select)  # primitive select combobox
+        # self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
+        # self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
+        # self.btn_scan_start.clicked.connect(self.start_obj_scan)
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
         self.btn_start_probing.clicked.connect(self.begin_probe_flow)
@@ -91,14 +92,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
 
         # Move windows (o3d) to proper tabs
-        hwnd = win32gui.FindWindowEx(0, 0, None, "Open3D")
-        self.window = QtGui.QWindow.fromWinId(hwnd)
-        self.windowcontainer = self.createWindowContainer(self.window, self.widget_open3d)
-        self.windowcontainer.setMinimumSize(1221, 761)
+        # hwnd = win32gui.FindWindowEx(0, 0, None, "Open3D")
+        # self.window = QtGui.QWindow.fromWinId(hwnd)
+        # self.windowcontainer = self.createWindowContainer(self.window, self.widget_open3d)
+        # self.windowcontainer.setMinimumSize(1221, 761)
 
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
-        #self.embed_pysim()
+        self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -133,7 +134,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.o3d_visualizer.update_visualizer()
 
         # If there is no current mesh, disable the 'send to sim' button
-        self.btn_obj_send_to_sim.setEnabled(not self.o3d_visualizer.cur_mesh is None)
+        # self.btn_obj_send_to_sim.setEnabled(not self.o3d_visualizer.cur_mesh is None)
 
         # If there are normals, allow for probe flow generation
         self.btn_probe_setup.setEnabled(not self.controller.simulation_instance.normal_point_cloud is None)
@@ -174,7 +175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.window.setParent(None)
         self.update_thread.stop()
         self.controller.shutdown()
-        self.o3d_visualizer.visualizer.destroy_window()
+        # self.o3d_visualizer.visualizer.destroy_window()
         exit()
 
     def start_obj_scan(self):
@@ -306,7 +307,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == '__main__':
+    current_dir = os.getcwd()
+    print(current_dir)
+
+    log_file_name = "console_log.txt"
+    log_file_path = os.path.join(current_dir, log_file_name)
+
+    sys.stdout = open(log_file_path, "w")
+
     app = QApplication(sys.argv)
     form = MainWindow()
     form.show()
+
+    sys.stdout.close()
     sys.exit(app.exec_())
