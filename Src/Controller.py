@@ -25,7 +25,7 @@ class Controller:
         will update each instance class, as well as provide time data.
     """
 
-    def __init__(self, main_instance):
+    def __init__(self, main_instance, obj_wiz_data):
         # Time Management
         self.update_rate = 1. / UPDATE_RATE
         self.dt = 0
@@ -34,7 +34,7 @@ class Controller:
 
         # Instance management
         self.main_instance = main_instance
-        self.simulation_instance = Simulation(main_instance)
+        self.simulation_instance = Simulation(main_instance, obj_wiz_data[0], obj_wiz_data[1])
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")

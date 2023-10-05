@@ -70,7 +70,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # New controller that is stored within our main window.
         print("[MAIN] Initializing Controller...")
-        self.controller = Controller(self)
+        self.controller = Controller(self, obj_wiz_data)
 
         # Object visualizer
         # print("[MAIN] Creating Open3D Visualizer...")
@@ -261,11 +261,11 @@ class ObjectWizard(QWizard):
             time.sleep(0.01)
 
     def update_rbt_offset(self):
-        self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value(), self.ui.sbox_rbt_offset_y.value(), self.ui.sbox_rbt_offset_z.value()])
+        self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value()/1000, self.ui.sbox_rbt_offset_y.value()/1000, self.ui.sbox_rbt_offset_z.value()/1000])
         p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
 
     def update_obj_offset(self):
-        self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value(), self.ui.sbox_offset_y.value(), .16 + self.ui.sbox_offset_z.value()])
+        self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value()/1000, self.ui.sbox_offset_y.value()/1000, .16 + self.ui.sbox_offset_z.value()/1000])
         p.removeConstraint(self.obj_const)
         self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
                                             childBodyUniqueId=self.obj,
@@ -287,8 +287,7 @@ def show_setup_wizard():
 
     if res == QWizard.Accepted:
         pp.disconnect()
-        data = "Hello world"
-        show_main_form(data)
+        show_main_form([wiz.SIM_ROBOT_OFFSET, wiz.obj_joint_offset])
 
 if __name__ == '__main__':
     # current_dir = os.getcwd()
