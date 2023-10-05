@@ -50,8 +50,12 @@ def writeGoalPosition(packet_handler, port_handler: PortHandler, id, position):
     packet_handler.write4ByteTxRx(port_handler, id, ADDR_GOAL_POSITION, position)
 
 
-def writeDataAndWait(packet_handler, port_handler: PortHandler, id, addr, data):
+def writeDataAndWait4Byte(packet_handler: PacketHandler, port_handler: PortHandler, id, addr, data):
     packet_handler.write4ByteTxRx(port_handler, id, addr, data)
+    time.sleep(0.01)
+
+def writeDataAndWait2Byte(packet_handler: PacketHandler, port_handler: PortHandler, id, addr, data):
+    packet_handler.write2ByteTxRx(port_handler, id, addr, data)
     time.sleep(0.01)
 
 def setTorques(packet_handler, port_handler, id, torque):

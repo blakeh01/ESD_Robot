@@ -266,7 +266,7 @@ class ObjectWizard(QWizard):
             time.sleep(0.01)
 
     def update_rbt_offset(self):
-        self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value()/1000, self.ui.sbox_rbt_offset_y.value()/1000, self.ui.sbox_rbt_offset_z.value()/1000])
+        self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40 + self.ui.sbox_rbt_offset_x.value()/1000, self.ui.sbox_rbt_offset_y.value()/1000, self.ui.sbox_rbt_offset_z.value()/1000])
         p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
 
     def update_obj_offset(self):
@@ -306,6 +306,7 @@ def show_setup_wizard():
         with open(URDF_PLAT, 'w') as file:
             file.writelines(content)
 
+        time.sleep(1)
         show_main_form([wiz.SIM_ROBOT_OFFSET, wiz.obj_joint_offset])
 
 if __name__ == '__main__':

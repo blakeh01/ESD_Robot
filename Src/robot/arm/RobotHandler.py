@@ -5,8 +5,9 @@ class RobotHandler:
 
     def __init__(self, dummy=False):
         if not dummy:
-            self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
-            self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
+            pass
+            # self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
+            # self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
 
         # Time management
         self.time_alive = 0
@@ -49,25 +50,25 @@ class RobotHandler:
 
         # set some default params:
         #ID02/03
-        writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 75)
-        writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_PROF_ACCEL, 20)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 9000)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 1500)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_POS_D_GAIN, 3600)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_ACCEL, 20)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 9000)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 1500)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_D_GAIN, 3600)
 
         #ID04
-        writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 75)
-        writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_PROF_ACCEL, 20)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 6000)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_POS_I_GAIN, 600)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_POS_D_GAIN, 3600)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_ACCEL, 20)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 6000)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_I_GAIN, 600)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_D_GAIN, 3600)
 
         #ID05
-        writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_PROF_VELOCITY, 75)
-        writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_PROF_ACCEL, 30)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_POS_P_GAIN, 1600)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_POS_I_GAIN, 600)
-        # writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_POS_D_GAIN, 3600)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 5, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 5, ADDR_PROF_ACCEL, 30)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 5, ADDR_POS_P_GAIN, 1600)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 5, ADDR_POS_I_GAIN, 600)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 5, ADDR_POS_D_GAIN, 3600)
 
     def update(self):
         pass
