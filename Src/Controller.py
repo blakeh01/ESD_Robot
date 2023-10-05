@@ -81,15 +81,15 @@ class Controller:
         print("Shutdown!")
         self.canRun = False
 
-    def restart_sim(self):
-        self.canRun = False
-        self.main_instance.window.setParent(None)
-        p.disconnect()
-
-        time.sleep(1)
-        del self.simulation_instance
-        time.sleep(1)
-
-        self.simulation_instance = Simulation()
-        self.main_instance.embed_pysim()
-        self.canRun = True
+    # def restart_sim(self):
+    #     self.canRun = False
+    #     self.main_instance.window.setParent(None)
+    #     p.disconnect()
+    #
+    #     time.sleep(1)
+    #     del self.simulation_instance
+    #     time.sleep(1)
+    #
+    #     self.simulation_instance = Simulation()
+    #     self.main_instance.embed_pysim()
+    #     self.canRun = True

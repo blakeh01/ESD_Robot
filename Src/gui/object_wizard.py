@@ -508,13 +508,3 @@ class Ui_ObjectWizard(object):
         self.lbl_offset_z_units_3.setText(_translate("ObjectWizard", "mm"))
         self.lbl_offset_x_3.setText(_translate("ObjectWizard", "X"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_robot), _translate("ObjectWizard", "Robot Offsets"))
-
-    def branch_method(self):
-        if self.rbt_primitive.isChecked():
-            return 1
-        elif self.rbtn_import_obj.isChecked():
-            return 2
-        elif self.rbt_scan_obj.isChecked():
-            return 3
-        else:
-            return 0

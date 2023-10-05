@@ -229,6 +229,8 @@ class ObjectWizard(QWizard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.obj_joint_offset = None
+        self.obj_const = None
         self.ui = Ui_ObjectWizard()
         self.ui.setupUi(self)
 
@@ -270,6 +272,8 @@ class ObjectWizard(QWizard):
         self.prim = 2
 
         self.ui.wiz_page_visualize_obj.nextId = self.pack_object
+
+        self.ui.wiz_page_method.nextId = self.select_method
 
         self.button(QWizard.FinishButton).clicked.connect(self.finish_button)
 
@@ -361,6 +365,17 @@ class ObjectWizard(QWizard):
         self.o3d_viz.pack_object()
         time.sleep(1)
         return 5
+
+    def select_method(self):
+        if self.rbt_primitive.isChecked():
+            return 1
+        elif self.rbtn_import_obj.isChecked():
+            return 2
+        elif self.rbt_scan_obj.isChecked():
+            return 3
+        else:
+            return 0
+
 
     def show_all(self):
         self.ui.lbl_prim_field_A.setVisible(True)
