@@ -52,6 +52,7 @@ class Simulation:
         self.can_execute_flow = False
         self.lineup_normal = [-1, 0, 0] # direction of the normal vector that 'lines up' the platform to the robot.
         self.col_flag = False
+        self.home_flag = False
 
         # Debug stuff
         self.tip_ref_axes = []
@@ -140,13 +141,14 @@ class Simulation:
         if not self.col_flag:
             if self.can_execute_flow and self.cur_probe_flow:
                 self.cur_probe_flow.update(time_elapsed)
-        else:
-            pass
-            # what i want here: probe collision -> back off probe by offset Y -> send to home -> throw error.
-            #self.pos_probe_command = ProbePositionSetter(self, #homepos)
+        elif self.col_flag and not self.home_flag:
+            new_point = np.add(pp.get_link_pose(self.sim.sim_robot, 6)[0], [-.1, 0, 0]) # offset probe
+            self.sim.pos_probe_command = ProbePositionSetter(self, new_point)
+            self.home_flag = True
 
-        # self.platform_normal = rotate_3d_vector([-1, 0, 0], [0, 0, pp.get_joint_position(self.sim_platform, 1)])
-        # p.addUserDebugLine([0, 0, 0], self.platform_normal, [255, 0, 0], 5, replaceItemUniqueId=self.debug_platform_normal_line)
+        if self.col_flag and self.home_flag and self.sim.pos_probe_command.complete:
+            print("Going home! [TODO IMPL]")
+            #self.sim.pos_probe_command = ProbePositionSetter(self, home_pos)
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
