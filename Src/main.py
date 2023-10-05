@@ -246,6 +246,8 @@ class ObjectWizard(QWizard):
 
         self.ui.wiz_page_visualize_obj.nextId = self.pack_object
 
+        self.button(QWizard.FinishButton).clicked.connect(self.finish_button)
+
     def update(self):
         if self.currentId() == 5 and not self.has_init:
             self.rbt = RobotHandler(dummy=True)
@@ -340,31 +342,14 @@ class ObjectWizard(QWizard):
         self.ui.sbox_prim_field_B.setVisible(True)
         self.ui.sbox_prim_field_C.setVisible(True)
 
-
-
-
-skip_wiz = False
-
-def show_main_form(data):
-    main = MainWindow(data)
-    main.show()
-
-def show_setup_wizard():
-    if skip_wiz:
-        show_main_form(None)
-        return
-    wiz = ObjectWizard()
-    res = wiz.exec_()
-
-    if res == QWizard.Accepted:
+    def finish_button(self):
         pp.disconnect()
-        wiz.rbt.terminateRobot()
-        wiz.o3d_viz.visualizer.destroy_window()
-        wiz.gui_timer.stop()
-        wiz.destroy()
+        self.rbt.terminateRobot()
+        self.o3d_viz.visualizer.destroy_window()
+        self.gui_timer.stop()
 
         #overwrite offsets
-        (x, y, z) = wiz.obj_joint_offset
+        (x, y, z) = self.obj_joint_offset
         URDF_OFFSET_LINE_NUM = 77
 
         with open(URDF_PLAT, 'r') as file:
@@ -376,7 +361,10 @@ def show_setup_wizard():
             file.writelines(content)
 
         time.sleep(1)
-        show_main_form([wiz.SIM_ROBOT_OFFSET, wiz.obj_joint_offset])
+        self.destroy()
+
+
+skip_wiz = False
 
 if __name__ == '__main__':
     # current_dir = os.getcwd()
@@ -386,6 +374,15 @@ if __name__ == '__main__':
     # log_file_path = os.path.join(current_dir, log_file_name)
     # sys.stdout = open(log_file_path, "w")
 
-    app = QApplication(sys.argv)
-    show_setup_wizard()
-    sys.exit(app.exec_())
+    app1 = QApplication(sys.argv)
+    first_window = ObjectWizard()
+    first_window.show()
+    app1.exec_()
+    app1.exit()
+
+    # After the first window is closed, this part will run
+
+    app2 = QApplication(sys.argv)
+    second_window = MainWindow([first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset])
+    second_window.show()
+    sys.exit(app2.exec_())
