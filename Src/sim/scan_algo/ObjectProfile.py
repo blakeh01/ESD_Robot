@@ -50,6 +50,7 @@ class ObjectProfile():
         self.cur_flow_idx = 0
         self.probe_percentage = 0
         self.can_run = True
+        self.charge_done_flag = False
 
         # retrieve flow arguments
         self.rbt_max_speed = float(flow_args[0])
@@ -168,33 +169,45 @@ class RotationallySymmetric(ObjectProfile):
         cur_flow = self.flow[self.cur_flow_idx]
 
         if isinstance(cur_flow, Wait):
-            if(cur_flow.end_time == 0 and cur_flow.start_time == 0):
+            if cur_flow.end_time == 0 and cur_flow.start_time == 0:
                 cur_flow.start_time = time_elasped
                 cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
 
-            if(time_elasped >= cur_flow.end_time):
+            if time_elasped >= cur_flow.end_time:
                 print("Waiting completed... moving to next step!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Charge):
-            if(cur_flow.start_time == 0):
+            if cur_flow.start_time == 0:
                 cur_flow.start_time = time_elasped
-                self.sim.parent.show_charge_popup()
+                self.action_wait_end = time_elasped + 0.25
+                self.sim.parent.btn_charge_done.setVisible(True)
+                self.sim.parent.lbl_charge_warn.setVisible(True)
+            else:
+                if time_elasped >= self.action_wait_end:
+                    self.action_wait_end = time_elasped + 0.25
+                    self.sim.parent.lbl_charge_warn.setStyleSheet("background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
+
+            if self.charge_done_flag:
+                cur_flow.end_time = time_elasped
+                print("[USER] Charge Complete!")
                 self.cur_flow_idx += 1
+                self.charge_done_flag = False
+
         elif isinstance(cur_flow, Discharge):
-            if(cur_flow.start_time == 0):
+            if cur_flow.start_time == 0:
                 cur_flow.start_time = time_elasped
                 input("DISCHARGE!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
 
-            if(cur_flow.start_time == 0):
+            if cur_flow.start_time == 0:
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
                 self.probe_percentage = 0
                 print("PROBING! Sending robot home...")
             else:
 
-                if(self.z_sil_index >= len(self.z_slices)-1):
+                if self.z_sil_index >= len(self.z_slices)-1:
                     print("Probing Completed!")
                     cur_flow.end_time = time_elasped
                     self.cur_flow_idx += 1
@@ -382,10 +395,21 @@ class RectangularPrisms(ObjectProfile):
                 print("Waiting completed... moving to next step!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Charge):
-            if(cur_flow.start_time == 0):
+            if cur_flow.start_time == 0:
                 cur_flow.start_time = time_elasped
-                input("CHARGE!")
+                self.action_wait_end = time_elasped + 0.25
+                self.sim.parent.btn_charge_done.setVisible(True)
+                self.sim.parent.lbl_charge_warn.setVisible(True)
+            else:
+                if time_elasped >= self.action_wait_end:
+                    self.action_wait_end = time_elasped + 0.25
+                    self.sim.parent.lbl_charge_warn.setStyleSheet("background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
+
+            if self.charge_done_flag:
+                cur_flow.end_time = time_elasped
+                print("[USER] Charge Complete!")
                 self.cur_flow_idx += 1
+                self.charge_done_flag = False
         elif isinstance(cur_flow, Discharge):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped

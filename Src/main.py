@@ -92,6 +92,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
         self.btn_start_probing.clicked.connect(self.begin_probe_flow)
+        self.btn_charge_done.clicked.connect(self.advance_flow)
+
+        self.lbl_charge_warn.setVisible(False)
+        self.btn_charge_done.setVisible(False)
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
@@ -160,6 +164,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             text.setPos(x, y)
             self.widget_slice_disp.addItem(text)
 
+    def advance_flow(self):
+        self.controller.simulation_instance.cur_probe_flow.charge_done_flag = True
+        self.lbl_charge_warn.setVisible(False)
+        self.btn_charge_done.setVisible(False)
+
     def edit_constants(self):
         pass
 
@@ -191,15 +200,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msg.setIcon(icon)
         msg.setWindowTitle(title)
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec_()
-
-    def show_charge_popup(self):
-        msg = QMessageBox()
-        msg.setWindowTitle("CHARGE")
-
-        # Use HTML formatting to make the text bigger and bold
-        msg.setText("<font size='6' color='black'><b>CHARGE</b></font>")
-
         msg.exec_()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
@@ -373,7 +373,7 @@ class ObjectWizard(QWizard):
         self.destroy()
 
 
-skip_wiz = False
+skip_wiz = True
 param = []
 
 if __name__ == '__main__':
@@ -384,16 +384,17 @@ if __name__ == '__main__':
     # log_file_path = os.path.join(current_dir, log_file_name)
     # sys.stdout = open(log_file_path, "w")
 
-    app1 = QApplication(sys.argv)
-    first_window = ObjectWizard()
-    first_window.show()
-    app1.exec_()
-    app1.exit()
-    param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset]
-    del app1
-    del first_window
+    if not skip_wiz:
+        app1 = QApplication(sys.argv)
+        first_window = ObjectWizard()
+        first_window.show()
+        app1.exec_()
+        app1.exit()
+        param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset]
+        del app1
+        del first_window
 
-    print(param)
+        print(param)
 
     # After the first window is closed, this part will run
 
