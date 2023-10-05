@@ -80,10 +80,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
         self.btn_edit_consts.clicked.connect(self.edit_constants)  # set probe pos dialog TODO
         self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)  # robot 'info' button
-        # self.cb_primitive_select.currentIndexChanged.connect(self.on_primitive_select)  # primitive select combobox
-        # self.btn_obj_create.clicked.connect(self.on_primitive_create)  # primitive create button
-        # self.btn_obj_send_to_sim.clicked.connect(self.on_send_obj_to_sim)
-        # self.btn_scan_start.clicked.connect(self.start_obj_scan)
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
         self.btn_start_probing.clicked.connect(self.begin_probe_flow)
@@ -178,9 +174,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.o3d_visualizer.visualizer.destroy_window()
         exit()
 
-    def start_obj_scan(self):
-        pass
-
     def begin_probe_flow(self):
         self.controller.simulation_instance.can_execute_flow = True
 
@@ -199,98 +192,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def dialog_normal_generator(self):
         _dlg = DialogNormalGenerator(self)
         _dlg.exec()
-
-    def on_primitive_select(self, index):
-        selected_prim = self.cb_primitive_select.itemText(index)
-
-        # Hide the UI and set them visible depending on what primitive is selected.
-        self.lbl_info_a.setVisible(False)
-        self.lbl_info_b.setVisible(False)
-        self.lbl_info_c.setVisible(False)
-        self.lbl_info_m1.setVisible(False)
-        self.lbl_info_m2.setVisible(False)
-        self.lbl_info_m3.setVisible(False)
-        self.txt_obj_a.setVisible(False)
-        self.txt_obj_b.setVisible(False)
-        self.txt_obj_c.setVisible(False)
-
-        # Check what the primitive is and display the proper text boxes and labels.
-        if selected_prim.lower() == "sphere":
-            self.lbl_info_a.setText("Radius:")
-            self.lbl_info_a.setVisible(True)
-            self.lbl_info_m1.setVisible(True)
-            self.txt_obj_a.setVisible(True)
-        elif selected_prim.lower() == "cylinder":
-            self.lbl_info_a.setText("Radius:")
-            self.lbl_info_b.setText("Height:")
-            self.lbl_info_a.setVisible(True)
-            self.lbl_info_b.setVisible(True)
-            self.lbl_info_m1.setVisible(True)
-            self.lbl_info_m2.setVisible(True)
-            self.txt_obj_a.setVisible(True)
-            self.txt_obj_b.setVisible(True)
-        elif selected_prim.lower() == "rectangular prism":
-            self.lbl_info_a.setText("Width:")
-            self.lbl_info_b.setText("Height:")
-            self.lbl_info_c.setText("Depth:")
-            self.lbl_info_a.setVisible(True)
-            self.lbl_info_b.setVisible(True)
-            self.lbl_info_c.setVisible(True)
-            self.lbl_info_m1.setVisible(True)
-            self.lbl_info_m2.setVisible(True)
-            self.lbl_info_m3.setVisible(True)
-            self.txt_obj_a.setVisible(True)
-            self.txt_obj_b.setVisible(True)
-            self.txt_obj_c.setVisible(True)
-
-    def on_primitive_create(self):
-        match self.cb_primitive_select.currentIndex():
-            case 0:
-                self.show_information_box("Select a Primitive!", "Please select a primitive object before creation!")
-
-            case 1:  # sphere was selected.
-                if float(self.txt_obj_a.text()) == 0:
-                    self.show_information_box("Enter Required Fields!",
-                                              "Please enter all required fields before creation!")
-                    return
-                self.o3d_visualizer.display_primitive(
-                    "sphere",
-                    200,
-                    float(self.txt_obj_a.text())
-                )
-
-            case 2:  # prism was selected.
-                if float(self.txt_obj_a.text()) == 0 or float(self.txt_obj_b.text()) == 0 or float(
-                        self.txt_obj_c.text()) == 0:
-                    self.show_information_box("Enter Required Fields!",
-                                              "Please enter all required fields before creation!")
-                    return
-                self.o3d_visualizer.display_primitive(
-                    "rectangular prism",
-                    200,
-                    float(self.txt_obj_a.text()), float(self.txt_obj_b.text()), float(self.txt_obj_c.text())
-                )
-
-            case 3:  # cylinder was selected.
-                if float(self.txt_obj_a.text()) == 0 or float(self.txt_obj_b.text()) == 0:
-                    self.show_information_box("Enter Required Fields!",
-                                              "Please enter all required fields before creation!")
-                    return
-                self.o3d_visualizer.display_primitive(
-                    "cylinder",
-                    200,
-                    float(self.txt_obj_a.text()), float(self.txt_obj_b.text())
-                )
-
-    def on_send_obj_to_sim(self):
-        _dlg = DialogOffsetObject(self)
-        _dlg.exec()
-
-    def send_object_to_sim(self):
-        print("[MAIN] Sending object to simulation! Please hold...")
-        self.o3d_visualizer.pack_object()
-        time.sleep(0.5)
-        self.controller.restart_sim()
 
     def show_information_box(self, title, content, icon=QMessageBox.Information):
         msg = QMessageBox()
