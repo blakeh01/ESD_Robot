@@ -17,15 +17,14 @@ import win32gui
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QMessageBox
+    QApplication, QMainWindow, QMessageBox, QWizard
 )
 from Src.Controller import Controller
-from Src.gui.dialogs.dialog_cmd_set_pose import DialogSetProbePosition
-from Src.gui.dialogs.dialog_obj_offset import DialogOffsetObject
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
+from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.gui.main_window import Ui_MainWindow
 
 import pyqtgraph as pg
@@ -53,7 +52,7 @@ class UpdateThread(QThread):
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, obj_wiz_data, parent=None):
         super().__init__(parent)
 
         self.setupUi(self)
@@ -185,10 +184,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         _dlg = DialogRobotInfo(self)
         _dlg.exec()
 
-    def dialog_set_probe_pos(self):
-        _dlg = DialogSetProbePosition(self)
-        _dlg.exec()
-
     def dialog_normal_generator(self):
         _dlg = DialogNormalGenerator(self)
         _dlg.exec()
@@ -207,18 +202,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         a0.accept()
 
 
+class ObjectWizard(QWizard):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_ObjectWizard()
+        self.ui.setupUi(self)
+
+
+skip_wiz = False
+
+def show_main_form(data):
+    main = MainWindow(data)
+    main.show()
+
+def show_setup_wizard():
+    if skip_wiz:
+        show_main_form(None)
+        return
+    wiz = ObjectWizard()
+    res = wiz.exec_()
+
+    if res == QWizard.Accepted:
+        data = "Hello world"
+        show_main_form(data)
+
 if __name__ == '__main__':
     current_dir = os.getcwd()
     print(current_dir)
 
     log_file_name = "console_log.txt"
     log_file_path = os.path.join(current_dir, log_file_name)
-
     sys.stdout = open(log_file_path, "w")
 
     app = QApplication(sys.argv)
-    form = MainWindow()
-    form.show()
-
-    sys.stdout.close()
+    show_setup_wizard()
     sys.exit(app.exec_())
