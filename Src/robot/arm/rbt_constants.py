@@ -6,14 +6,17 @@ LEN_GOAL_POSITION = 4  # Number of bytes
 ADDR_PRESENT_POSITION = 132
 LEN_PRESENT_POSITION = 4
 
+ADDR_PROF_ACCEL = 108
 ADDR_PROF_VELOCITY = 112
-VELOCITY_LIMIT_DEF = 200  # Default time per movement command.
+ADDR_POS_P_GAIN = 84
+ADDR_POS_I_GAIN = 82
+ADDR_POS_D_GAIN = 80
 
 # Protocol version
 PROTOCOL_VERSION = 2
 
 # Default vars
-BAUDRATE = 1000000
+BAUDRATE = 4000000
 DEVICENAME = "COM6"  # Check which port is being used on your controller
 
 TORQUE_ENABLE = 1  # Value for enabling the torque

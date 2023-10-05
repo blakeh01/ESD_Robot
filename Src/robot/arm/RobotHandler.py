@@ -46,6 +46,28 @@ class RobotHandler:
             result = self.group_bulk_read.addParam(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             print(f"[ROBOT] Created bulk read parameter for motor ID#{i}. (Success? {result})")
 
+        # set some default params:
+        #ID02/03
+        writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_PROF_ACCEL, 20)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 9000)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 1500)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 2, ADDR_POS_D_GAIN, 3600)
+
+        #ID04
+        writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_PROF_ACCEL, 20)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 6000)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_POS_I_GAIN, 600)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 4, ADDR_POS_D_GAIN, 3600)
+
+        #ID05
+        writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_PROF_ACCEL, 30)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_POS_P_GAIN, 1600)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_POS_I_GAIN, 600)
+        # writeDataAndWait(self.packet_handler, self.port_handler, 5, ADDR_POS_D_GAIN, 3600)
+
     def update(self):
         pass
 
@@ -120,6 +142,7 @@ class RobotHandler:
     def terminateRobot(self):
         print("[RBT] Shutting down... TORQUE is now OFF! [Please implement going home :)]")
         for m in self.motors:
+            time.sleep(0.05)
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()

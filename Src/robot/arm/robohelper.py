@@ -50,6 +50,10 @@ def writeGoalPosition(packet_handler, port_handler: PortHandler, id, position):
     packet_handler.write4ByteTxRx(port_handler, id, ADDR_GOAL_POSITION, position)
 
 
+def writeDataAndWait(packet_handler, port_handler: PortHandler, id, addr, data):
+    packet_handler.write4ByteTxRx(port_handler, id, addr, data)
+    time.sleep(0.01)
+
 def setTorques(packet_handler, port_handler, id, torque):
     '''
         Set the torque control on a specified dynamixel id (or ids)
