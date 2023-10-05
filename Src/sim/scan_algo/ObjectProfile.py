@@ -18,6 +18,7 @@
     Other objects ???
         - Would be cool to have an system for users to extend functionality with a script..?
 '''
+import math
 
 import matplotlib.pyplot as plt
 from Src.sim.Command import *
@@ -251,9 +252,13 @@ class RotationallySymmetric(ObjectProfile):
                             dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
                             temp.append(AlignmentPoint(pos, dir))
 
+                        #orn = [0, math.atan2(self.cur_path[self.cur_point_index].direction[2], self.cur_path[self.cur_point_index].direction[1]) - np.pi, 0]
+                        #print(orn)
                         self.cur_path = temp
                         self.sim.pos_probe_command = ProbePositionSetter(self.sim,
-                                                                         self.cur_path[self.cur_point_index].pos)
+                                                                         self.cur_path[self.cur_point_index].pos,
+                                                                         [0, 0, 0]
+                                                                         )
                         self.measure_flag = True
 
                     if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
@@ -283,7 +288,7 @@ class RotationallySymmetric(ObjectProfile):
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
             new_point = np.add(new_point, [-.15, 0, 0])  # offset probe
-            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
+            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
             self.action_wait_end = time_elasped + 5  # wait 5 seconds to let system ground
 
         if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
@@ -381,6 +386,7 @@ class RectangularPrisms(ObjectProfile):
         if self.cur_flow_idx + 1 > len(self.flow):
             print("Probe flow completed!")
             self.can_run = False
+            self.sim.parent.sim_stop()
             return
 
         cur_flow = self.flow[self.cur_flow_idx]
@@ -472,7 +478,8 @@ class RectangularPrisms(ObjectProfile):
                         temp.append(AlignmentPoint(pos, dir))
 
                     self.cur_path = temp
-                    self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
+                    self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos,
+                                                                     goal_orn=[0, -np.pi/4, 0])
 
                     print("BEEP PROBE VOLTAGE!")
                     self.cur_path[self.cur_point_index].measurement = 10

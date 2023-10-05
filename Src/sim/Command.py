@@ -5,9 +5,10 @@ import pybullet_planning as pp
 
 class ProbePositionSetter():
 
-    def __init__(self, sim, goal_pos, probe_v=2, a_tol=0.01, timeout=0):
+    def __init__(self, sim, goal_pos, goal_orn, probe_v=2, a_tol=0.01, timeout=0):
         self.sim = sim
         self.goal_pos = goal_pos
+        self.goal_orn = goal_orn
         self.complete = False
         self.point = None
 
@@ -21,7 +22,7 @@ class ProbePositionSetter():
         if not self.point: self.point = pp.draw_point(self.goal_pos)
 
         joint_poses = p.calculateInverseKinematics(self.sim.sim_robot, 6, self.goal_pos,
-                                                   p.getQuaternionFromEuler([0, 0, 0]))  # -np.pi / 2]))
+                                                   p.getQuaternionFromEuler(self.goal_orn))  # -np.pi / 2]))
         self.enableMotor(joint_poses, [1, 2, 3, 4, 5])
         # print(joint_poses, self.sim.robot_handler.read_cur_conf())
 

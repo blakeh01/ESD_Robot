@@ -112,7 +112,7 @@ class Simulation:
         if not self.can_run:
             return
 
-        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home)
+        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
         self.pos_probe_command.onUpdate()
 
         if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(
@@ -131,7 +131,7 @@ class Simulation:
         elif self.col_flag and not self.home_flag:
             print("[SIM] Collision detected!")
             new_point = np.add(pp.get_link_pose(self.sim_robot, 6)[0], [-.1, 0, 0])  # offset probe
-            self.pos_probe_command = ProbePositionSetter(self, new_point)
+            self.pos_probe_command = ProbePositionSetter(self, new_point, [0, 0, 0])
             self.home_flag = True
 
         if self.col_flag and self.home_flag:
@@ -169,6 +169,6 @@ class Simulation:
                                 targetPosition=self.home_conf[3])
 
     def shutdown(self):
-        self.pos_probe_command = ProbePositionSetter(self, self.probe_home)
+        self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
         # self.shutdown_flag = True
         self.robot_handler.terminate_robot()

@@ -200,6 +200,14 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>sbox_scan_resolution</tabstop>
+  <tabstop>sbox_scan_z</tabstop>
+  <tabstop>sbox_scan_z_3</tabstop>
+  <tabstop>sbox_scan_z_4</tabstop>
+  <tabstop>sbox_probe_distance</tabstop>
+  <tabstop>btn_generate_normals</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
