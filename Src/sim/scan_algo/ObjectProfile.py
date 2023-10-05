@@ -178,7 +178,7 @@ class RotationallySymmetric(ObjectProfile):
         elif isinstance(cur_flow, Charge):
             if(cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
-                input("CHARGE!")
+                self.sim.parent.show_charge_popup()
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Discharge):
             if(cur_flow.start_time == 0):

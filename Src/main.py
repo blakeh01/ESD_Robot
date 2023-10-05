@@ -191,7 +191,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msg.setIcon(icon)
         msg.setWindowTitle(title)
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
+        msg.exec_()
+
+    def show_charge_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("CHARGE")
+
+        # Use HTML formatting to make the text bigger and bold
+        msg.setText("<font size='6' color='black'><b>CHARGE</b></font>")
+
+        msg.exec_()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         self.update_thread.quit()
@@ -365,6 +374,7 @@ class ObjectWizard(QWizard):
 
 
 skip_wiz = False
+param = []
 
 if __name__ == '__main__':
     # current_dir = os.getcwd()
@@ -379,11 +389,15 @@ if __name__ == '__main__':
     first_window.show()
     app1.exec_()
     app1.exit()
+    param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset]
     del app1
+    del first_window
+
+    print(param)
 
     # After the first window is closed, this part will run
 
     app1 = QApplication(sys.argv)
-    second_window = MainWindow([first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset])
+    second_window = MainWindow([[-.4*2, 0, 0], [0, 0, 0]])
     second_window.show()
     sys.exit(app1.exec_())
