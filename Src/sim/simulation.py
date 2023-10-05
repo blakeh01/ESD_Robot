@@ -17,6 +17,7 @@ DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
+URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
 
 class Simulation:
     """
@@ -27,9 +28,12 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, parent, time_step=1. / UPDATE_RATE):
+    def __init__(self, parent, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
         self.parent = parent
         self.robot_handler = RobotHandler()
+
+        self.robot_offset = robot_offset
+        self.object_offset = object_offset
 
         self.pos_probe_command = None
         self.pos_plat_command = None
@@ -73,7 +77,7 @@ class Simulation:
 
         # Add robot into PyBullet environment
         self.sim_robot = pp.load_pybullet(URDF_RBT, fixed_base=True, scale=SIM_SCALE)
-        p.resetBasePositionAndOrientation(self.sim_robot, SIM_ROBOT_OFFSET, p.getQuaternionFromEuler(SIM_ROBOT_ORN))
+        p.resetBasePositionAndOrientation(self.sim_robot, self.robot_offset, p.getQuaternionFromEuler(SIM_ROBOT_ORN))
         print(f"[SIM] Initialized robot with ID: {self.sim_robot}")
 
         # Add center platform AND OBJECT into PyBullet environment
@@ -82,8 +86,18 @@ class Simulation:
                                           p.getQuaternionFromEuler(SIM_PLATFORM_ORN))
         print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
 
+        self.sim_obj = pp.load_pybullet(URDF_OBJ, scale=2)
+        p.resetBasePositionAndOrientation(self.sim_obj, np.dot(2, [0, 0, .16]), [0, 0, 0, 1])
+        p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
+                                            childBodyUniqueId=self.sim_obj,
+                                            childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
+                                            parentFramePosition=self.object_offset, childFramePosition=[0, 0, 0])
+        print(f"[SIM] Initialized object with ID: {self.sim_obj} with custom fixed joint!")
+
+        # set camera to center
         pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
 
+        # draw axes
         if not PYBULLET_SHOW_GUI:
             simhelper.draw_world_axis(1 * SIM_SCALE, 5)
 

@@ -4,7 +4,7 @@
     Run this file to start the program...
 
 '''
-
+import random
 import sys
 import os
 import time
@@ -34,6 +34,7 @@ DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
+URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
 
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
@@ -162,8 +163,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.widget_slice_disp.addItem(text)
 
     def edit_constants(self):
-        pp.control_joints(0, [1, 2, 3, 4, 5],
-                          pp.inverse_kinematics_helper(0, 6, ([0, 0.15, 0.5], p.getQuaternionFromEuler([0, 0, 0]))))
         pass
 
     def stop_program(self):
@@ -212,6 +211,7 @@ class ObjectWizard(QWizard):
 
         self.sim_robot = None
         self.sim_platform = None
+        self.obj = None
 
         self.gui_timer = QTimer(self)
         self.gui_timer.timeout.connect(self.update)
@@ -227,6 +227,10 @@ class ObjectWizard(QWizard):
         self.ui.sbox_rbt_offset_y.valueChanged.connect(self.update_rbt_offset)
         self.ui.sbox_rbt_offset_z.valueChanged.connect(self.update_rbt_offset)
 
+        self.ui.sbox_offset_x.valueChanged.connect(self.update_obj_offset)
+        self.ui.sbox_offset_y.valueChanged.connect(self.update_obj_offset)
+        self.ui.sbox_offset_z.valueChanged.connect(self.update_obj_offset)
+
     def update(self):
         if self.currentId() == 5 and not self.has_init:
             pp.connect(True)
@@ -241,14 +245,32 @@ class ObjectWizard(QWizard):
             p.resetBasePositionAndOrientation(self.sim_platform, self.SIM_PLATFORM_OFFSET,
                                               p.getQuaternionFromEuler([0, 0, 0]))
             print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
+            self.obj = pp.load_pybullet(URDF_OBJ, scale=2)
+            p.resetBasePositionAndOrientation(self.obj, np.dot(2, [0, 0, .15875]), [0, 0, 0, 1])
+
+            self.obj_joint_offset = [0, 0, .16*2]
+            self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1, childBodyUniqueId=self.obj,
+                               childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
+                               parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
 
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
             self.has_init = True
 
+        if pp.is_connected():
+            pp.step_simulation()
+            time.sleep(0.01)
+
     def update_rbt_offset(self):
-        p.resetBasePositionAndOrientation(self.sim_robot,
-                                          np.dot(2, [self.ui.sbox_rbt_offset_x.value(), self.ui.sbox_rbt_offset_y.value(), self.ui.sbox_rbt_offset_z.value()]),
-                                          p.getQuaternionFromEuler([0, 0, 0]))
+        self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value(), self.ui.sbox_rbt_offset_y.value(), self.ui.sbox_rbt_offset_z.value()])
+        p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
+
+    def update_obj_offset(self):
+        self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value(), self.ui.sbox_offset_y.value(), .16 + self.ui.sbox_offset_z.value()])
+        p.removeConstraint(self.obj_const)
+        self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
+                                            childBodyUniqueId=self.obj,
+                                            childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
+                                            parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
 
 skip_wiz = False
 

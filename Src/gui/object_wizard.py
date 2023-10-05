@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_ObjectWizard(object):
     def setupUi(self, ObjectWizard):
         ObjectWizard.setObjectName("ObjectWizard")
@@ -271,9 +272,15 @@ class Ui_ObjectWizard(object):
         self.lbl_offset_y_units.setObjectName("lbl_offset_y_units")
         self.gridLayout_6.addWidget(self.lbl_offset_y_units, 1, 2, 1, 1)
         self.sbox_offset_x = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_6)
+        self.sbox_offset_x.setMinimum(-100.0)
+        self.sbox_offset_x.setMaximum(100.0)
+        self.sbox_offset_x.setSingleStep(0.05)
         self.sbox_offset_x.setObjectName("sbox_offset_x")
         self.gridLayout_6.addWidget(self.sbox_offset_x, 0, 1, 1, 1)
         self.sbox_offset_y = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_6)
+        self.sbox_offset_y.setMinimum(-100.0)
+        self.sbox_offset_y.setMaximum(100.0)
+        self.sbox_offset_y.setSingleStep(0.05)
         self.sbox_offset_y.setObjectName("sbox_offset_y")
         self.gridLayout_6.addWidget(self.sbox_offset_y, 1, 1, 1, 1)
         self.lbl_offset_x_units = QtWidgets.QLabel(self.gridLayoutWidget_6)
@@ -299,6 +306,9 @@ class Ui_ObjectWizard(object):
         self.lbl_offset_x.setObjectName("lbl_offset_x")
         self.gridLayout_6.addWidget(self.lbl_offset_x, 0, 0, 1, 1)
         self.sbox_offset_z = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_6)
+        self.sbox_offset_z.setMinimum(-100.0)
+        self.sbox_offset_z.setMaximum(100.0)
+        self.sbox_offset_z.setSingleStep(0.05)
         self.sbox_offset_z.setObjectName("sbox_offset_z")
         self.gridLayout_6.addWidget(self.sbox_offset_z, 2, 1, 1, 1)
         self.tabWidget.addTab(self.tab_object, "")
@@ -327,11 +337,14 @@ class Ui_ObjectWizard(object):
         self.sbox_rbt_offset_x = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_8)
         self.sbox_rbt_offset_x.setMinimum(-100.0)
         self.sbox_rbt_offset_x.setMaximum(100.0)
-        self.sbox_rbt_offset_x.setSingleStep(0.1)
+        self.sbox_rbt_offset_x.setSingleStep(0.05)
         self.sbox_rbt_offset_x.setProperty("value", -0.4)
         self.sbox_rbt_offset_x.setObjectName("sbox_rbt_offset_x")
         self.gridLayout_8.addWidget(self.sbox_rbt_offset_x, 0, 1, 1, 1)
         self.sbox_rbt_offset_y = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_8)
+        self.sbox_rbt_offset_y.setMinimum(-100.0)
+        self.sbox_rbt_offset_y.setMaximum(100.0)
+        self.sbox_rbt_offset_y.setSingleStep(0.05)
         self.sbox_rbt_offset_y.setObjectName("sbox_rbt_offset_y")
         self.gridLayout_8.addWidget(self.sbox_rbt_offset_y, 1, 1, 1, 1)
         self.lbl_offset_x_units_3 = QtWidgets.QLabel(self.gridLayoutWidget_8)
@@ -357,13 +370,16 @@ class Ui_ObjectWizard(object):
         self.lbl_offset_x_3.setObjectName("lbl_offset_x_3")
         self.gridLayout_8.addWidget(self.lbl_offset_x_3, 0, 0, 1, 1)
         self.sbox_rbt_offset_z = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_8)
+        self.sbox_rbt_offset_z.setMinimum(-100.0)
+        self.sbox_rbt_offset_z.setMaximum(100.0)
+        self.sbox_rbt_offset_z.setSingleStep(0.05)
         self.sbox_rbt_offset_z.setObjectName("sbox_rbt_offset_z")
         self.gridLayout_8.addWidget(self.sbox_rbt_offset_z, 2, 1, 1, 1)
         self.tabWidget.addTab(self.tab_robot, "")
         ObjectWizard.addPage(self.wiz_page_sim_offsets)
 
         self.retranslateUi(ObjectWizard)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(ObjectWizard)
 
     def retranslateUi(self, ObjectWizard):
@@ -432,7 +448,6 @@ class Ui_ObjectWizard(object):
         self.lbl_offset_z_units_3.setText(_translate("ObjectWizard", "mm"))
         self.lbl_offset_x_3.setText(_translate("ObjectWizard", "X"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_robot), _translate("ObjectWizard", "Robot Offsets"))
-
 
     def branch_method(self):
         if self.rbt_primitive.isChecked():
