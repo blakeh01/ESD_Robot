@@ -25,11 +25,11 @@ class ObjectVisualizer:
         self.visualizer.update_renderer()
 
     def load_mesh_from_path(self, mesh_path):
-        # extension = os.path.splitext(mesh_path)[1]
-        #
-        # if extension.lower() != '.stl' or extension.lower() != '.obj':
-        #     print("[OBJ] Invalid file type!")
-        #     return
+        extension = os.path.splitext(mesh_path)[1]
+
+        if extension.lower() != '.stl' or extension.lower() != '.obj':
+            print("[OBJ] Invalid file type!")
+            return
 
         return o3d.io.read_triangle_mesh(mesh_path)
 
@@ -65,9 +65,6 @@ class ObjectVisualizer:
         self.cur_mesh.translate(
             np.array([0, 0, z_offset]))  # offset the object by the neg. of minimum z, thus lifting it off the ground.
 
-        # add the geometry to the visualizer to allow for viewing
-        self.visualizer.add_geometry(self.cur_mesh)
-
     def pack_object(self, path=None):
         '''
             Writes 'self.curmesh' to disk for simulation usage.
@@ -82,6 +79,10 @@ class ObjectVisualizer:
             path = os.path.join(DATA_DIR, "object_exp.stl")
 
         o3d.io.write_triangle_mesh(path, self.cur_mesh)
+
+    def disp_cur_mesh(self):
+        self.clear_visualizer()
+        self.visualizer.add_geometry(self.cur_mesh)
 
     def clear_visualizer(self):
         self.visualizer.clear_geometries()

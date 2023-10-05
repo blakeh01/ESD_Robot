@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>561</width>
-    <height>388</height>
+    <width>575</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -99,16 +99,19 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QRadioButton" name="rbtn_prim_cylinder">
+          <widget class="QRadioButton" name="rbtn_prim_rect">
            <property name="text">
-            <string>Cylinder</string>
+            <string>Rectangular Prism</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="rbtn_prim_rect">
+          <widget class="QRadioButton" name="rbtn_prim_cylinder">
            <property name="text">
-            <string>Rectangular Prism</string>
+            <string>Cylinder</string>
            </property>
           </widget>
          </item>
@@ -153,6 +156,9 @@
            <property name="decimals">
             <number>3</number>
            </property>
+           <property name="minimum">
+            <double>1.000000000000000</double>
+           </property>
            <property name="maximum">
             <double>200.000000000000000</double>
            </property>
@@ -162,6 +168,9 @@
           <widget class="QDoubleSpinBox" name="sbox_prim_field_A">
            <property name="decimals">
             <number>3</number>
+           </property>
+           <property name="minimum">
+            <double>1.000000000000000</double>
            </property>
            <property name="maximum">
             <double>200.000000000000000</double>
@@ -218,6 +227,9 @@
           <widget class="QDoubleSpinBox" name="sbox_prim_field_C">
            <property name="decimals">
             <number>3</number>
+           </property>
+           <property name="minimum">
+            <double>1.000000000000000</double>
            </property>
            <property name="maximum">
             <double>200.000000000000000</double>
@@ -527,6 +539,9 @@
         <property name="decimals">
          <number>3</number>
         </property>
+        <property name="minimum">
+         <double>1.000000000000000</double>
+        </property>
         <property name="maximum">
          <double>150.000000000000000</double>
         </property>
@@ -537,6 +552,9 @@
         <property name="decimals">
          <number>3</number>
         </property>
+        <property name="minimum">
+         <double>1.000000000000000</double>
+        </property>
         <property name="maximum">
          <double>150.000000000000000</double>
         </property>
@@ -546,6 +564,9 @@
        <widget class="QDoubleSpinBox" name="sbox_scan_x">
         <property name="decimals">
          <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>1.000000000000000</double>
         </property>
         <property name="maximum">
          <double>150.000000000000000</double>
@@ -608,10 +629,10 @@
    <widget class="QOpenGLWidget" name="widget_visualize">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>551</width>
-      <height>291</height>
+      <x>10</x>
+      <y>10</y>
+      <width>540</width>
+      <height>280</height>
      </rect>
     </property>
    </widget>
@@ -649,7 +670,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab_object">
      <attribute name="title">
@@ -951,6 +972,36 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>cbox_import_units</tabstop>
+  <tabstop>sbox_import_Y</tabstop>
+  <tabstop>sbox_import_Z</tabstop>
+  <tabstop>sbox_prim_field_A</tabstop>
+  <tabstop>sbox_prim_field_B</tabstop>
+  <tabstop>sbox_prim_field_C</tabstop>
+  <tabstop>rbtn_prim_rect</tabstop>
+  <tabstop>rbtn_prim_cylinder</tabstop>
+  <tabstop>rbtn_prim_sphere</tabstop>
+  <tabstop>txt_path</tabstop>
+  <tabstop>btn_prompt_path</tabstop>
+  <tabstop>rbt_primitive</tabstop>
+  <tabstop>rbtn_import_obj</tabstop>
+  <tabstop>rbt_scan_obj</tabstop>
+  <tabstop>sbox_import_X</tabstop>
+  <tabstop>rbtn_import_units</tabstop>
+  <tabstop>rbtn_import_scale</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>sbox_offset_x</tabstop>
+  <tabstop>sbox_offset_y</tabstop>
+  <tabstop>sbox_offset_z</tabstop>
+  <tabstop>sbox_scan_y</tabstop>
+  <tabstop>sbox_scan_z</tabstop>
+  <tabstop>btn_find</tabstop>
+  <tabstop>sbox_scan_x</tabstop>
+  <tabstop>sbox_rbt_offset_x</tabstop>
+  <tabstop>sbox_rbt_offset_y</tabstop>
+  <tabstop>sbox_rbt_offset_z</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

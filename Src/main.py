@@ -26,7 +26,9 @@ from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.gui.main_window import Ui_MainWindow
+from Src.sim.ObjectVisualizer import ObjectVisualizer
 from Src.robot.arm.RobotHandler import RobotHandler
+
 
 import pyqtgraph as pg
 import numpy as np
@@ -93,12 +95,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
-
-        # Move windows (o3d) to proper tabs
-        # hwnd = win32gui.FindWindowEx(0, 0, None, "Open3D")
-        # self.window = QtGui.QWindow.fromWinId(hwnd)
-        # self.windowcontainer = self.createWindowContainer(self.window, self.widget_open3d)
-        # self.windowcontainer.setMinimumSize(1221, 761)
 
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
@@ -172,7 +168,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.window.setParent(None)
         self.update_thread.stop()
         self.controller.shutdown()
-        # self.o3d_visualizer.visualizer.destroy_window()
         exit()
 
     def begin_probe_flow(self):
@@ -222,6 +217,14 @@ class ObjectWizard(QWizard):
         self.rbt = None
         self.has_init = False
 
+        self.o3d_viz = ObjectVisualizer()
+
+        hwnd = win32gui.FindWindowEx(0, 0, None, "Open3D")
+        self.window = QtGui.QWindow.fromWinId(hwnd)
+        self.window.resize(551, 291)
+        self.windowcontainer = self.createWindowContainer(self.window, self.ui.widget_visualize)
+        self.windowcontainer.setMinimumSize(551, 291)
+
         # todo if time, configurable for calibration perhaps?
         self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40, 0, 0])
         self.SIM_PLATFORM_OFFSET = np.dot(2, [0, 0, 0])
@@ -233,6 +236,15 @@ class ObjectWizard(QWizard):
         self.ui.sbox_offset_x.valueChanged.connect(self.update_obj_offset)
         self.ui.sbox_offset_y.valueChanged.connect(self.update_obj_offset)
         self.ui.sbox_offset_z.valueChanged.connect(self.update_obj_offset)
+
+        self.ui.rbtn_prim_rect.clicked.connect(self.prim_rect_selected)
+        self.ui.rbtn_prim_sphere.clicked.connect(self.prim_sphere_selected)
+        self.ui.rbtn_prim_cylinder.clicked.connect(self.prim_cylinder_selected)
+
+        self.ui.wiz_page_create_primitive.nextId = self.prim_creation
+        self.prim = 2
+
+        self.ui.wiz_page_visualize_obj.nextId = self.pack_object
 
     def update(self):
         if self.currentId() == 5 and not self.has_init:
@@ -260,6 +272,9 @@ class ObjectWizard(QWizard):
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
             self.has_init = True
 
+        if self.currentId() == 4:
+            self.o3d_viz.update_visualizer()
+
         if pp.is_connected():
             pp.step_simulation()
             pp.set_joint_positions(self.sim_robot, [2,3,4,5], self.rbt.read_cur_conf())
@@ -277,6 +292,57 @@ class ObjectWizard(QWizard):
                                             childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
                                             parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
 
+    def prim_rect_selected(self):
+        self.show_all()
+        self.ui.lbl_prim_field_A.setText("X")
+        self.ui.lbl_prim_field_B.setText("Y")
+        self.ui.lbl_prim_field_C.setText("Z")
+        self.prim = 2
+
+    def prim_sphere_selected(self):
+        self.show_all()
+        self.ui.lbl_prim_field_B.setVisible(False)
+        self.ui.lbl_prim_field_C.setVisible(False)
+        self.ui.lbl_prim_field_units_B.setVisible(False)
+        self.ui.lbl_prim_field_units_C.setVisible(False)
+        self.ui.sbox_prim_field_B.setVisible(False)
+        self.ui.sbox_prim_field_C.setVisible(False)
+        self.ui.lbl_prim_field_A.setText("Radius")
+        self.prim = 1
+
+    def prim_cylinder_selected(self):
+        self.show_all()
+        self.ui.lbl_prim_field_C.setVisible(False)
+        self.ui.lbl_prim_field_units_C.setVisible(False)
+        self.ui.sbox_prim_field_C.setVisible(False)
+        self.ui.lbl_prim_field_A.setText("Radius")
+        self.ui.lbl_prim_field_B.setText("Height")
+        self.prim = 0
+
+    def prim_creation(self):
+        self.o3d_viz.display_primitive(self.prim, 1024, float(self.ui.sbox_prim_field_A.text()), float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
+        self.o3d_viz.disp_cur_mesh()
+        return 4
+
+    def pack_object(self):
+        self.o3d_viz.pack_object()
+        time.sleep(1)
+        return 5
+
+    def show_all(self):
+        self.ui.lbl_prim_field_A.setVisible(True)
+        self.ui.lbl_prim_field_B.setVisible(True)
+        self.ui.lbl_prim_field_C.setVisible(True)
+        self.ui.lbl_prim_field_units_A.setVisible(True)
+        self.ui.lbl_prim_field_units_B.setVisible(True)
+        self.ui.lbl_prim_field_units_C.setVisible(True)
+        self.ui.sbox_prim_field_A.setVisible(True)
+        self.ui.sbox_prim_field_B.setVisible(True)
+        self.ui.sbox_prim_field_C.setVisible(True)
+
+
+
+
 skip_wiz = False
 
 def show_main_form(data):
@@ -293,6 +359,9 @@ def show_setup_wizard():
     if res == QWizard.Accepted:
         pp.disconnect()
         wiz.rbt.terminateRobot()
+        wiz.o3d_viz.visualizer.destroy_window()
+        wiz.gui_timer.stop()
+        wiz.destroy()
 
         #overwrite offsets
         (x, y, z) = wiz.obj_joint_offset

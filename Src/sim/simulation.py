@@ -1,4 +1,5 @@
 import os.path
+import time
 
 import Src.sim.simhelper as simhelper
 import numpy as np
@@ -17,6 +18,7 @@ DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
+
 
 class Simulation:
     """
@@ -51,9 +53,11 @@ class Simulation:
         self.normal_point_cloud = None
         self.cur_probe_flow = None
         self.can_execute_flow = False
-        self.lineup_normal = [-1, 0, 0] # direction of the normal vector that 'lines up' the platform to the robot.
+        self.lineup_normal = [-1, 0, 0]  # direction of the normal vector that 'lines up' the platform to the robot.
         self.col_flag = False
         self.home_flag = False
+        self.home_conf = None
+        self.probe_home = None
 
         # Debug stuff
         self.tip_ref_axes = []
@@ -65,7 +69,6 @@ class Simulation:
         p.addUserDebugLine([0, 0, 0], self.lineup_normal, [255, 0, 0], 5)
 
         # self.debug_platform_normal_line = p.addUserDebugLine([0, 0, 0], [0, 1, 0], [255, 0, 0], 5)
-
 
     def initialize_sim(self):
         # Instantiate and start a PyBullet physics client
@@ -99,16 +102,27 @@ class Simulation:
         if DRAW_TIP_AXES:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
+        # SET HOME POSITION TO DEFAULT CONF.
+        self.home_conf = self.robot_handler.read_cur_conf()
+
+        self.drive_motors_to_home()
+        for i in range(100):
+            p.stepSimulation()
+            time.sleep(0.01)
+
+        self.probe_home = pp.get_link_pose(self.sim_robot, 6)[0]
+
         print("[SIM] Successfully initialized PyBullet environment...")
 
     def update(self, time_elapsed):
         if not self.can_run:
             return
 
-        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, pp.get_link_pose(self.sim_robot, 6)[0])
+        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home)
         self.pos_probe_command.onUpdate()
 
-        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(self.sim_platform, 1), 0)
+        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(
+            self.sim_platform, 1), 0)
         self.pos_plat_command.onUpdate()
 
         if DRAW_TIP_AXES:
@@ -121,16 +135,45 @@ class Simulation:
             if self.can_execute_flow and self.cur_probe_flow:
                 self.cur_probe_flow.update(time_elapsed)
         elif self.col_flag and not self.home_flag:
-            new_point = np.add(pp.get_link_pose(self.sim_robot, 6)[0], [-.1, 0, 0]) # offset probe
+            print("[SIM] Collision detected!")
+            new_point = np.add(pp.get_link_pose(self.sim_robot, 6)[0], [-.1, 0, 0])  # offset probe
             self.pos_probe_command = ProbePositionSetter(self, new_point)
             self.home_flag = True
 
-        if self.col_flag and self.home_flag and self.pos_probe_command.complete:
-            print("Going home! [TODO IMPL]")
-            #self.pos_probe_command = ProbePositionSetter(self, home_pos)
+        if self.col_flag and self.home_flag:
+            print("[SIM] Going home!")
+            self.drive_motors_to_home()
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
 
+    def drive_motors_to_home(self):
+        # RAIL
+        # p.setJointMotorControl2(self.sim.sim_robot, joints[0],
+        #                         controlMode=p.POSITION_CONTROL,
+        #                         targetPosition=joint_pos[0])
+
+        # WAIST
+        p.setJointMotorControl2(self.sim_robot, 2,
+                                controlMode=p.POSITION_CONTROL,
+                                targetPosition=self.home_conf[0])
+
+        # SHOULDER
+        p.setJointMotorControl2(self.sim_robot, 3,
+                                controlMode=p.POSITION_CONTROL,
+                                targetPosition=self.home_conf[1])
+
+        # ELBOW
+        p.setJointMotorControl2(self.sim_robot, 4,
+                                controlMode=p.POSITION_CONTROL,
+                                targetPosition=self.home_conf[2])
+
+        # WRIST/PROBE
+        p.setJointMotorControl2(self.sim_robot, 5,
+                                controlMode=p.POSITION_CONTROL,
+                                targetPosition=self.home_conf[3])
+
     def shutdown(self):
+        self.pos_probe_command = ProbePositionSetter(self, self.probe_home)
+        self.shutdown_flag = True
         self.robot_handler.terminateRobot()
