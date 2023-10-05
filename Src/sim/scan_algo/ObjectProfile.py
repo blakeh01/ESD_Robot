@@ -110,7 +110,7 @@ class RotationallySymmetric(ObjectProfile):
             if len(points_list) < self.min_points_slice:
                 print("Detected a malformed slice! Try decreasing the tolerance of the object profile or decrease probing resolution!")
                 # Find the neighboring slice with the most points
-                neighboring_slices = [z for z in self.z_slices.keys() if abs(z - z_value) <= tolerance and z != z_value]
+                neighboring_slices = [z for z in self.z_slices.keys() if abs(z - z_value) <= self.tolerance and z != z_value]
                 if neighboring_slices:
                     neighboring_slices.sort(key=lambda z: len(self.z_slices[z]), reverse=True)
                     target_slice = neighboring_slices[0]
@@ -207,7 +207,7 @@ class RotationallySymmetric(ObjectProfile):
                 print("PROBING! Sending robot home...")
             else:
 
-                if self.z_sil_index >= len(self.z_slices)-1:
+                if self.z_sil_index >= len(self.z_slices):
                     print("Probing Completed!")
                     cur_flow.end_time = time_elasped
                     self.cur_flow_idx += 1
@@ -234,6 +234,8 @@ class RotationallySymmetric(ObjectProfile):
 
                     if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
                         self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
+                        self.sim.parent.lbl_slice_index.setText(str(self.z_sil_index))
+                        self.sim.parent.lbl_point_index.setText(str(self.cur_point_index))
 
                         if self.next_groud_time == 0:
                             self.next_groud_time = self.grounding_interval + time_elasped

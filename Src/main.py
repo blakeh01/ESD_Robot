@@ -23,7 +23,6 @@ from Src.Controller import Controller
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
-from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.gui.main_window import Ui_MainWindow
 from Src.sim.ObjectVisualizer import ObjectVisualizer
@@ -93,6 +92,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
         self.btn_start_probing.clicked.connect(self.begin_probe_flow)
         self.btn_charge_done.clicked.connect(self.advance_flow)
+        self.btn_sim_terminate.clicked.connect(self.sim_stop)
+        self.btn.clicked.connect(self.rbt_stop) # fix name lol
 
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
@@ -102,7 +103,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
-        self.embed_pysim()
+        #self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -169,12 +170,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
 
+    def sim_stop(self):
+        # this function could do many things, but I've decided to make it stop probe flow and return the robot home.
+        self.controller.simulation_instance.cur_probe_flow = None
+        for i in range(100):
+            self.controller.simulation_instance.drive_motors_to_home()
+            p.stepSimulation()
+            time.sleep(1/120)
+
+        self.controller.simulation_instance.robot_handler.set_goal_conf(pp.get_joint_positions(self.controller.simulation_instance.sim_robot, [1,2,3,4,5]))
+
+    def rbt_stop(self):
+        self.controller.simulation_instance.robot_handler.terminateRobot()
+
     def edit_constants(self):
         pass
 
     def stop_program(self):
         print("[MAIN] Stopping Program!")
-        self.window.setParent(None)
+        #self.window.setParent(None)
+        self.sim_stop()
+        time.sleep(1.5)
         self.update_thread.stop()
         self.controller.shutdown()
         exit()
@@ -234,7 +250,6 @@ class ObjectWizard(QWizard):
         self.windowcontainer = self.createWindowContainer(self.window, self.ui.widget_visualize)
         self.windowcontainer.setMinimumSize(551, 291)
 
-        # todo if time, configurable for calibration perhaps?
         self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40, 0, 0])
         self.SIM_PLATFORM_OFFSET = np.dot(2, [0, 0, 0])
 

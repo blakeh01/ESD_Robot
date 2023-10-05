@@ -52,14 +52,14 @@ class RobotHandler:
         #ID02/03
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 75)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_ACCEL, 20)
-        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 9000)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 4000)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 1500)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_D_GAIN, 3600)
 
         #ID04
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 75)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_ACCEL, 20)
-        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 6000)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 4000)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_I_GAIN, 600)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_D_GAIN, 3600)
 

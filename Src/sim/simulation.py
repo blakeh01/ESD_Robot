@@ -143,6 +143,7 @@ class Simulation:
         if self.col_flag and self.home_flag:
             print("[SIM] Going home!")
             self.drive_motors_to_home()
+            self.parent.lbl_rbt_status.setText("Collision Error!")
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
