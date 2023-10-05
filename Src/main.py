@@ -30,6 +30,11 @@ from Src.gui.main_window import Ui_MainWindow
 import pyqtgraph as pg
 import numpy as np
 
+DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
+
+URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
+URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
+
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
 
@@ -205,10 +210,47 @@ class ObjectWizard(QWizard):
         self.ui = Ui_ObjectWizard()
         self.ui.setupUi(self)
 
-        # self._gui_timer.start(32)  # start GUI update thread ~ 60 FPS
+        self.sim_robot = None
+        self.sim_platform = None
 
+        self.gui_timer = QTimer(self)
+        self.gui_timer.timeout.connect(self.update)
+        self.gui_timer.start(25)  # start GUI update thread ~ 40 FPS
 
-skip_wiz = True
+        self.has_init = False
+
+        # todo if time, configurable for calibration perhaps?
+        self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40, 0, 0])
+        self.SIM_PLATFORM_OFFSET = np.dot(2, [0, 0, 0])
+
+        self.ui.sbox_rbt_offset_x.valueChanged.connect(self.update_rbt_offset)
+        self.ui.sbox_rbt_offset_y.valueChanged.connect(self.update_rbt_offset)
+        self.ui.sbox_rbt_offset_z.valueChanged.connect(self.update_rbt_offset)
+
+    def update(self):
+        if self.currentId() == 5 and not self.has_init:
+            pp.connect(True)
+            p.setGravity(0, 0, 0)
+            # Add robot into PyBullet environment
+            self.sim_robot = pp.load_pybullet(URDF_RBT, fixed_base=True, scale=2)
+            p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
+            print(f"[SIM] Initialized robot with ID: {self.sim_robot}")
+
+            # Add center platform AND OBJECT into PyBullet environment
+            self.sim_platform = pp.load_pybullet(URDF_PLAT, fixed_base=True, scale=2)
+            p.resetBasePositionAndOrientation(self.sim_platform, self.SIM_PLATFORM_OFFSET,
+                                              p.getQuaternionFromEuler([0, 0, 0]))
+            print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
+
+            pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
+            self.has_init = True
+
+    def update_rbt_offset(self):
+        p.resetBasePositionAndOrientation(self.sim_robot,
+                                          np.dot(2, [self.ui.sbox_rbt_offset_x.value(), self.ui.sbox_rbt_offset_y.value(), self.ui.sbox_rbt_offset_z.value()]),
+                                          p.getQuaternionFromEuler([0, 0, 0]))
+
+skip_wiz = False
 
 def show_main_form(data):
     main = MainWindow(data)
@@ -222,16 +264,17 @@ def show_setup_wizard():
     res = wiz.exec_()
 
     if res == QWizard.Accepted:
+        pp.disconnect()
         data = "Hello world"
         show_main_form(data)
 
 if __name__ == '__main__':
-    current_dir = os.getcwd()
-    print(current_dir)
-
-    log_file_name = "console_log.txt"
-    log_file_path = os.path.join(current_dir, log_file_name)
-    sys.stdout = open(log_file_path, "w")
+    # current_dir = os.getcwd()
+    # print(current_dir)
+    #
+    # log_file_name = "console_log.txt"
+    # log_file_path = os.path.join(current_dir, log_file_name)
+    # sys.stdout = open(log_file_path, "w")
 
     app = QApplication(sys.argv)
     show_setup_wizard()

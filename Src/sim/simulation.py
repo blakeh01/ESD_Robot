@@ -15,7 +15,6 @@ import math
 # Paths for URDF files.
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
-URDF_PLANE = os.path.join(DATA_DIR, "urdf", "plane.urdf")
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 
