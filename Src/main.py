@@ -379,10 +379,11 @@ if __name__ == '__main__':
     first_window.show()
     app1.exec_()
     app1.exit()
+    del app1
 
     # After the first window is closed, this part will run
 
-    app2 = QApplication(sys.argv)
+    app1 = QApplication(sys.argv)
     second_window = MainWindow([first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset])
     second_window.show()
-    sys.exit(app2.exec_())
+    sys.exit(app1.exec_())
