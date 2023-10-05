@@ -4,43 +4,24 @@ from Src.sim.sim_constants import *
 from Src.util.math_util import *
 
 
-def get_normal_point_cloud(draw_cloud=True, draw_normals=False, draw_ray_start=True, line_thickness=1, numThreads=0,
-                           z_limits=Z_LIMITS, z_density=Z_DENSITY,
-                           xz_offset=XZ_OFFSET,
-                           resolution=RESOLUTION, scan_center=SCAN_CENTER,
-                           norm_length=NORM_LENGTH, probe_dist=PROBE_DIST):
-    '''
-    :param draw_cloud:
-    :param draw_normals:
-    :param line_thickness:
-    :param numThreads:
-    :param z_limits:
-    :param z_density:
-    :param xz_offset:
-    :param resolution:
-    :param scan_center:
-    :param norm_length:
-    :param probe_dist:
-    :return:
-    '''
-
-    z_space = np.linspace(start=z_limits[0], stop=z_limits[1], num=z_density, endpoint=True)
-    phi_space = np.linspace(start=0, stop=2 * np.pi, num=resolution, endpoint=False)  # no endpoint as 0 = 2pi
-    rho = xz_offset
-
+def get_normal_point_cloud(pts_per_slice, z_limits, z_density, probe_dist, obj_center, draw_ray_start=True, draw_cloud=True):
     ray_start = []
     ray_end = []
+
+    z_space = np.linspace(start=z_limits[0], stop=z_limits[1], num=z_density, endpoint=True)
+    phi_space = np.linspace(start=0, stop=2*np.pi, num=pts_per_slice, endpoint=False)  # no endpoint as 0 = 2pi
+    rho = .200 # 200 mm
 
     for phi in phi_space:
         for z in z_space:
             x, y, z = (
-                rho * np.cos(phi),
-                rho * np.sin(phi),
+                rho * np.cos(phi) + obj_center[0],
+                rho * np.sin(phi) + obj_center[1],
                 z
             )
 
             ray_start.append([x, y, z])
-            ray_end.append([scan_center[0], scan_center[1], z])
+            ray_end.append([obj_center[0], obj_center[1], z])
 
     if draw_ray_start: p.addUserDebugPoints(ray_start, [[255, 0, 0]] * len(ray_start), 5)
 
@@ -61,9 +42,71 @@ def get_normal_point_cloud(draw_cloud=True, draw_normals=False, draw_ray_start=T
 
     point_cloud = PointCloud(alignment_points)
 
-    if draw_cloud: point_cloud.draw_point_cloud()
+    if draw_cloud:
+        point_cloud.draw_point_cloud()
 
     return point_cloud
+
+# def get_normal_point_cloud(draw_cloud=True, draw_normals=False, draw_ray_start=True, line_thickness=1, numThreads=0,
+#                            z_limits=Z_LIMITS, z_density=Z_DENSITY,
+#                            xz_offset=XZ_OFFSET,
+#                            resolution=RESOLUTION, scan_center=SCAN_CENTER,
+#                            norm_length=NORM_LENGTH, probe_dist=PROBE_DIST):
+#     '''
+#     :param draw_cloud:
+#     :param draw_normals:
+#     :param line_thickness:
+#     :param numThreads:
+#     :param z_limits:
+#     :param z_density:
+#     :param xz_offset:
+#     :param resolution:
+#     :param scan_center:
+#     :param norm_length:
+#     :param probe_dist:
+#     :return:
+#     '''
+#
+#     z_space = np.linspace(start=z_limits[0], stop=z_limits[1], num=z_density, endpoint=True)
+#     phi_space = np.linspace(start=0, stop=2 * np.pi, num=resolution, endpoint=False)  # no endpoint as 0 = 2pi
+#     rho = xz_offset
+#
+#     ray_start = []
+#     ray_end = []
+#
+#     for phi in phi_space:
+#         for z in z_space:
+#             x, y, z = (
+#                 rho * np.cos(phi),
+#                 rho * np.sin(phi),
+#                 z
+#             )
+#
+#             ray_start.append([x, y, z])
+#             ray_end.append([scan_center[0], scan_center[1], z])
+#
+#     if draw_ray_start: p.addUserDebugPoints(ray_start, [[255, 0, 0]] * len(ray_start), 5)
+#
+#     if len(ray_start) > p.MAX_RAY_INTERSECTION_BATCH_SIZE:
+#         print("[SIM] Attempted raycast beyond bounded limit!")
+#         return
+#
+#     ray_batch = p.rayTestBatch(ray_start, ray_end, numThreads=0)
+#     alignment_points = []
+#
+#     for result in ray_batch:
+#         if result[1] != -1:
+#             hit_pos = result[3]
+#             hit_norm = result[4]
+#
+#             offset_pos = np.add(hit_pos, np.dot(hit_norm, probe_dist))
+#             alignment_points.append(AlignmentPoint(offset_pos, hit_norm))
+#
+#     point_cloud = PointCloud(alignment_points)
+#
+#     if draw_cloud: point_cloud.draw_point_cloud()
+#
+#     return point_cloud
 
 
 class AlignmentPoint:

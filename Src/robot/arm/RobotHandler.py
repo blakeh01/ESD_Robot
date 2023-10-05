@@ -131,7 +131,6 @@ class RobotHandler:
         self.port_handler.closePort()
     # self.stepper_handler.close()
 
-
 class DXL_Motor:
 
     def __init__(self, id, packet_handler: PacketHandler, port_handler: PortHandler):

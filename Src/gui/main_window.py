@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main.ui'
+# Form implementation generated from reading ui file 'main_reduced.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -14,9 +14,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1720, 967)
-        MainWindow.setMinimumSize(QtCore.QSize(865, 600))
-        MainWindow.setMaximumSize(QtCore.QSize(99999, 99999))
+        MainWindow.resize(460, 960)
+        MainWindow.setMinimumSize(QtCore.QSize(460, 960))
+        MainWindow.setMaximumSize(QtCore.QSize(460, 960))
         MainWindow.setMouseTracking(True)
         MainWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -143,28 +143,6 @@ class Ui_MainWindow(object):
         self.btn_shutdown_program.setFont(font)
         self.btn_shutdown_program.setStyleSheet("background-color: red")
         self.btn_shutdown_program.setObjectName("btn_shutdown_program")
-        self.widget_window_tabs = QtWidgets.QTabWidget(self.centralwidget)
-        self.widget_window_tabs.setGeometry(QtCore.QRect(460, 10, 1251, 941))
-        self.widget_window_tabs.setTabShape(QtWidgets.QTabWidget.Triangular)
-        self.widget_window_tabs.setObjectName("widget_window_tabs")
-        self.tab_pybullet = QtWidgets.QWidget()
-        self.tab_pybullet.setObjectName("tab_pybullet")
-        self.widget_pybullet = QtWidgets.QOpenGLWidget(self.tab_pybullet)
-        self.widget_pybullet.setGeometry(QtCore.QRect(10, 10, 1220, 900))
-        self.widget_pybullet.setMouseTracking(True)
-        self.widget_pybullet.setTabletTracking(True)
-        self.widget_pybullet.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.widget_pybullet.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self.widget_pybullet.setAcceptDrops(True)
-        self.widget_pybullet.setAutoFillBackground(False)
-        self.widget_pybullet.setObjectName("widget_pybullet")
-        self.widget_window_tabs.addTab(self.tab_pybullet, "")
-        self.tab_manual = QtWidgets.QWidget()
-        self.tab_manual.setObjectName("tab_manual")
-        self.widget_window_tabs.addTab(self.tab_manual, "")
-        self.tab_data_visualizer = QtWidgets.QWidget()
-        self.tab_data_visualizer.setObjectName("tab_data_visualizer")
-        self.widget_window_tabs.addTab(self.tab_data_visualizer, "")
         self.widget_slice_disp = PlotWidget(self.centralwidget)
         self.widget_slice_disp.setGeometry(QtCore.QRect(10, 420, 440, 441))
         self.widget_slice_disp.setObjectName("widget_slice_disp")
@@ -203,7 +181,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1720, 21))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 460, 21))
         self.menuBar.setObjectName("menuBar")
         self.menuFile = QtWidgets.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
@@ -220,7 +198,6 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.widget_window_tabs.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -239,13 +216,13 @@ class Ui_MainWindow(object):
         self.lbl_info_simstatus.setText(_translate("MainWindow", "Simulation Status:"))
         self.lbl_sim_status.setText(_translate("MainWindow", "OFF"))
         self.btn_sim_terminate.setText(_translate("MainWindow", "Terminate"))
-        self.btn_normal_generator.setToolTip(
-            _translate("MainWindow", "Generates object normals with given parameters for probing."))
+        self.btn_normal_generator.setToolTip(_translate("MainWindow", "Generates object normals with given parameters for probing."))
         self.btn_normal_generator.setText(_translate("MainWindow", "Generate Object Normals"))
         self.btn_probe_setup.setToolTip(_translate("MainWindow", "Setup a custom probing profile."))
         self.btn_probe_setup.setText(_translate("MainWindow", "Setup Probe Flow"))
-        self.btn_start_probing.setToolTip(_translate("MainWindow",
-                                                     "Begin the probing profile. This will, in order, execute the probe flow created before clicking this button."))
+        self.btn_start_probing.setToolTip(_translate("MainWindow", "Begin the probing profile. This will, in order, execute the probe flow created before\n"
+"                            clicking this button.\n"
+"                        "))
         self.btn_start_probing.setText(_translate("MainWindow", "Execute Probe Flow"))
         self.lbl_charge_warn.setText(_translate("MainWindow", "CHARGE"))
         self.btn_charge_done.setText(_translate("MainWindow", "OK"))
@@ -258,22 +235,13 @@ class Ui_MainWindow(object):
         self.lbl_info_updaterate.setText(_translate("MainWindow", "Update Rate:"))
         self.lbl_updaterate.setText(_translate("MainWindow", "120 /s"))
         self.btn_shutdown_program.setText(_translate("MainWindow", "Shutdown"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_pybullet),
-                                           _translate("MainWindow", "Simulation"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_manual),
-                                           _translate("MainWindow", "Page"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_data_visualizer),
-                                           _translate("MainWindow", "Data Visualizer"))
-        self.probe_progress_bar.setToolTip(
-            _translate("MainWindow", "The completed percentage of the current probing algorithm."))
-        self.lbl_info_slice_index.setText(_translate("MainWindow", "Slice Index: "))
+        self.probe_progress_bar.setToolTip(_translate("MainWindow", "The completed percentage of the current probing algorithm."))
+        self.lbl_info_slice_index.setText(_translate("MainWindow", "Slice Index:"))
         self.lbl_slice_index.setText(_translate("MainWindow", "0"))
-        self.lbl_info_point_index.setText(_translate("MainWindow", "Point Index: "))
+        self.lbl_info_point_index.setText(_translate("MainWindow", "Point Index:"))
         self.lbl_point_index.setText(_translate("MainWindow", "0"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionVersion.setText(_translate("MainWindow", "Version"))
-
-
 from pyqtgraph import PlotWidget

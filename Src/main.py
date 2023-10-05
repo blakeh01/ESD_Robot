@@ -375,7 +375,7 @@ class ObjectWizard(QWizard):
 
     def finish_button(self):
         pp.disconnect()
-        self.rbt.terminateRobot()
+        self.rbt.terminate_robot()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 
