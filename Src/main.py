@@ -145,6 +145,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowcontainer.setMinimumSize(1220, 900)
 
     def plot_slice(self, slice, path, active_idx=0):
+        self.widget_slice_disp.clear()
+        time.sleep(0.1)
+
         x_values = [point.pos[0] for point in path]
         y_values = [point.pos[1] for point in path]
 
