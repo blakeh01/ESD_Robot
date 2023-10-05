@@ -4,6 +4,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QDialog
 
+import pybullet_planning as pp
+
 
 # Form implementation generated from reading ui file 'dialog_robot_info.ui'
 #
@@ -161,7 +163,7 @@ class DialogRobotInfo(QDialog):
         ## SIM POSITIONS (todo, add check for mode to select between pos/vel/accel)
 
         # read positions and assign the time and position to dict
-        read_pos = self.sim.get_sim_joint_states()
+        read_pos = pp.get_joint_positions(self.sim.sim_robot, [1,2,3,4])
         self.stored_positions["RAIL"].append(read_pos[0])
         self.stored_positions["SHOULDER"].append(read_pos[2])  # Skipped waist as will be disabled
         self.stored_positions["ELBOW"].append(read_pos[3])

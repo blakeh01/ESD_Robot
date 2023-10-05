@@ -73,7 +73,6 @@ class RobotHandler:
 
     def set_goal_conf(self, joint_states):
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
-        print(joint_states)
         waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
         shoulder_pos = radiansToDxlUnits(joint_states[2] + np.pi)
         elbow_pos = radiansToDxlUnits(joint_states[3] + np.pi)
@@ -113,7 +112,7 @@ class RobotHandler:
             )
 
         # convert to joint states, remove shadow joint
-        conf = [dxlToRadians(pos, np.pi) for pos in conf]
+        conf = [dxlToRadians(pos, -np.pi) for pos in conf]
         del conf[2]
 
         # todo read stepper motor position

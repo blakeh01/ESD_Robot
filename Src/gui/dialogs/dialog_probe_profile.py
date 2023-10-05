@@ -167,7 +167,7 @@ class DialogProbeProfile(QDialog):
             return
 
         try:
-            if int(self.ui.txt_max_speed.text()) <= 0 or int(self.ui.txt_measuring_time.text()) <= 0 \
+            if int(self.ui.txt_max_speed.text()) <= 0 or int(self.ui.txt_measuring_time.text()) < 0 \
                     or int(self.ui.txt_rotator_feedrate.text()) <= 0 or int(self.ui.txt_grounding_interval.text()) <= 0:
                 return
         except:

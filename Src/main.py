@@ -100,9 +100,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # todo figure out a fix^
         #self.embed_pysim()
 
-        self.scatter_item = pg.ScatterPlotItem()
-        self.widget_slice_disp.addItem(self.scatter_item)
-
         print("[MAIN] Initialized Program! Ready for action...")
 
     def update_gui(self):

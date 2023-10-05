@@ -271,7 +271,7 @@ class RotationallySymmetric(ObjectProfile):
         if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
-            new_point = np.add(new_point, [-.1, 0, 0]) # offset probe
+            new_point = np.add(new_point, [-.15, 0, 0]) # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
             self.action_wait_end = time_elasped + 5 # wait 5 seconds to let system ground
 
@@ -396,6 +396,12 @@ class RectangularPrisms(ObjectProfile):
                 self.side_index = 0
                 print("PROBING! Sending robot home...")
             else:
+
+                if(self.side_index >= len(self.normal_slices)-1):
+                    print("Probing Completed!")
+                    cur_flow.end_time = time_elasped
+                    self.cur_flow_idx += 1
+                    return
 
                 if not self.cur_slice:
                     self.cur_slice = self.normal_slices[self.side_index]
