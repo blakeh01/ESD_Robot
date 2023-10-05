@@ -26,6 +26,7 @@ from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
 from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.gui.main_window import Ui_MainWindow
+from Src.robot.arm.RobotHandler import RobotHandler
 
 import pyqtgraph as pg
 import numpy as np
@@ -218,6 +219,7 @@ class ObjectWizard(QWizard):
         self.gui_timer.timeout.connect(self.update)
         self.gui_timer.start(25)  # start GUI update thread ~ 40 FPS
 
+        self.rbt = None
         self.has_init = False
 
         # todo if time, configurable for calibration perhaps?
@@ -234,6 +236,7 @@ class ObjectWizard(QWizard):
 
     def update(self):
         if self.currentId() == 5 and not self.has_init:
+            self.rbt = RobotHandler(dummy=True)
             pp.connect(True)
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
@@ -259,6 +262,7 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
+            pp.set_joint_positions(self.sim_robot, [2,3,4,5], self.rbt.read_cur_conf())
             time.sleep(0.01)
 
     def update_rbt_offset(self):
@@ -288,6 +292,7 @@ def show_setup_wizard():
 
     if res == QWizard.Accepted:
         pp.disconnect()
+        wiz.rbt.terminateRobot()
 
         #overwrite offsets
         (x, y, z) = wiz.obj_joint_offset

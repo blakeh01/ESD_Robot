@@ -3,9 +3,10 @@ from Src.robot.SerialMonitor import SerialMonitor, StepperHandler, LDS
 
 class RobotHandler:
 
-    def __init__(self):
-        #self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
-        #self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
+    def __init__(self, dummy=False):
+        if not dummy:
+            self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
+            self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
 
         # Time management
         self.time_alive = 0
@@ -39,7 +40,7 @@ class RobotHandler:
         self.motors = []
         for i in DXL_IDS:
             m = DXL_Motor(i, self.packet_handler, self.port_handler)
-            m.set_torque(TORQUE_ENABLE)
+            m.set_torque(TORQUE_DISABLE if dummy else TORQUE_ENABLE)
             self.motors.append(m)
 
         for i in range(1, 6):
