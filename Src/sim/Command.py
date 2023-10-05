@@ -4,11 +4,14 @@ import numpy as np
 
 class ProbePositionSetter():
 
-    def __init__(self, sim, goal_pos, timeout=0):
+    def __init__(self, sim, goal_pos, probe_v=2, a_tol=0.01, timeout=0):
         self.sim = sim
         self.goal_pos = goal_pos
         self.complete = False
         self.point = None
+
+        self.probe_v = probe_v
+        self.a_tol = a_tol
 
     def onUpdate(self):
         if self.complete:
@@ -20,7 +23,7 @@ class ProbePositionSetter():
                                                    p.getQuaternionFromEuler([0, 0, 0]))#-np.pi / 2]))
         self.enableMotor(joint_poses, [1, 2, 3, 4, 5])
 
-        self.complete = np.linalg.norm(np.array(self.goal_pos) - np.array(pp.get_link_pose(self.sim.sim_robot, 6)[0])) <= 0.01
+        self.complete = np.linalg.norm(np.array(self.goal_pos) - np.array(pp.get_link_pose(self.sim.sim_robot, 6)[0])) <= self.a_tol
 
     def enableMotor(self, joint_pos, joints):
         # awful code but no better solution atm
@@ -32,7 +35,7 @@ class ProbePositionSetter():
                                 force=1000,
                                 positionGain=0.5,
                                 velocityGain=1,
-                                maxVelocity=0.125)
+                                maxVelocity=0.1)
 
         # WAIST
         p.setJointMotorControl2(self.sim.sim_robot, joints[1],
@@ -46,24 +49,29 @@ class ProbePositionSetter():
         # SHOULDER
         p.setJointMotorControl2(self.sim.sim_robot, joints[2],
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=joint_pos[2])
+                                targetPosition=joint_pos[2],
+                                maxVelocity=self.probe_v)
 
         # ELBOW
         p.setJointMotorControl2(self.sim.sim_robot, joints[3],
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=joint_pos[3])
+                                targetPosition=joint_pos[3],
+                                maxVelocity=self.probe_v)
 
         # WRIST/PROBE
         p.setJointMotorControl2(self.sim.sim_robot, joints[4],
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=joint_pos[4])
+                                targetPosition=joint_pos[4],
+                                maxVelocity=self.probe_v)
 
 class PlatformPositionSetter():
 
-    def __init__(self, sim, inc_rot, timeout=0):
+    def __init__(self, sim, inc_rot, plat_v=0.5, timeout=0):
         self.sim = sim
         self.goal_rot = inc_rot + pp.get_joint_position(self.sim.sim_platform, 1)
         self.complete = False
+
+        self.plat_v = plat_v
 
     def onUpdate(self):
         if self.complete:
@@ -79,4 +87,4 @@ class PlatformPositionSetter():
                                 force=1000,
                                 positionGain=1,
                                 velocityGain=1,
-                                maxVelocity=0.5)
+                                maxVelocity=self.plat_v)

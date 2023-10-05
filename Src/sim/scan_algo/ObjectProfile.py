@@ -247,10 +247,22 @@ class RotationallySymmetric(ObjectProfile):
                         self.measure_flag = True
 
                     if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
-                        print("[FIX] BEEP PROBE VOLTAGE!")
-                        self.cur_path[self.cur_point_index].measurement = 10
-                        self.cur_point_index += 1
-                        self.measure_flag = False
+                        # i think i will quit coding for a long time after this. I am sick just looking at the
+                        # repetitive code that ive written but have no choice as im enslaved and cannot think :]
+                        if self.measuring_time > 0:
+                            if self.action_wait_end == 0:
+                                self.action_wait_end = time_elasped + self.measuring_time
+                            elif time_elasped >= self.action_wait_end:
+                                print("[FIX] BEEP PROBE VOLTAGE!")
+                                self.cur_path[self.cur_point_index].measurement = 10
+                                self.cur_point_index += 1
+                                self.measure_flag = False
+                                self.action_wait_end = 0
+                        else:
+                            print("[FIX] BEEP PROBE VOLTAGE!")
+                            self.cur_path[self.cur_point_index].measurement = 10
+                            self.cur_point_index += 1
+                            self.measure_flag = False
 
         if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
             print("Time to ground! Raising flag!")
