@@ -118,12 +118,12 @@ class Simulation:
                 self.cur_probe_flow.update(time_elapsed)
         elif self.col_flag and not self.home_flag:
             new_point = np.add(pp.get_link_pose(self.sim_robot, 6)[0], [-.1, 0, 0]) # offset probe
-            self.sim.pos_probe_command = ProbePositionSetter(self, new_point)
+            self.pos_probe_command = ProbePositionSetter(self, new_point)
             self.home_flag = True
 
-        if self.col_flag and self.home_flag and self.sim.pos_probe_command.complete:
+        if self.col_flag and self.home_flag and self.pos_probe_command.complete:
             print("Going home! [TODO IMPL]")
-            #self.sim.pos_probe_command = ProbePositionSetter(self, home_pos)
+            #self.pos_probe_command = ProbePositionSetter(self, home_pos)
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
