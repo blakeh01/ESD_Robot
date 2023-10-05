@@ -25,6 +25,6 @@ SCAN_CENTER = (0, 0)  # Where is the CoM of the object (x,y)?
 RESOLUTION = 180  # How many ray casts. 360 = 1 every degree of the object
 Z_LIMITS = (0.32, 0.485)  # Where should the scan begin and end.
 Z_DENSITY = 20  # how many rays should be present on the Z (up/down) axis per degree of resolution
-XZ_OFFSET = 0.25  # how far away should the ray start
+XZ_OFFSET = 0.2032  # how far away should the ray start
 PROBE_DIST = 0.005 * SIM_SCALE  # how far should the point be from the object in mm
 NORM_LENGTH = 0.05  # *for debug only* how long should the normal vectors be?

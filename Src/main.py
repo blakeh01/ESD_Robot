@@ -33,6 +33,7 @@ import numpy as np
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
+URDF_PLAT_NO_OBJ = os.path.join(DATA_DIR, "urdf", "actuated_platform_no_obj.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
 
@@ -241,7 +242,7 @@ class ObjectWizard(QWizard):
             print(f"[SIM] Initialized robot with ID: {self.sim_robot}")
 
             # Add center platform AND OBJECT into PyBullet environment
-            self.sim_platform = pp.load_pybullet(URDF_PLAT, fixed_base=True, scale=2)
+            self.sim_platform = pp.load_pybullet(URDF_PLAT_NO_OBJ, fixed_base=True, scale=2)
             p.resetBasePositionAndOrientation(self.sim_platform, self.SIM_PLATFORM_OFFSET,
                                               p.getQuaternionFromEuler([0, 0, 0]))
             print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
@@ -287,6 +288,19 @@ def show_setup_wizard():
 
     if res == QWizard.Accepted:
         pp.disconnect()
+
+        #overwrite offsets
+        (x, y, z) = wiz.obj_joint_offset
+        URDF_OFFSET_LINE_NUM = 77
+
+        with open(URDF_PLAT, 'r') as file:
+            content = file.readlines()
+            str_write = f'    <origin xyz="{x/2} {y/2} {z/2}"/>\n'
+            content[URDF_OFFSET_LINE_NUM - 1] = str_write  # replace contents with modified offset.
+
+        with open(URDF_PLAT, 'w') as file:
+            file.writelines(content)
+
         show_main_form([wiz.SIM_ROBOT_OFFSET, wiz.obj_joint_offset])
 
 if __name__ == '__main__':

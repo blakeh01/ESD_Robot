@@ -113,7 +113,8 @@ class DialogNormalGenerator(QDialog):
         cloud = get_normal_point_cloud(
             probe_dist=(float(self.ui.sbox_probe_distance.text()) / 1000) * SIM_SCALE,
             resolution=(int(float(self.ui.sbox_scan_resolution.text()))),
-            z_density=(int(float(self.ui.sbox_scan_z.text())) * SIM_SCALE) * 10
+            z_density=(int(float(self.ui.sbox_scan_z.text())) * SIM_SCALE) * 10,
+            scan_center=(self.controller_instance.simulation_instance.object_offset[0], self.controller_instance.simulation_instance.object_offset[1])
         )
 
         self.controller_instance.simulation_instance.normal_point_cloud = cloud

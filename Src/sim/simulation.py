@@ -17,7 +17,6 @@ DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
-URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
 
 class Simulation:
     """
@@ -85,14 +84,6 @@ class Simulation:
         p.resetBasePositionAndOrientation(self.sim_platform, SIM_PLATFORM_OFFSET,
                                           p.getQuaternionFromEuler(SIM_PLATFORM_ORN))
         print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
-
-        self.sim_obj = pp.load_pybullet(URDF_OBJ, scale=2)
-        p.resetBasePositionAndOrientation(self.sim_obj, np.dot(2, [0, 0, .16]), [0, 0, 0, 1])
-        p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
-                                            childBodyUniqueId=self.sim_obj,
-                                            childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
-                                            parentFramePosition=self.object_offset, childFramePosition=[0, 0, 0])
-        print(f"[SIM] Initialized object with ID: {self.sim_obj} with custom fixed joint!")
 
         # set camera to center
         pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))

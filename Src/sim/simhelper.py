@@ -4,13 +4,12 @@ from Src.sim.sim_constants import *
 from Src.util.math_util import *
 
 
-def get_normal_point_cloud(draw_cloud=True, draw_normals=False, draw_ray_start=False, line_thickness=1, numThreads=0,
+def get_normal_point_cloud(draw_cloud=True, draw_normals=False, draw_ray_start=True, line_thickness=1, numThreads=0,
                            z_limits=Z_LIMITS, z_density=Z_DENSITY,
                            xz_offset=XZ_OFFSET,
                            resolution=RESOLUTION, scan_center=SCAN_CENTER,
                            norm_length=NORM_LENGTH, probe_dist=PROBE_DIST):
     '''
-
     :param draw_cloud:
     :param draw_normals:
     :param line_thickness:
