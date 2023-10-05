@@ -1,8 +1,7 @@
-import numpy as np
 import time
 
-from serial import Serial, PARITY_NONE, EIGHTBITS
-from Src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
+import numpy as np
+from Src.robot.SerialMonitor import LDS
 
 
 # possibly useful article if 3D board does NOT repsond 'OK' after a move is completed:
@@ -44,20 +43,20 @@ class Scanner:
                     if x_pos == self.x_end - 1:
                         time.sleep(1)
                         self.stepper_board.write_x(self.x_start, self.x_feed)
-                        self.stepper_board.read_data() # wait for response
+                        self.stepper_board.read_data()  # wait for response
                         time.sleep(5)
                     else:
                         self.stepper_board.write_x(x_pos + self.step, self.x_feed)
-                        self.stepper_board.read_data() # wait for response or wait a fixed amount of time if no work
-                        #time.sleep(0.0001)
-                        #time.sleep(0.05) # ensure that the distance is read before the next move, might need to adjust or maybe we can get rid of entirely
+                        self.stepper_board.read_data()  # wait for response or wait a fixed amount of time if no work
+                        # time.sleep(0.0001)
+                        # time.sleep(0.05) # ensure that the distance is read before the next move, might need to adjust or maybe we can get rid of entirely
                         xc = np.append(self.xc, x_pos)
                         zc = np.append(self.zc, z_pos)
-                        yc = np.append(self.yc, self.LDS.read_distance()) # change this to the adjusted read in value from the sensor
+                        yc = np.append(self.yc,
+                                       self.LDS.read_distance())  # change this to the adjusted read in value from the sensor
                         ca = np.append(self.ca, cur_axis)
 
                         print("Saved point: ", xc[-1], zc[-1], yc[-1], " degree: ", ca[-1])
-
 
                 if z_pos == self.z_end - 1:
                     self.stepper_board.write_z(self.z_start, self.z_feed)

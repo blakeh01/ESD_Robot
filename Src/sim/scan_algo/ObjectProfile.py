@@ -19,25 +19,12 @@
         - Would be cool to have an system for users to extend functionality with a script..?
 '''
 
-import pybullet as p
-import pybullet_planning as pp
-
-from Src.robot.arm.RobotHandler import RobotHandler
-from Src.sim.simulation import Simulation
-from Src.sim.simhelper import *
-from Src.sim.Command import *
-
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-import numpy as np
-
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from Src.gui.dialogs.dialog_charge_object import DialogChargeObject
-
+from Src.sim.Command import *
+from Src.sim.simhelper import *
+from Src.sim.simulation import Simulation
 from Src.util.math_util import *
+
 
 class ObjectProfile():
 
@@ -56,15 +43,16 @@ class ObjectProfile():
         self.rbt_max_speed = float(flow_args[0])
         self.rotator_feedrate = float(flow_args[1])
         self.grounding_interval = float(flow_args[2])
-        self.measuring_time = float(flow_args[3]) / 1000 # convert to ms
+        self.measuring_time = float(flow_args[3]) / 1000  # convert to ms
 
-        self.ground_flag = False # set to true when robot should ground after completed movement
+        self.ground_flag = False  # set to true when robot should ground after completed movement
 
     def initialize(self):
         pass
 
     def update(self):
         pass
+
 
 class RotationallySymmetric(ObjectProfile):
 
@@ -108,9 +96,11 @@ class RotationallySymmetric(ObjectProfile):
         # if this happens, its relatively a 'bad' thing, so try to warn the user just in case.
         for z_value, points_list in self.z_slices.items():
             if len(points_list) < self.min_points_slice:
-                print("Detected a malformed slice! Try decreasing the tolerance of the object profile or decrease probing resolution!")
+                print(
+                    "Detected a malformed slice! Try decreasing the tolerance of the object profile or decrease probing resolution!")
                 # Find the neighboring slice with the most points
-                neighboring_slices = [z for z in self.z_slices.keys() if abs(z - z_value) <= self.tolerance and z != z_value]
+                neighboring_slices = [z for z in self.z_slices.keys() if
+                                      abs(z - z_value) <= self.tolerance and z != z_value]
                 if neighboring_slices:
                     neighboring_slices.sort(key=lambda z: len(self.z_slices[z]), reverse=True)
                     target_slice = neighboring_slices[0]
@@ -142,7 +132,7 @@ class RotationallySymmetric(ObjectProfile):
             plt.title('Slices Visualization')
 
             # Add legend
-            #plt.legend(loc='upper right')
+            # plt.legend(loc='upper right')
 
             # Show the plot
             plt.show()
@@ -157,11 +147,12 @@ class RotationallySymmetric(ObjectProfile):
         
         But do I have the time to implement a full state machine for clean code? No. (lord forgive me)
     '''
+
     def update(self, time_elasped):
         if not self.can_run:
             return
 
-        if self.cur_flow_idx+1 > len(self.flow):
+        if self.cur_flow_idx + 1 > len(self.flow):
             print("Probe flow completed!")
             self.can_run = False
             return
@@ -185,7 +176,8 @@ class RotationallySymmetric(ObjectProfile):
             else:
                 if time_elasped >= self.action_wait_end:
                     self.action_wait_end = time_elasped + 0.25
-                    self.sim.parent.lbl_charge_warn.setStyleSheet("background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
+                    self.sim.parent.lbl_charge_warn.setStyleSheet(
+                        "background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             if self.charge_done_flag:
                 cur_flow.end_time = time_elasped
@@ -246,7 +238,8 @@ class RotationallySymmetric(ObjectProfile):
                         # get point from current index
                         pt = self.cur_path[self.cur_point_index]
                         # find angle between point and lineup vector
-                        angle = np.math.atan2(np.linalg.det([pt.direction[0:2],self.sim.lineup_normal[0:2]]),np.dot(pt.direction[0:2],self.sim.lineup_normal[0:2]))
+                        angle = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
+                                              np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
 
                         # rotate platform to angle
                         self.sim.pos_plat_command = PlatformPositionSetter(self.sim, angle)
@@ -259,7 +252,8 @@ class RotationallySymmetric(ObjectProfile):
                             temp.append(AlignmentPoint(pos, dir))
 
                         self.cur_path = temp
-                        self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos)
+                        self.sim.pos_probe_command = ProbePositionSetter(self.sim,
+                                                                         self.cur_path[self.cur_point_index].pos)
                         self.measure_flag = True
 
                     if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
@@ -288,13 +282,14 @@ class RotationallySymmetric(ObjectProfile):
         if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
-            new_point = np.add(new_point, [-.15, 0, 0]) # offset probe
+            new_point = np.add(new_point, [-.15, 0, 0])  # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
-            self.action_wait_end = time_elasped + 5 # wait 5 seconds to let system ground
+            self.action_wait_end = time_elasped + 5  # wait 5 seconds to let system ground
 
         if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
             self.action_wait_end = 0
             self.ground_flag = False
+
 
 class RectangularPrisms(ObjectProfile):
 
@@ -370,7 +365,9 @@ class RectangularPrisms(ObjectProfile):
 
         # Sort slices, starting with side nearest to robot, then use a nearest neighbor algorithm to find a good path.
         point_list = list(self.normal_slices.keys())
-        sorted = nearest_neighbor_dict_sort(point_list, find_nearest_point_index(self.normal_slices, pp.get_link_pose(self.sim.sim_robot, 6)[0]))
+        sorted = nearest_neighbor_dict_sort(point_list, find_nearest_point_index(self.normal_slices,
+                                                                                 pp.get_link_pose(self.sim.sim_robot,
+                                                                                                  6)[0]))
         self.normal_slices = {point: self.normal_slices[point] for point in sorted}
 
         self.normal_slices = [((x, y, z), data) for (x, y, z), data in self.normal_slices.items()]
@@ -381,7 +378,7 @@ class RectangularPrisms(ObjectProfile):
         if not self.can_run:
             return
 
-        if self.cur_flow_idx+1 > len(self.flow):
+        if self.cur_flow_idx + 1 > len(self.flow):
             print("Probe flow completed!")
             self.can_run = False
             return
@@ -389,11 +386,11 @@ class RectangularPrisms(ObjectProfile):
         cur_flow = self.flow[self.cur_flow_idx]
 
         if isinstance(cur_flow, Wait):
-            if(cur_flow.end_time == 0 and cur_flow.start_time == 0):
+            if (cur_flow.end_time == 0 and cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
 
-            if(cur_flow.end_time <= time_elasped):
+            if (cur_flow.end_time <= time_elasped):
                 print("Waiting completed... moving to next step!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Charge):
@@ -405,7 +402,8 @@ class RectangularPrisms(ObjectProfile):
             else:
                 if time_elasped >= self.action_wait_end:
                     self.action_wait_end = time_elasped + 0.25
-                    self.sim.parent.lbl_charge_warn.setStyleSheet("background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
+                    self.sim.parent.lbl_charge_warn.setStyleSheet(
+                        "background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             if self.charge_done_flag:
                 cur_flow.end_time = time_elasped
@@ -413,19 +411,19 @@ class RectangularPrisms(ObjectProfile):
                 self.cur_flow_idx += 1
                 self.charge_done_flag = False
         elif isinstance(cur_flow, Discharge):
-            if(cur_flow.start_time == 0):
+            if (cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 input("DISCHARGE!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
 
-            if(cur_flow.start_time == 0):
+            if (cur_flow.start_time == 0):
                 cur_flow.start_time = time_elasped
                 self.side_index = 0
                 print("PROBING! Sending robot home...")
             else:
 
-                if(self.side_index >= len(self.normal_slices)-1):
+                if (self.side_index >= len(self.normal_slices) - 1):
                     print("Probing Completed!")
                     cur_flow.end_time = time_elasped
                     self.cur_flow_idx += 1
@@ -438,7 +436,7 @@ class RectangularPrisms(ObjectProfile):
                     optimal = find_corner(self.cur_slice[1])
                     self.cur_path = find_alignment_point_path(optimal, self.cur_slice[1])
 
-                    #self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
+                    # self.sim.parent.plot_slice(self.cur_slice[1], self.cur_path)
                     print("Completed plotting slices! Beginning movements!")
 
                 if self.cur_point_index >= len(self.cur_path):
@@ -493,16 +491,19 @@ class RectangularPrisms(ObjectProfile):
         #     self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
         #     self.ground_flag = False
 
+
 class Charge():
     def __init__(self):
         self.start_time = 0
         self.end_time = 0
+
 
 class Discharge():
 
     def __init__(self):
         self.start_time = 0
         self.end_time = 0
+
 
 class Probe():
 
@@ -512,6 +513,7 @@ class Probe():
 
         self.measured_points = []
 
+
 class Wait():
 
     def __init__(self, wait_time):
@@ -519,6 +521,7 @@ class Wait():
 
         self.start_time = 0
         self.end_time = 0
+
 
 def sort_and_convert_to_list(z_slices):
     sorted_slices = sorted(z_slices.items(), key=lambda item: item[0], reverse=True)

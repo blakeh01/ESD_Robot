@@ -1,6 +1,3 @@
-import nidaqmx
-import nidaqmx.system
-from Src.robot.arm.RobotHandler import *
 from Src.sim.simulation import *
 
 
@@ -59,7 +56,8 @@ class Controller:
         self.simulation_instance.update(self.time_elapsed)
 
         # Collision check
-        closest_points = p.getClosestPoints(self.simulation_instance.sim_robot, self.simulation_instance.sim_platform, 0.2)
+        closest_points = p.getClosestPoints(self.simulation_instance.sim_robot, self.simulation_instance.sim_platform,
+                                            0.2)
         if closest_points:
             self.obj_distance = min(point[8] for point in closest_points)
         else:

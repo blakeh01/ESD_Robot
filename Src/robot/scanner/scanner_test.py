@@ -28,7 +28,7 @@ class LaserScanner():
     def __init__(self, port, baud):
         self.laser = Serial(port=port, baudrate=baud, bytesize=EIGHTBITS, parity=PARITY_NONE)
 
-        scanner.tx_rx(0x52, 0x40, 0x06, True) # generate test packet
+        scanner.tx_rx(0x52, 0x40, 0x06, True)  # generate test packet
 
     def read_distance(self):
         # begin read sequence by handshaking with laser TODO

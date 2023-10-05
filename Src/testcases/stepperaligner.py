@@ -2,7 +2,6 @@ from Src.robot.arm.stepperhandler import StepperHandler
 
 s = StepperHandler()
 
-
 while 1:
     i = input("Enter X/Y/Z followed by POS: 'X12': ")
     F = 1500
@@ -16,5 +15,4 @@ while 1:
     elif i[0] == 'A' or i[0] == 'a':
         s.write_a(int(i[1:]), F)
     elif i[0] == 'B' or i[0] == 'b':
-        s.write_b(int(i[1:]), F*2)
-
+        s.write_b(int(i[1:]), F * 2)

@@ -1,9 +1,9 @@
 import time
-import pwmio
-import board
-import digitalio
-import busio
 
+import board
+import busio
+import digitalio
+import pwmio
 from adafruit_motor import servo
 
 # create a PWMOut object on Pin A2.
@@ -24,4 +24,4 @@ while True:
             relay.value = False
             my_servo = 0
             time.sleep(1)
-            uart.write("ok\n") # may be unused.
+            uart.write("ok\n")  # may be unused.

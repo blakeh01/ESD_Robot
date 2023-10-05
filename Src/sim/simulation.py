@@ -2,16 +2,10 @@ import os.path
 import time
 
 import Src.sim.simhelper as simhelper
-import numpy as np
-import pybullet as p
-import pybullet_planning as pp
-from Src.sim.sim_constants import *
-from Src.sim.Command import *
-
 from Src.robot.arm.RobotHandler import RobotHandler
+from Src.sim.Command import *
+from Src.sim.sim_constants import *
 from Src.util.math_util import *
-
-import math
 
 # Paths for URDF files.
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
@@ -176,5 +170,5 @@ class Simulation:
 
     def shutdown(self):
         self.pos_probe_command = ProbePositionSetter(self, self.probe_home)
-        self.shutdown_flag = True
-        self.robot_handler.terminateRobot()
+        # self.shutdown_flag = True
+        self.robot_handler.terminate_robot()

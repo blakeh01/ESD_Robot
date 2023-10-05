@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QDialog
 
+
 class Ui_dialog_charge_object(object):
     def setupUi(self, dialog_charge_object):
         dialog_charge_object.setObjectName("dialog_charge_object")
@@ -37,6 +38,7 @@ class Ui_dialog_charge_object(object):
         dialog_charge_object.setWindowTitle(_translate("dialog_charge_object", "Charge Object"))
         self.lbl_charge.setText(_translate("dialog_charge_object", "CHARGE"))
         self.btn_done.setText(_translate("dialog_charge_object", "Done"))
+
 
 class DialogChargeObject(QDialog):
 

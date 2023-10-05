@@ -1,16 +1,18 @@
-import serial
 import time
+
+import serial
 
 ## TODO: CONFIG?
 LDS_PORT = "COM7"
 LDS_BAUD = 115200
 
-CMD_READ    = 0x52
-CMD_WRITE   = 0x57
-CMD_FUNC    = 0x43
+CMD_READ = 0x52
+CMD_WRITE = 0x57
+CMD_FUNC = 0x43
 
-STX         = 0x02
-ETX         = 0x03
+STX = 0x02
+ETX = 0x03
+
 
 class SerialMonitor:
 
@@ -47,13 +49,15 @@ class SerialMonitor:
         else:
             print("No active connection to read from.")
 
+
 class StepperHandler(SerialMonitor):
 
     def __init__(self, port, baud):
         super(StepperHandler, self).__init__(port, baud)
 
         if not self.serial_conn:
-            input("Failed to connect to DUET Stepper Controller, please ensure the board is powered and all connections are present!")
+            input(
+                "Failed to connect to DUET Stepper Controller, please ensure the board is powered and all connections are present!")
             quit()
 
         self.initialized = False
@@ -102,6 +106,7 @@ class StepperHandler(SerialMonitor):
         print(f"[DUET] Exiting... going home.")
         print("[DUET] I did nothing... please implement me :]")
         self.stepper_serial.close()
+
 
 class LDS:
 

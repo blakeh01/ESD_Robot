@@ -77,6 +77,7 @@ class StepperHandler:
         print("[RAIL] I did nothing... please implement me :]")
         self.stepper_serial.close()
 
+
 def generate_g_code(axis, goal_position, feed_rate):
     rot_code = bytes(str(goal_position), "ASCII")
     feed_code = bytes(str(feed_rate), "ASCII")

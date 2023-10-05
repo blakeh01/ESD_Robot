@@ -1,6 +1,7 @@
+import numpy as np
 import pybullet as p
 import pybullet_planning as pp
-import numpy as np
+
 
 class ProbePositionSetter():
 
@@ -20,11 +21,12 @@ class ProbePositionSetter():
         if not self.point: self.point = pp.draw_point(self.goal_pos)
 
         joint_poses = p.calculateInverseKinematics(self.sim.sim_robot, 6, self.goal_pos,
-                                                   p.getQuaternionFromEuler([0, 0, 0]))#-np.pi / 2]))
+                                                   p.getQuaternionFromEuler([0, 0, 0]))  # -np.pi / 2]))
         self.enableMotor(joint_poses, [1, 2, 3, 4, 5])
-        #print(joint_poses, self.sim.robot_handler.read_cur_conf())
+        # print(joint_poses, self.sim.robot_handler.read_cur_conf())
 
-        self.complete = np.linalg.norm(np.array(self.goal_pos) - np.array(pp.get_link_pose(self.sim.sim_robot, 6)[0])) <= self.a_tol# and np.linalg.norm(np.array(joint_poses[1:]) - np.array(self.sim.robot_handler.read_cur_conf())) <= 0.1
+        self.complete = np.linalg.norm(np.array(self.goal_pos) - np.array(pp.get_link_pose(self.sim.sim_robot, 6)[
+                                                                              0])) <= self.a_tol  # and np.linalg.norm(np.array(joint_poses[1:]) - np.array(self.sim.robot_handler.read_cur_conf())) <= 0.1
 
     def enableMotor(self, joint_pos, joints):
         # awful code but no better solution atm
@@ -67,6 +69,7 @@ class ProbePositionSetter():
                                 targetPosition=joint_pos[4],
                                 maxVelocity=self.probe_v)
 
+
 class PlatformPositionSetter():
 
     def __init__(self, sim, inc_rot, plat_v=0.5, timeout=0):
@@ -80,7 +83,7 @@ class PlatformPositionSetter():
         if self.complete:
             return
 
-        if(abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.00005):
+        if (abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.00005):
             print("Done!")
             self.complete = True
 

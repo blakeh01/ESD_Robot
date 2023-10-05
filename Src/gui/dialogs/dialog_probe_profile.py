@@ -1,8 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDialog, QInputDialog, QErrorMessage
+from PyQt5.QtWidgets import QDialog, QInputDialog
 
 from Src.sim.scan_algo.ObjectProfile import *
 from Src.sim.scan_algo.ObjectProfile import Discharge, Charge, Wait, Probe
+
 
 class Ui_CreateProbeProfile(object):
     def setupUi(self, CreateProbeProfile):
@@ -126,6 +127,7 @@ class Ui_CreateProbeProfile(object):
         self.txt_measuring_time.setText("250")
         self.txt_grounding_interval.setText("10")
 
+
 class DialogProbeProfile(QDialog):
 
     def __init__(self, parent=None):
@@ -161,7 +163,8 @@ class DialogProbeProfile(QDialog):
             try:
                 self.ui.list_probe_flow.addItem("Wait: " + str(abs(int(value))) + " s")
             except:
-                return # todo error handling?
+                return  # todo error handling?
+
     def parse_flow(self):
         if self.ui.list_probe_flow.count() <= 0:
             return
@@ -171,7 +174,7 @@ class DialogProbeProfile(QDialog):
                     or int(self.ui.txt_rotator_feedrate.text()) <= 0 or int(self.ui.txt_grounding_interval.text()) <= 0:
                 return
         except:
-            return # error handling for all this. PLEASE
+            return  # error handling for all this. PLEASE
 
         flow_arr = []
 
@@ -184,19 +187,19 @@ class DialogProbeProfile(QDialog):
             if len(data) > 1:
                 flow_arr.append(Wait(int(data[1].split(' ')[1])))
             else:
-                if(len(item) == 9): flow_arr.append(Discharge())
-                if(len(item) == 6): flow_arr.append(Charge())
-                if(len(item) == 5): flow_arr.append(Probe())
+                if (len(item) == 9): flow_arr.append(Discharge())
+                if (len(item) == 6): flow_arr.append(Charge())
+                if (len(item) == 5): flow_arr.append(Probe())
 
         match self.ui.cmb_object_profile.currentIndex():
-            case 0: # rot symm
+            case 0:  # rot symm
                 self.controller_instance.simulation_instance.cur_probe_flow = RotationallySymmetric(
                     self.controller_instance.simulation_instance, flow_arr,
                     [self.ui.txt_max_speed.text(), self.ui.txt_rotator_feedrate.text(),
                      self.ui.txt_grounding_interval.text(), self.ui.txt_measuring_time.text()]
                 )
 
-            case 1: # rect
+            case 1:  # rect
                 self.controller_instance.simulation_instance.cur_probe_flow = RectangularPrisms(
                     self.controller_instance.simulation_instance, flow_arr,
                     [self.ui.txt_max_speed.text(), self.ui.txt_rotator_feedrate.text(),

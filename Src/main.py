@@ -4,15 +4,14 @@
     Run this file to start the program...
 
 '''
-import random
-import sys
 import os
+import sys
 import time
 
-import pybullet_planning as pp
+import numpy as np
 import pybullet as p
-
-import Src.sim.ObjectVisualizer
+import pybullet_planning as pp
+import pyqtgraph as pg
 import win32gui
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
@@ -20,17 +19,13 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QWizard
 )
 from Src.Controller import Controller
-from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
-from Src.gui.object_wizard import Ui_ObjectWizard
+from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.main_window import Ui_MainWindow
-from Src.sim.ObjectVisualizer import ObjectVisualizer
+from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.robot.arm.RobotHandler import RobotHandler
-
-
-import pyqtgraph as pg
-import numpy as np
+from Src.sim.ObjectVisualizer import ObjectVisualizer
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
@@ -38,6 +33,7 @@ URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT_NO_OBJ = os.path.join(DATA_DIR, "urdf", "actuated_platform_no_obj.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
+
 
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
@@ -93,7 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_start_probing.clicked.connect(self.begin_probe_flow)
         self.btn_charge_done.clicked.connect(self.advance_flow)
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
-        self.btn.clicked.connect(self.rbt_stop) # fix name lol
+        self.btn.clicked.connect(self.rbt_stop)  # fix name lol
 
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
@@ -103,7 +99,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Moves pybullet to the GUI... however it disables all controls from the user
         # todo figure out a fix^
-        #self.embed_pysim()
+        # self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -152,7 +148,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         x_values = [point.pos[0] for point in path]
         y_values = [point.pos[1] for point in path]
 
-        self.widget_slice_disp.plot(x=x_values, y=y_values, pen='r', symbol='o', symbolPen='r', symbolBrush=(0, 0, 255), symbolSize=10)
+        self.widget_slice_disp.plot(x=x_values, y=y_values, pen='r', symbol='o', symbolPen='r', symbolBrush=(0, 0, 255),
+                                    symbolSize=10)
 
         for i, point in enumerate(path):
             x, y, z = point.pos
@@ -176,9 +173,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in range(100):
             self.controller.simulation_instance.drive_motors_to_home()
             p.stepSimulation()
-            time.sleep(1/120)
+            time.sleep(1 / 120)
 
-        self.controller.simulation_instance.robot_handler.set_goal_conf(pp.get_joint_positions(self.controller.simulation_instance.sim_robot, [1,2,3,4,5]))
+        self.controller.simulation_instance.robot_handler.set_goal_conf(
+            pp.get_joint_positions(self.controller.simulation_instance.sim_robot, [1, 2, 3, 4, 5]))
 
     def rbt_stop(self):
         self.controller.simulation_instance.robot_handler.terminateRobot()
@@ -188,7 +186,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def stop_program(self):
         print("[MAIN] Stopping Program!")
-        #self.window.setParent(None)
+        # self.window.setParent(None)
         self.sim_stop()
         time.sleep(1.5)
         self.update_thread.stop()
@@ -279,7 +277,8 @@ class ObjectWizard(QWizard):
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
             self.sim_robot = pp.load_pybullet(URDF_RBT, fixed_base=True, scale=2)
-            p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
+            p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET,
+                                              p.getQuaternionFromEuler([0, 0, 0]))
             print(f"[SIM] Initialized robot with ID: {self.sim_robot}")
 
             # Add center platform AND OBJECT into PyBullet environment
@@ -290,10 +289,11 @@ class ObjectWizard(QWizard):
             self.obj = pp.load_pybullet(URDF_OBJ, scale=2)
             p.resetBasePositionAndOrientation(self.obj, np.dot(2, [0, 0, .15875]), [0, 0, 0, 1])
 
-            self.obj_joint_offset = [0, 0, .16*2]
-            self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1, childBodyUniqueId=self.obj,
-                               childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
-                               parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
+            self.obj_joint_offset = [0, 0, .16 * 2]
+            self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
+                                                childBodyUniqueId=self.obj,
+                                                childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
+                                                parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
 
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
             self.has_init = True
@@ -303,15 +303,18 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
-            pp.set_joint_positions(self.sim_robot, [2,3,4,5], self.rbt.read_cur_conf())
+            pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.rbt.read_cur_conf())
             time.sleep(0.01)
 
     def update_rbt_offset(self):
-        self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40 + self.ui.sbox_rbt_offset_x.value()/1000, self.ui.sbox_rbt_offset_y.value()/1000, self.ui.sbox_rbt_offset_z.value()/1000])
+        self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40 + self.ui.sbox_rbt_offset_x.value() / 1000,
+                                           self.ui.sbox_rbt_offset_y.value() / 1000,
+                                           self.ui.sbox_rbt_offset_z.value() / 1000])
         p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
 
     def update_obj_offset(self):
-        self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value()/1000, self.ui.sbox_offset_y.value()/1000, .16 + self.ui.sbox_offset_z.value()/1000])
+        self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value() / 1000, self.ui.sbox_offset_y.value() / 1000,
+                                           .16 + self.ui.sbox_offset_z.value() / 1000])
         p.removeConstraint(self.obj_const)
         self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
                                             childBodyUniqueId=self.obj,
@@ -346,7 +349,8 @@ class ObjectWizard(QWizard):
         self.prim = 0
 
     def prim_creation(self):
-        self.o3d_viz.display_primitive(self.prim, 1024, float(self.ui.sbox_prim_field_A.text()), float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
+        self.o3d_viz.display_primitive(self.prim, 1024, float(self.ui.sbox_prim_field_A.text()),
+                                       float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
         self.o3d_viz.disp_cur_mesh()
         return 4
 
@@ -372,13 +376,13 @@ class ObjectWizard(QWizard):
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 
-        #overwrite offsets
+        # overwrite offsets
         (x, y, z) = self.obj_joint_offset
         URDF_OFFSET_LINE_NUM = 77
 
         with open(URDF_PLAT, 'r') as file:
             content = file.readlines()
-            str_write = f'    <origin xyz="{x/2} {y/2} {z/2}"/>\n'
+            str_write = f'    <origin xyz="{x / 2} {y / 2} {z / 2}"/>\n'
             content[URDF_OFFSET_LINE_NUM - 1] = str_write  # replace contents with modified offset.
 
         with open(URDF_PLAT, 'w') as file:
@@ -414,6 +418,6 @@ if __name__ == '__main__':
     # After the first window is closed, this part will run
 
     app1 = QApplication(sys.argv)
-    second_window = MainWindow([[-.4*2, 0, 0], [0, 0, 0]])
+    second_window = MainWindow([[-.4 * 2, 0, 0], [0, 0, 0]])
     second_window.show()
     sys.exit(app1.exec_())

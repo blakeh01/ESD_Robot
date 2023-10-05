@@ -239,11 +239,13 @@ class Ui_MainWindow(object):
         self.lbl_info_simstatus.setText(_translate("MainWindow", "Simulation Status:"))
         self.lbl_sim_status.setText(_translate("MainWindow", "OFF"))
         self.btn_sim_terminate.setText(_translate("MainWindow", "Terminate"))
-        self.btn_normal_generator.setToolTip(_translate("MainWindow", "Generates object normals with given parameters for probing."))
+        self.btn_normal_generator.setToolTip(
+            _translate("MainWindow", "Generates object normals with given parameters for probing."))
         self.btn_normal_generator.setText(_translate("MainWindow", "Generate Object Normals"))
         self.btn_probe_setup.setToolTip(_translate("MainWindow", "Setup a custom probing profile."))
         self.btn_probe_setup.setText(_translate("MainWindow", "Setup Probe Flow"))
-        self.btn_start_probing.setToolTip(_translate("MainWindow", "Begin the probing profile. This will, in order, execute the probe flow created before clicking this button."))
+        self.btn_start_probing.setToolTip(_translate("MainWindow",
+                                                     "Begin the probing profile. This will, in order, execute the probe flow created before clicking this button."))
         self.btn_start_probing.setText(_translate("MainWindow", "Execute Probe Flow"))
         self.lbl_charge_warn.setText(_translate("MainWindow", "CHARGE"))
         self.btn_charge_done.setText(_translate("MainWindow", "OK"))
@@ -256,10 +258,14 @@ class Ui_MainWindow(object):
         self.lbl_info_updaterate.setText(_translate("MainWindow", "Update Rate:"))
         self.lbl_updaterate.setText(_translate("MainWindow", "120 /s"))
         self.btn_shutdown_program.setText(_translate("MainWindow", "Shutdown"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_pybullet), _translate("MainWindow", "Simulation"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_manual), _translate("MainWindow", "Page"))
-        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_data_visualizer), _translate("MainWindow", "Data Visualizer"))
-        self.probe_progress_bar.setToolTip(_translate("MainWindow", "The completed percentage of the current probing algorithm."))
+        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_pybullet),
+                                           _translate("MainWindow", "Simulation"))
+        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_manual),
+                                           _translate("MainWindow", "Page"))
+        self.widget_window_tabs.setTabText(self.widget_window_tabs.indexOf(self.tab_data_visualizer),
+                                           _translate("MainWindow", "Data Visualizer"))
+        self.probe_progress_bar.setToolTip(
+            _translate("MainWindow", "The completed percentage of the current probing algorithm."))
         self.lbl_info_slice_index.setText(_translate("MainWindow", "Slice Index: "))
         self.lbl_slice_index.setText(_translate("MainWindow", "0"))
         self.lbl_info_point_index.setText(_translate("MainWindow", "Point Index: "))
@@ -268,4 +274,6 @@ class Ui_MainWindow(object):
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionVersion.setText(_translate("MainWindow", "Version"))
+
+
 from pyqtgraph import PlotWidget

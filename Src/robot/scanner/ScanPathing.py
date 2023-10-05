@@ -1,5 +1,4 @@
 import numpy as np
-import time
 
 # def scanner_points(self):
 xc = np.array([])
@@ -47,7 +46,7 @@ for h in range(0, int(rotations)):
                     # zc = np.append(yc, [z_pos])
                     # yc = np.append(zc, [y_pos]) # change this to the adjusted read in value from the sensor
                     # ca = np.append(ca, [cur_axis])
-                if x_pos == x_end-1:
+                if x_pos == x_end - 1:
                     pass
                     # move_servo_x(x_start)
                     # time.sleep(0.00001)  # Wait for motor to reset to beginning of loop
@@ -55,7 +54,7 @@ for h in range(0, int(rotations)):
                     pass
                     # move_servo_x(x_pos + step)
                     # time.sleep(.00001)  # change this to just longer than feed rate
-            if z_pos == z_end-1:
+            if z_pos == z_end - 1:
                 pass
                 # move_servo_z(z_start)
                 # time.sleep(0.00001)  # reset to beginning of loop

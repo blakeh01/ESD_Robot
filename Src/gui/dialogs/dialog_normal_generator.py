@@ -10,9 +10,9 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
-
-from Src.sim.simhelper import *
 from Src.sim.sim_constants import *
+from Src.sim.simhelper import *
+
 
 class UiDialogNormalGenerator(object):
     def setupUi(self, NormalGenerator):
@@ -97,6 +97,7 @@ class UiDialogNormalGenerator(object):
         self.lbl_info_probe_distance.setText(_translate("NormalGenerator", "Probe Distance (mm):"))
         self.btn_generate_normals.setText(_translate("NormalGenerator", "Generate Normals"))
 
+
 class DialogNormalGenerator(QDialog):
 
     def __init__(self, parent=None):
@@ -114,7 +115,8 @@ class DialogNormalGenerator(QDialog):
             probe_dist=(float(self.ui.sbox_probe_distance.text()) / 1000) * SIM_SCALE,
             resolution=(int(float(self.ui.sbox_scan_resolution.text()))),
             z_density=(int(float(self.ui.sbox_scan_z.text())) * SIM_SCALE) * 10,
-            scan_center=(self.controller_instance.simulation_instance.object_offset[0], self.controller_instance.simulation_instance.object_offset[1])
+            scan_center=(self.controller_instance.simulation_instance.object_offset[0],
+                         self.controller_instance.simulation_instance.object_offset[1])
         )
 
         self.controller_instance.simulation_instance.normal_point_cloud = cloud

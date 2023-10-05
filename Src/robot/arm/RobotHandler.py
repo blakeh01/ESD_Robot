@@ -1,5 +1,5 @@
 from Src.robot.arm.robohelper import *
-from Src.robot.SerialMonitor import SerialMonitor, StepperHandler, LDS
+
 
 class RobotHandler:
 
@@ -49,21 +49,21 @@ class RobotHandler:
             print(f"[ROBOT] Created bulk read parameter for motor ID#{i}. (Success? {result})")
 
         # set some default params:
-        #ID02/03
+        # ID02/03
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 75)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_ACCEL, 20)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 4000)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 1500)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_D_GAIN, 3600)
 
-        #ID04
+        # ID04
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 75)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_ACCEL, 20)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 4000)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_I_GAIN, 600)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_D_GAIN, 3600)
 
-        #ID05
+        # ID05
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 5, ADDR_PROF_VELOCITY, 75)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 5, ADDR_PROF_ACCEL, 30)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 5, ADDR_POS_P_GAIN, 1600)
@@ -118,36 +118,19 @@ class RobotHandler:
         del conf[2]
 
         # todo read stepper motor position
-        #conf.insert(0, stepper_pos)
+        # conf.insert(0, stepper_pos)
 
         return conf
 
-    def get_goal_positions(self):
-        def are_close(current_pos, goal_pos, tolerance=5):
-            return abs(current_pos - goal_pos) <= tolerance
-
-        goal_positions = []
-
-        # Get the current positions
-        current_positions = self.read_cur_conf()
-
-        # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
-        goal_positions.append(are_close(radiansToDxlUnits(joint_state[1] + np.pi), current_positions[0]))
-        goal_positions.append(are_close(radiansToDxlUnits(joint_state[2] + np.pi), current_positions[1]))
-        goal_positions.append(are_close(radiansToDxlUnits(joint_state[2] + np.pi), current_positions[2]))
-        goal_positions.append(are_close(radiansToDxlUnits(joint_state[3] + np.pi), current_positions[3]))
-        goal_positions.append(are_close(radiansToDxlUnits(joint_state[4] + np.pi), current_positions[4]))
-
-        return goal_positions
-
-    def terminateRobot(self):
+    def terminate_robot(self):
         print("[RBT] Shutting down... TORQUE is now OFF! [Please implement going home :)]")
         for m in self.motors:
             time.sleep(0.05)
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
-       # self.stepper_handler.close()
+    # self.stepper_handler.close()
+
 
 class DXL_Motor:
 

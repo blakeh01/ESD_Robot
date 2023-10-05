@@ -85,7 +85,7 @@ class PointCloud:
 
     def __init__(self, alignment_points):
         self.alignment_points = alignment_points
-        self.disp_pc_points = None # used in drawing points
+        self.disp_pc_points = None  # used in drawing points
 
     def get_num_points(self):
         return len(self.alignment_points)
