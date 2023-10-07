@@ -281,6 +281,7 @@ class ObjectWizard(QWizard):
 
         self.ui.btn_start_scan.clicked.connect(self.start_scan)
         self.ui.btn_scan_halt.clicked.connect(self.halt_scan)
+        self.ui.wiz_page_scan_obj.nextId = self.check_scan
         self.scan_thread = None
 
         self.ui.wiz_page_create_primitive.nextId = self.prim_creation
@@ -367,15 +368,22 @@ class ObjectWizard(QWizard):
             self.scan_thread.join()
             del self.scan_thread
 
-        s = Scanner(float(self.ui.sbox_scan_x.value()), float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()), self.stepper_board,
+        s = Scanner(self.stepper_board, float(self.ui.sbox_scan_x.value()), float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
                     self.ui.prg_scan)
 
         self.scan_thread = threading.Thread(target=s.begin_scan)
+        self.ui.prg_scan.setValue(0)
         self.scan_thread.start()
 
     def halt_scan(self):
         self.scan_thread.join()
         self.stepper_board.home_scan()
+
+    def check_scan(self):
+        if self.ui.prg_scan.value() == 100:
+            return 4
+        else:
+            return 3
 
     def prim_rect_selected(self):
         self.show_all()
