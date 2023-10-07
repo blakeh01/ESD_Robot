@@ -1,10 +1,7 @@
 import time
 
 import serial
-
-## TODO: CONFIG?
-LDS_PORT = "COM7"
-LDS_BAUD = 115200
+from Src.robot.arm.rbt_constants import *
 
 CMD_READ = 0x52
 CMD_WRITE = 0x57
@@ -102,11 +99,25 @@ class StepperHandler(SerialMonitor):
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
+    def home_all(self):
+        self.write_x(0)
+        self.write_y(0)
+        self.write_z(0)
+        self.write_a(0)
+        self.write_b(0)
+
+    def home_robot(self):
+        self.write_b(0, 3000)
+
+    def home_scan(self):
+        self.write_x(0)
+        self.write_y(0)
+        self.write_z(0)
+
     def close(self):
         print(f"[DUET] Exiting... going home.")
-        print("[DUET] I did nothing... please implement me :]")
-        self.stepper_serial.close()
-
+        self.home_all()
+        self.close_connection()
 
 class LDS:
 

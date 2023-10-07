@@ -6,6 +6,7 @@
 '''
 import os
 import sys
+import threading
 import time
 
 import numpy as np
@@ -24,8 +25,10 @@ from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.main_window import Ui_MainWindow
 from Src.gui.object_wizard import Ui_ObjectWizard
-from Src.gui.widgets.DeviceStatusIndicator import DeviceStatusIndicator
+from Src.robot.SerialMonitor import StepperHandler
 from Src.robot.arm.RobotHandler import RobotHandler
+from Src.robot.arm.rbt_constants import STEPPER_PORT, STEPPER_BAUD
+from Src.robot.scanner.Scanner import Scanner
 from Src.sim.ObjectVisualizer import ObjectVisualizer
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
@@ -244,6 +247,7 @@ class ObjectWizard(QWizard):
         self.gui_timer.start(25)  # start GUI update thread ~ 40 FPS
 
         self.rbt = None
+        self.stepper_board = None
         self.has_init = False
 
         self.o3d_viz = ObjectVisualizer()
@@ -275,6 +279,10 @@ class ObjectWizard(QWizard):
         self.ui.rbtn_prim_sphere.clicked.connect(self.prim_sphere_selected)
         self.ui.rbtn_prim_cylinder.clicked.connect(self.prim_cylinder_selected)
 
+        self.ui.btn_start_scan.clicked.connect(self.start_scan)
+        self.ui.btn_scan_halt.clicked.connect(self.halt_scan)
+        self.scan_thread = None
+
         self.ui.wiz_page_create_primitive.nextId = self.prim_creation
         self.prim = 2
 
@@ -287,6 +295,7 @@ class ObjectWizard(QWizard):
     def update(self):
         if self.currentId() == 5 and not self.has_init:
             #self.rbt = RobotHandler(dummy=True)
+            #self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
             pp.connect(True)
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
@@ -353,6 +362,21 @@ class ObjectWizard(QWizard):
                                  "Invalid object filetype was selected, please select an object in .stl or .obj format!",
                                  QMessageBox.Ok)
 
+    def start_scan(self):
+        if self.scan_thread:
+            self.scan_thread.join()
+            del self.scan_thread
+
+        s = Scanner(float(self.ui.sbox_scan_x.value()), float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()), self.stepper_board,
+                    self.ui.prg_scan)
+
+        self.scan_thread = threading.Thread(target=s.begin_scan)
+        self.scan_thread.start()
+
+    def halt_scan(self):
+        self.scan_thread.join()
+        self.stepper_board.home_scan()
+
     def prim_rect_selected(self):
         self.show_all()
         self.ui.lbl_prim_field_A.setText("X")
@@ -386,9 +410,6 @@ class ObjectWizard(QWizard):
         self.o3d_viz.disp_cur_mesh()
         return 4
 
-    def import_object(self):
-        pass
-
     def pack_object(self):
         self.o3d_viz.pack_object()
         time.sleep(1)
@@ -419,6 +440,7 @@ class ObjectWizard(QWizard):
     def finish_button(self):
         pp.disconnect()
 #        self.rbt.terminate_robot()
+#        self.stepper_board.close()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 

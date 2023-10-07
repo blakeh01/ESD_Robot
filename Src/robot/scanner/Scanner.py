@@ -8,9 +8,12 @@ from Src.robot.SerialMonitor import LDS
 # https://forum.duet3d.com/topic/18282/tighter-control-for-waiting-for-motion-commands-to-complete/2
 class Scanner:
 
-    def __init__(self, stepper_board):
-        self.LDS = LDS()
+    def __init__(self, stepper_board, obj_x, obj_y, obj_z, run_thread=None, percentage_widget=None):
+       # self.LDS = LDS()
         self.stepper_board = stepper_board
+
+        self.percentage_widget = percentage_widget
+        self.run_thread = run_thread
 
         self.xc = np.array([])
         self.yc = np.array([])
@@ -29,6 +32,10 @@ class Scanner:
 
         self.degree = 45
         self.rotations = 360 / self.degree
+
+        # add some statistics for viewing
+        self.total_points = ((self.x_end - self.x_start) * (self.z_end - self.z_start)) * self.rotations
+        self.point_index = 0
 
     def begin_scan(self):
         for h in range(0, int(self.rotations)):
@@ -55,6 +62,10 @@ class Scanner:
                         yc = np.append(self.yc,
                                        self.LDS.read_distance())  # change this to the adjusted read in value from the sensor
                         ca = np.append(self.ca, cur_axis)
+                        self.point_index += 1
+
+                        if self.percentage_widget:
+                            self.percentage_widget.setValue(int((self.point_index / self.total_points) * 100))
 
                         print("Saved point: ", xc[-1], zc[-1], yc[-1], " degree: ", ca[-1])
 
@@ -67,5 +78,5 @@ class Scanner:
                     self.stepper_board.read_data()  # wait for response
                     time.sleep(5)
 
-            self.stepper_board.write_a(cur_axis * 35.5, F=1800)
+            self.stepper_board.write_a(cur_axis, F=1500)
             time.sleep(10)
