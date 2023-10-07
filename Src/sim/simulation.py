@@ -97,7 +97,7 @@ class Simulation:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
         # SET HOME POSITION TO DEFAULT CONF.
-        self.home_conf = self.robot_handler.read_cur_conf()
+        self.home_conf = self.robot_handler.read_cur_conf()[1]
 
         self.drive_motors_to_home()
         for i in range(100):
@@ -144,29 +144,29 @@ class Simulation:
 
     def drive_motors_to_home(self):
         # RAIL
-        # p.setJointMotorControl2(self.sim.sim_robot, joints[0],
-        #                         controlMode=p.POSITION_CONTROL,
-        #                         targetPosition=joint_pos[0])
+        p.setJointMotorControl2(self.sim.sim_robot, joints[0],
+                                controlMode=p.POSITION_CONTROL,
+                                targetPosition=home_conf[0])
 
         # WAIST
         p.setJointMotorControl2(self.sim_robot, 2,
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=self.home_conf[0])
+                                targetPosition=self.home_conf[1])
 
         # SHOULDER
         p.setJointMotorControl2(self.sim_robot, 3,
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=self.home_conf[1])
+                                targetPosition=self.home_conf[2])
 
         # ELBOW
         p.setJointMotorControl2(self.sim_robot, 4,
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=self.home_conf[2])
+                                targetPosition=self.home_conf[3])
 
         # WRIST/PROBE
         p.setJointMotorControl2(self.sim_robot, 5,
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=self.home_conf[3])
+                                targetPosition=self.home_conf[4])
 
     def shutdown(self):
         self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])

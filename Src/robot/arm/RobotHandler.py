@@ -4,10 +4,10 @@ from Src.robot.arm.robohelper import *
 class RobotHandler:
 
     def __init__(self, dummy=False):
-        if not dummy:
-            pass
-            # self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
-            # self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
+        self.dummy = dummy
+        if not self.dummy:
+            self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
+            self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
 
         # Time management
         self.time_alive = 0
@@ -48,16 +48,20 @@ class RobotHandler:
             result = self.group_bulk_read.addParam(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             print(f"[ROBOT] Created bulk read parameter for motor ID#{i}. (Success? {result})")
 
+        for i in range(1, 6):
+            result = self.group_bulk_read_load.addParam(i, ADDR_PRESENT_LOAD, LEN_PRESENT_LOAD)
+            print(f"[ROBOT] Created bulk read parameter for load on motor ID#{i}. (Success? {result})")
+
         # set some default params:
         # ID02/03
-        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_VELOCITY, 40)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 2, ADDR_PROF_ACCEL, 20)
-        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 4000)
-        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 1500)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_P_GAIN, 2000)
+        writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_I_GAIN, 800)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 2, ADDR_POS_D_GAIN, 3600)
 
         # ID04
-        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 75)
+        writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_VELOCITY, 40)
         writeDataAndWait4Byte(self.packet_handler, self.port_handler, 4, ADDR_PROF_ACCEL, 20)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_P_GAIN, 4000)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 4, ADDR_POS_I_GAIN, 600)
@@ -74,7 +78,10 @@ class RobotHandler:
         pass
 
     def set_goal_conf(self, joint_states):
+        if self.dummy: return
+
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
+        rail_pos = radiansToDxlUnits(joint_states[0])
         waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
         shoulder_pos = radiansToDxlUnits(joint_states[2] + np.pi)
         elbow_pos = radiansToDxlUnits(joint_states[3] + np.pi)
@@ -88,7 +95,7 @@ class RobotHandler:
         addGroupParameter(self.pos_group_writer, DXL_IDS[3], byteIntegerTransform(int(elbow_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[4], byteIntegerTransform(int(wrist_pos)))
 
-        # todo write to stepper
+        self.stepper_board.write_b(rail_pos, 3600)
 
         # Syncwrite goal positions
         self.pos_group_writer.txPacket()  # begins motion of the DXLs
@@ -117,19 +124,34 @@ class RobotHandler:
         conf = [dxlToRadians(pos, -np.pi) for pos in conf]
         del conf[2]
 
-        # todo read stepper motor position
-        # conf.insert(0, stepper_pos)
+        # insert stepper pos @ 0
+        conf.insert(0, self.stepper_board.rail_pos)
 
-        return conf
+        forces = []
+        # read current robot loads
+        res = self.group_bulk_read_load.txRxPacket()
+        if res != COMM_SUCCESS:
+            print("%s" % self.packet_handler.getTxRxResult(res))
+            return
+
+        for i in DXL_IDS:
+            res = self.group_bulk_read_load.isAvailable(i, ADDR_PRESENT_LOAD, LEN_PRESENT_LOAD)
+            if not res:
+                print(f"Failed to read motor ID:{i}!")
+            forces.append(
+                self.group_bulk_read_load.getData(i, ADDR_PRESENT_LOAD, LEN_PRESENT_LOAD)
+            )
+
+        return [forces, conf]
 
     def terminate_robot(self):
-        print("[RBT] Shutting down... TORQUE is now OFF! [Please implement going home :)]")
+        print("[RBT] Shutting down... TORQUE is now OFF!")
         for m in self.motors:
             time.sleep(0.05)
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
-    # self.stepper_handler.close()
+        if not self.dummy: self.stepper_handler.close()
 
 class DXL_Motor:
 
