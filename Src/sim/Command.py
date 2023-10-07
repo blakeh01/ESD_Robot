@@ -88,6 +88,7 @@ class PlatformPositionSetter():
             print("Done!")
             self.complete = True
 
+        self.sim.robot_handler.stepper_board.write_a(np.rad2deg(self.goal_rot))
         p.setJointMotorControl2(self.sim.sim_platform, 1,
                                 controlMode=p.POSITION_CONTROL,
                                 targetPosition=self.goal_rot,

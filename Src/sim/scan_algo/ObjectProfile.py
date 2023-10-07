@@ -132,9 +132,6 @@ class RotationallySymmetric(ObjectProfile):
             # Set title
             plt.title('Slices Visualization')
 
-            # Add legend
-            # plt.legend(loc='upper right')
-
             # Show the plot
             plt.show()
 
@@ -290,6 +287,7 @@ class RotationallySymmetric(ObjectProfile):
             new_point = np.add(new_point, [-.15, 0, 0])  # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
             self.action_wait_end = time_elasped + 5  # wait 5 seconds to let system ground
+            self.sim.robot_handler.feather0.write_data("1") # tell servo to ground!
 
         if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
             self.action_wait_end = 0

@@ -31,6 +31,8 @@ from Src.robot.arm.rbt_constants import STEPPER_PORT, STEPPER_BAUD
 from Src.robot.scanner.Scanner import Scanner
 from Src.sim.ObjectVisualizer import ObjectVisualizer
 
+import configparser
+
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
@@ -75,10 +77,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("[MAIN] Initializing Controller...")
         self.controller = Controller(self, obj_wiz_data)
 
-        # Object visualizer
-        # print("[MAIN] Creating Open3D Visualizer...")
-        # self.o3d_visualizer = Src.sim.ObjectVisualizer.ObjectVisualizer()
-
         self.update_thread = UpdateThread(self.controller)
         self.update_thread.update_frame.connect(self.update)
         self.update_thread.start()  # start controller thread
@@ -100,10 +98,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
-
-        # Moves pybullet to the GUI... however it disables all controls from the user
-        # todo figure out a fix^
-        # self.embed_pysim()
 
         print("[MAIN] Initialized Program! Ready for action...")
 
@@ -258,7 +252,7 @@ class ObjectWizard(QWizard):
         self.windowcontainer = self.createWindowContainer(self.window, self.ui.widget_visualize)
         self.windowcontainer.setMinimumSize(551, 291)
 
-        self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40, 0, 0])
+        self.SIM_ROBOT_OFFSET = np.dot(2, [0, 0, 0])
         self.SIM_PLATFORM_OFFSET = np.dot(2, [0, 0, 0])
 
         self.ui.sbox_rbt_offset_x.valueChanged.connect(self.update_rbt_offset)
@@ -331,7 +325,7 @@ class ObjectWizard(QWizard):
             time.sleep(0.01)
 
     def update_rbt_offset(self):
-        self.SIM_ROBOT_OFFSET = np.dot(2, [-0.40 + self.ui.sbox_rbt_offset_x.value() / 1000,
+        self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value() / 1000,
                                            self.ui.sbox_rbt_offset_y.value() / 1000,
                                            self.ui.sbox_rbt_offset_z.value() / 1000])
         p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))

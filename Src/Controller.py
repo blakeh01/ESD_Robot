@@ -35,9 +35,9 @@ class Controller:
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
-        # self.nidaq_vTask = nidaqmx.Task()
-        # self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
-        # self.probe_voltage = 0
+        self.nidaq_vTask = nidaqmx.Task()
+        self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+        self.probe_voltage = 0
 
         # Program mode
         self.canRun = True
