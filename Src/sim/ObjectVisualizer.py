@@ -25,13 +25,29 @@ class ObjectVisualizer:
         self.visualizer.update_renderer()
 
     def load_mesh_from_path(self, mesh_path):
-        extension = os.path.splitext(mesh_path)[1]
+        _, extension = os.path.splitext(mesh_path)
+        if extension.lower() in ['.stl', '.obj']:
+            self.cur_mesh = o3d.io.read_triangle_mesh(mesh_path, print_progress=True)
 
-        if extension.lower() != '.stl' or extension.lower() != '.obj':
-            print("[OBJ] Invalid file type!")
-            return
+            self.cur_mesh.compute_vertex_normals()
+            self.cur_mesh.paint_uniform_color([0.3, 0.3, 0.3])
 
-        return o3d.io.read_triangle_mesh(mesh_path)
+            self.cur_mesh.scale(2, center=self.cur_mesh.get_center())
+
+            # Get the vertices of the mesh
+            vertices = np.asarray(self.cur_mesh.vertices)
+
+            # Find the lowest Z-coordinate in the mesh
+            lowest_z = np.min(vertices[:, 2])
+
+            # Offset the mesh along the Z-axis
+            self.cur_mesh.translate([0, 0, -lowest_z])
+
+            self.disp_cur_mesh()
+            return True
+
+        print("[OBJ] Invalid file type!")
+        return False
 
     def display_primitive(self, primitive, resolution, *args):
         if primitive == "cylinder" or primitive == 0:

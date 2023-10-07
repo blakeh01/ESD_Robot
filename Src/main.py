@@ -16,7 +16,7 @@ import win32gui
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QMessageBox, QWizard
+    QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog, QErrorMessage, QWidget, QVBoxLayout
 )
 from Src.Controller import Controller
 from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
@@ -24,6 +24,7 @@ from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.main_window import Ui_MainWindow
 from Src.gui.object_wizard import Ui_ObjectWizard
+from Src.gui.widgets.DeviceStatusIndicator import DeviceStatusIndicator
 from Src.robot.arm.RobotHandler import RobotHandler
 from Src.sim.ObjectVisualizer import ObjectVisualizer
 
@@ -264,6 +265,12 @@ class ObjectWizard(QWizard):
         self.ui.sbox_offset_y.valueChanged.connect(self.update_obj_offset)
         self.ui.sbox_offset_z.valueChanged.connect(self.update_obj_offset)
 
+        self.ui.btn_prompt_path.clicked.connect(self.prompt_path)
+        self.ui.rbtn_import_units.clicked.connect(self.update_import)
+        self.ui.rbtn_import_scale.clicked.connect(self.update_import)
+        self.ui.wiz_page_import_obj.nextId = lambda: 4 if self.o3d_viz.cur_mesh is not None else 2
+        self.update_import()
+
         self.ui.rbtn_prim_rect.clicked.connect(self.prim_rect_selected)
         self.ui.rbtn_prim_sphere.clicked.connect(self.prim_sphere_selected)
         self.ui.rbtn_prim_cylinder.clicked.connect(self.prim_cylinder_selected)
@@ -279,7 +286,7 @@ class ObjectWizard(QWizard):
 
     def update(self):
         if self.currentId() == 5 and not self.has_init:
-            self.rbt = RobotHandler(dummy=True)
+            #self.rbt = RobotHandler(dummy=True)
             pp.connect(True)
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
@@ -310,7 +317,7 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
-            pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.rbt.read_cur_conf())
+            #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.rbt.read_cur_conf())
             time.sleep(0.01)
 
     def update_rbt_offset(self):
@@ -327,6 +334,24 @@ class ObjectWizard(QWizard):
                                             childBodyUniqueId=self.obj,
                                             childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
                                             parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
+
+    def update_import(self):
+        self.ui.cbox_import_units.setVisible(self.ui.rbtn_import_units.isChecked())
+        self.ui.sbox_import_X.setVisible(self.ui.rbtn_import_scale.isChecked())
+        self.ui.sbox_import_Y.setVisible(self.ui.rbtn_import_scale.isChecked())
+        self.ui.sbox_import_Z.setVisible(self.ui.rbtn_import_scale.isChecked())
+        self.ui.lbl_import_X.setVisible(self.ui.rbtn_import_scale.isChecked())
+        self.ui.lbl_import_Y.setVisible(self.ui.rbtn_import_scale.isChecked())
+        self.ui.lbl_import_Z.setVisible(self.ui.rbtn_import_scale.isChecked())
+
+    def prompt_path(self):
+        file_path, _ = QFileDialog.getOpenFileName(None, "Select Object Mesh", "", "STL Files (*.stl);;OBJ Files (*.obj)")
+        self.ui.txt_path.setText(file_path)
+        if not self.o3d_viz.load_mesh_from_path(file_path):
+            QMessageBox.critical(None,
+                                 "Invalid Filetype Selected!",
+                                 "Invalid object filetype was selected, please select an object in .stl or .obj format!",
+                                 QMessageBox.Ok)
 
     def prim_rect_selected(self):
         self.show_all()
@@ -361,17 +386,20 @@ class ObjectWizard(QWizard):
         self.o3d_viz.disp_cur_mesh()
         return 4
 
+    def import_object(self):
+        pass
+
     def pack_object(self):
         self.o3d_viz.pack_object()
         time.sleep(1)
         return 5
 
     def select_method(self):
-        if self.rbt_primitive.isChecked():
+        if self.ui.rbt_primitive.isChecked():
             return 1
-        elif self.rbtn_import_obj.isChecked():
+        elif self.ui.rbtn_import_obj.isChecked():
             return 2
-        elif self.rbt_scan_obj.isChecked():
+        elif self.ui.rbt_scan_obj.isChecked():
             return 3
         else:
             return 0
@@ -390,7 +418,7 @@ class ObjectWizard(QWizard):
 
     def finish_button(self):
         pp.disconnect()
-        self.rbt.terminate_robot()
+#        self.rbt.terminate_robot()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 
@@ -410,7 +438,7 @@ class ObjectWizard(QWizard):
         self.destroy()
 
 
-skip_wiz = True
+skip_wiz = False
 param = []
 
 if __name__ == '__main__':
