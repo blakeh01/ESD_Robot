@@ -487,6 +487,6 @@ if __name__ == '__main__':
     # After the first window is closed, this part will run
 
     app1 = QApplication(sys.argv)
-    second_window = MainWindow([[-.4 * 2, 0, 0], [0, 0, 0]])
+    second_window = MainWindow(param)
     second_window.show()
     sys.exit(app1.exec_())
