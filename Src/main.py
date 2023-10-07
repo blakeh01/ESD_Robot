@@ -433,7 +433,6 @@ class ObjectWizard(QWizard):
         else:
             return 0
 
-
     def show_all(self):
         self.ui.lbl_prim_field_A.setVisible(True)
         self.ui.lbl_prim_field_B.setVisible(True)
