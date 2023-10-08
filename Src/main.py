@@ -77,7 +77,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # New controller that is stored within our main window.
         print("[MAIN] Initializing Controller...")
-        self.controller = Controller(self, obj_wiz_data)
+        self.controller = Controller(self, port_config, obj_wiz_data)
 
         self.update_thread = UpdateThread(self.controller)
         self.update_thread.update_frame.connect(self.update)
@@ -458,8 +458,8 @@ class ObjectWizard(QWizard):
 
     def finish_button(self):
         pp.disconnect()
-        #self.rbt.terminate_robot()
-        #self.stepper_board.close()
+        self.rbt.terminate_robot()
+        self.stepper_board.close()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 
