@@ -284,7 +284,7 @@ class RotationallySymmetric(ObjectProfile):
         if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
-            new_point = np.add(new_point, [-.15, 0, 0])  # offset probe
+            new_point = np.add(new_point, [-.1, 0, 0])  # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
             self.action_wait_end = time_elasped + 5  # wait 5 seconds to let system ground
             self.sim.robot_handler.feather0.write_data("1") # tell servo to ground!

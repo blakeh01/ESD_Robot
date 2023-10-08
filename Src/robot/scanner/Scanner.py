@@ -8,8 +8,8 @@ from Src.robot.SerialMonitor import LDS
 # https://forum.duet3d.com/topic/18282/tighter-control-for-waiting-for-motion-commands-to-complete/2
 class Scanner:
 
-    def __init__(self, stepper_board, obj_x, obj_y, obj_z, run_thread=None, percentage_widget=None):
-        self.LDS = LDS()
+    def __init__(self, stepper_board, port_conf, obj_x, obj_y, obj_z, run_thread=None, percentage_widget=None):
+        self.LDS = LDS(port_conf.lds_port, port_conf.lds_baud)
         self.stepper_board = stepper_board
 
         self.percentage_widget = percentage_widget
@@ -36,6 +36,7 @@ class Scanner:
         # add some statistics for viewing
         self.total_points = ((self.x_end - self.x_start) * (self.z_end - self.z_start)) * self.rotations
         self.point_index = 0
+        self.stop = False
 
     def begin_scan(self):
         for h in range(0, int(self.rotations)):
@@ -45,6 +46,10 @@ class Scanner:
                 z_pos = j
 
                 for i in range(self.x_start, self.x_end):
+                    if self.stop:
+                        self.LDS.laser.close()
+                        return
+
                     x_pos = i
 
                     if x_pos == self.x_end - 1:
@@ -80,3 +85,139 @@ class Scanner:
 
             self.stepper_board.write_a(cur_axis, F=1500)
             time.sleep(10)
+
+
+class PrimitiveScan:
+
+    def __init__(self, stepper_board):
+        self.LDS = LDS()
+        self.stepper_board = stepper_board
+
+        self.xc = np.array([])
+        self.yc = np.array([])
+        self.zc = np.array([])
+        self.ca = np.array([])
+
+        self.x_feed = 1500
+        self.x_start = 0
+        self.z_feed = 500
+        self.z_start = 10
+        self.a_feed = 500
+        self.a_start = 0
+
+        self.step = 1
+
+        self.degree = 45
+        self.rotations = 360 / self.degree
+
+    def run_prim_scan(self, primitive):
+        if primitive == 0:
+            self.edge_1 = 101.5 - val / 2  # Take data from inputted face and /2 to put you a little edge
+            self.edge_2 = 101.5 + val / 2  # Same as above but other direction
+            self.edge_3 = 101.5 - val_2 / 2  # Ditto
+            self.edge_4 = 101.5 + val_2 / 2  # Ditto
+            self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
+            self.offset_2 = 0  # Read in value of LDS and subtract offset based off center for the second side
+            self.edge_actual_1 = 0
+            self.edge_actual_2 = 0
+            for h in range(0, 2):  # Just measure two sides
+                self.stepper_board.write_a(90 * 35.5, F=1800)
+                self.stepper_board.write_z(self.z_start, self.z_feed)
+                self.stepper_board.write_x(self.edge_1 - 5, self.x_feed)
+
+                for i in range(self.edge_1 - 5, self.edge_2 + 5):
+                    x_pos = i
+                    self.yc = np.append(self.yc, self.LDS.read_distance())
+                    if self.yc < 7777 and self.edge_actual_1 == 0:
+                        self.xc = np.append(self.xc, x_pos)
+                        self.edge_actual_1 = self.xc
+                        self.offset_1 = self.edge_1 - self.edge_actual_1
+                    elif self.yc > 7777 and self.edge_actual_2 == 0:
+                        self.xc = np.append(self.xc, x_pos)
+                        self.edge_actual_2 = self.xc
+                        self.offset_2 = self.edge_2 - self.edge_actual_2
+                    if x_pos == self.edge_2 + 5:
+                        self.stepper_board.write_x(self.edge_1, self.x_feed)
+                        time.sleep(5)  # Wait for motor to reset to beginning of loop
+                    else:
+                        self.stepper_board.write_x(x_pos + self.step, self.x_feed)
+                        self.stepper_board.read_data()  # change this to just longer than feed rate
+            self.stepper_board.write_a(90 * 35.5, F=1800)
+            time.sleep(5)
+
+        elif primitive == 1:
+            self.radius_1 = 101.5 - val / 2
+            self.radius_2 = 101.5 + val / 2
+            self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
+            self.offset_2 = 0  # Read in value of LDS and subtract offset based off center for the second side
+            self.radius_actual_1 = 0
+            self.radius_actual_2 = 0
+
+            for h in range(0, 2):  # Just measure two sides
+                self.stepper_board.write_a(90 * 35.5, F=1800)
+                self.stepper_board.write_z(self.z_start, self.z_feed)
+                self.stepper_board.write_x(self.radius_1 - 5, self.x_feed)
+
+                for i in range(self.radius_1 - 5, self.radius_2 + 5):
+                    x_pos = i
+                    self.xc = np.append(self.xc, x_pos)
+                    self.yc = np.append(self.yc,
+                                        self.LDS.read_distance())  # change this to the adjusted read in value from the sensor
+
+                    if h == 0 and i >= self.radius_2:
+                        self.radius_actual_1 = min(self.yc)
+                        self.offset_1 = self.radius_1 - self.radius_actual_1
+                        self.yc = np.array([])
+                    else:
+                        self.radius_actual_2 = min(self.yc)
+                        self.offset_2 = self.radius_2 - self.radius_actual_2
+
+                    if x_pos == self.radius_2 + 4:
+                        time.sleep(1)
+                        self.stepper_board.write_x(self.radius_1, self.x_feed)
+                        self.stepper_board.read_data()  # wait for response
+                        time.sleep(5)  # Wait for motor to reset to beginning of loop
+                    else:
+                        self.stepper_board.write_x(x_pos + self.step, self.x_feed)
+                        self.stepper_board.read_data()  # change this to just longer than feed rate
+            self.stepper_board.write_a(90 * 35.5, F=1800)
+            time.sleep(5)
+
+        elif primitive == 2:
+            self.radius = val
+            self.radius_1 = 101.5 - val / 2
+            self.radius_2 = 101.5 + val / 2
+            self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
+            self.offset_2 = 0  # Read in value of LDS and subtract offset based off center for the second side
+            self.radius_actual_1 = 0
+            self.radius_actual_2 = 0
+            for h in range(0, 2):  # Just measure two sides
+                self.stepper_board.write_a(90 * 35.5, F=1800)
+                self.stepper_board.write_z(self.radius, self.z_feed)
+                self.stepper_board.write_x(self.radius_1 - 5, self.x_feed)
+
+                for i in range(self.radius_1 - 5, self.radius_2 + 5):
+                    x_pos = i
+                    self.xc = np.append(self.xc, x_pos)
+                    self.yc = np.append(self.yc, self.LDS.read_distance())
+                    if h == 0 and i >= self.radius_2:
+                        self.radius_actual_1 = min(self.yc)
+                        self.offset_1 = self.radius_1 - self.radius_actual_1
+                        self.yc = np.array([])
+                    else:
+                        self.radius_actual_2 = min(self.yc)
+                        self.offset_2 = self.radius_2 - self.radius_actual_2
+                    if x_pos == self.radius_2 + 4:
+                        time.sleep(1)
+                        self.stepper_board.write_x(self.radius_1, self.x_feed)
+                        self.stepper_board.read_data()  # wait for response
+                        time.sleep(5)  # Wait for motor to reset to beginning of loop
+                    else:
+                        self.stepper_board.write_x(x_pos + self.step, self.x_feed)
+                        self.stepper_board.read_data()  # change this to just longer than feed rate
+                self.stepper_board.write_a(90 * 35.5, F=1800)
+                time.sleep(5)
+        else:
+            print("Primitive Object scan was not properly called")
+
+

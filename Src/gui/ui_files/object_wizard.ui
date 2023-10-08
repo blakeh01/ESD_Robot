@@ -631,8 +631,8 @@
    <widget class="QProgressBar" name="prg_scan">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>270</y>
+      <x>206</x>
+      <y>260</y>
       <width>161</width>
       <height>23</height>
      </rect>
@@ -640,18 +640,43 @@
     <property name="value">
      <number>0</number>
     </property>
+    <property name="textVisible">
+     <bool>false</bool>
+    </property>
    </widget>
    <widget class="QPushButton" name="btn_scan_halt">
     <property name="geometry">
      <rect>
-      <x>344</x>
-      <y>270</y>
+      <x>160</x>
+      <y>260</y>
       <width>41</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>Halt</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_current_points">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>260</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>0/1</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
   </widget>

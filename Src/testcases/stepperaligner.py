@@ -1,6 +1,8 @@
-from Src.robot.arm.stepperhandler import StepperHandler
+from Src.robot.SerialMonitor import *
+from Src.robot.ports import PortConfiguration
 
-s = StepperHandler()
+port = PortConfiguration()
+s = StepperHandler(port.stepper_port, port.stepper_baud)
 
 while 1:
     i = input("Enter X/Y/Z followed by POS: 'X12': ")

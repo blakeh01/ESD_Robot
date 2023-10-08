@@ -5,10 +5,8 @@ from Src.robot.SerialMonitor import *
 class RobotHandler:
 
     def __init__(self, port_config, dummy=False):
-        self.dummy = dummy
-        if not self.dummy:
-            self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
-            self.feather0 = SerialMonitor(port_config.feather_port, port_config.feather_baud)
+        self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
+        self.feather0 = SerialMonitor(port_config.feather_port, port_config.feather_baud)
 
         # Time management
         self.time_alive = 0
@@ -80,8 +78,6 @@ class RobotHandler:
         pass
 
     def set_goal_conf(self, joint_states):
-        if self.dummy: return
-
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
         rail_pos = radiansToDxlUnits(joint_states[0])
         waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
@@ -153,7 +149,7 @@ class RobotHandler:
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
-        if not self.dummy: self.stepper_board.close()
+        self.stepper_board.close()
 
 class DXL_Motor:
 

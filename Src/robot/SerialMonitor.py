@@ -71,25 +71,25 @@ class StepperHandler(SerialMonitor):
         print("[DUET] Current position is home.")
         self.initialized = True
 
-    def write_x(self, pos, feed=100):
+    def write_x(self, pos, feed=1500):
         code = bytes(str(f"G1 X{round(pos)} F{round(feed)}"), "ASCII")
         self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
-    def write_y(self, pos, feed=100):
+    def write_y(self, pos, feed=1500):
         code = bytes(str(f"G1 Y{round(pos)} F{round(feed)}"), "ASCII")
         self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
-    def write_z(self, pos, feed=100):
+    def write_z(self, pos, feed=500):
         code = bytes(str(f"G1 Z{round(pos)} F{round(feed)}"), "ASCII")
         self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
-    def write_a(self, pos, feed=100):
+    def write_a(self, pos, feed=1600):
         if self.plat_pos != pos:
             code = bytes(str(f"G1 A{round(pos)} F{round(feed)}"), "ASCII")
             self.serial_conn.flushInput()
@@ -98,7 +98,8 @@ class StepperHandler(SerialMonitor):
             print(code)
 
     # this is robot linear rail
-    def write_b(self, pos, feed=100):
+    def write_b(self, pos, feed=3600):
+        print(self.rail_pos, pos)
         if self.rail_pos != pos:
             code = bytes(str(f"G1 B{round(pos)} F{round(feed)}"), "ASCII")
             self.serial_conn.flushInput()
@@ -128,7 +129,7 @@ class StepperHandler(SerialMonitor):
 
 class LDS:
 
-    def __init__(self, port=LDS_PORT, baud=LDS_BAUD):
+    def __init__(self, port, baud):
         try:
             self.laser = serial.Serial(port=port, baudrate=baud, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE)
         except:

@@ -98,7 +98,7 @@ class Simulation:
 
         # SET HOME POSITION TO DEFAULT CONF.
         self.home_conf = self.robot_handler.read_cur_conf()[1]
-        self.home_conf = np.add(self.home_conf, [0, 0.4, 0, 0])
+        self.home_conf = np.add(self.home_conf, [0, 0, 0.4, 0, 0])
 
         self.drive_motors_to_home()
         for i in range(100):

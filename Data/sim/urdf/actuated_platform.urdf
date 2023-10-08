@@ -74,7 +74,7 @@
     <joint name="object_plate_joint" type="fixed">
     <parent link="actuated_platform/plate"/>
     <child link="actuated_platform/object"/>
-    <origin xyz="0.0 0.0 0.16"/>
+    <origin xyz="0.0 0.0 0.176"/>
   </joint>
   
   <link name="actuated_platform/object">

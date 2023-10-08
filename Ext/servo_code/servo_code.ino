@@ -5,8 +5,8 @@ Servo ground_servo;
 int servo_pin = 9;
 int relay_pin = 10;
 
-int servo_raised = 10;
-int servo_lowered = 180;
+int servo_raised = 180;
+int servo_lowered = 10;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -26,6 +26,7 @@ void loop() {
 
     if(cmd == 1)
     {
+      delay(1000);
       digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
       digitalWrite(relay_pin, HIGH);
       ground_servo.write(servo_lowered);

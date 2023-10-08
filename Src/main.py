@@ -95,7 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
         self.btn.clicked.connect(self.rbt_stop)  # fix name lol
 
-        self.actionImport_New_Object.triggered.connect(self.new_object_reset())
+#        self.actionImport_New_Object.triggered.connect(self.new_object_reset)
 
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 class ObjectWizard(QWizard):
 
-    def __init__(self, show_com=True, parent=None):
+    def __init__(self, show_com=False, parent=None):
         super().__init__(parent)
         self.obj_joint_offset = None
         self.obj_const = None
@@ -288,6 +288,7 @@ class ObjectWizard(QWizard):
         self.ui.btn_scan_halt.clicked.connect(self.halt_scan)
         self.ui.wiz_page_scan_obj.nextId = self.check_scan
         self.scan_thread = None
+        self.s = None
 
         self.ui.wiz_page_create_primitive.nextId = self.prim_creation
         self.prim = 2
@@ -298,15 +299,19 @@ class ObjectWizard(QWizard):
 
         self.button(QWizard.FinishButton).clicked.connect(self.finish_button)
 
+        self.rbt = RobotHandler(port_config, dummy=True)
+        self.rbt.stepper_board.home_all()
+
         if show_com:
             _dlg = DialogComPorts(self)
             _dlg.exec()
 
 
     def update(self):
+        if self.scan_thread and self.scanner:
+            self.ui.lbl_current_points.setText(f"{self.scanner.point_index}/{self.scanner.total_points}")
+
         if self.currentId() == 5 and not self.has_init:
-            self.rbt = RobotHandler(dummy=True)
-            self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
             pp.connect(True)
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
@@ -330,6 +335,7 @@ class ObjectWizard(QWizard):
                                                 parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
 
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
+            self.update_rbt_offset()
             self.has_init = True
 
         if self.currentId() == 4:
@@ -337,7 +343,8 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
-            pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.rbt.read_cur_conf())
+            # conf = self.rbt.read_cur_conf()
+            # if conf is not None: pp.set_joint_positions(self.sim_robot, [1, 2, 3, 4, 5], conf)
             time.sleep(0.01)
 
     def update_rbt_offset(self):
@@ -378,16 +385,16 @@ class ObjectWizard(QWizard):
             self.scan_thread.join()
             del self.scan_thread
 
-        s = Scanner(self.stepper_board, float(self.ui.sbox_scan_x.value()), float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
+        self.scanner = Scanner(self.rbt.stepper_board, port_config, float(self.ui.sbox_scan_x.value()), float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
                     self.ui.prg_scan)
 
-        self.scan_thread = threading.Thread(target=s.begin_scan)
+        self.scan_thread = threading.Thread(target=self.scanner.begin_scan)
         self.ui.prg_scan.setValue(0)
         self.scan_thread.start()
 
     def halt_scan(self):
-        self.scan_thread.join()
-        self.stepper_board.home_scan()
+        self.scanner.stop = True
+        self.rbt.stepper_board.home_scan()
 
     def check_scan(self):
         if self.ui.prg_scan.value() == 100:
@@ -439,8 +446,6 @@ class ObjectWizard(QWizard):
         elif self.ui.rbtn_import_obj.isChecked():
             return 2
         elif self.ui.rbt_scan_obj.isChecked():
-            self.update_rbt_offset()
-            self.update_obj_offset()
             return 3
         else:
             return 0
@@ -459,7 +464,6 @@ class ObjectWizard(QWizard):
     def finish_button(self):
         pp.disconnect()
         self.rbt.terminate_robot()
-        self.stepper_board.close()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 

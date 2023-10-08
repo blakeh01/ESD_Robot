@@ -188,8 +188,7 @@ class DialogComPorts(QDialog):
 
         self.cmb_list = [self.ui.cmb_dev, self.ui.cmb_dev_2, self.ui.cmb_dev_3, self.ui.cmb_dev_4, self.ui.cmb_dev_5]
 
-        for combo_box in self.cmb_list:
-            combo_box.currentIndexChanged.connect(self.try_connect)  # Connect signal to method
+        #self.ui.cmb_dev.currentIndexChanged.connect()
 
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_ports)
@@ -198,11 +197,7 @@ class DialogComPorts(QDialog):
         self.refresh_ports()
         self.load_settings()
 
-    def try_connect(self):
-        sender = self.sender()
-
-        selected_port = sender.currentText()
-
+    def try_connect(self, port):
         serial = QSerialPort()
         serial.setPortName(selected_port)
 
