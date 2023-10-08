@@ -137,7 +137,7 @@ class Simulation:
 
         if self.col_flag and self.home_flag:
             print("[SIM] Going home!")
-            self.drive_motors_to_home()
+            self.parent.sim_stop()
             self.parent.lbl_rbt_status.setText("Collision Error!")
 
         # Step the simulation
@@ -145,9 +145,9 @@ class Simulation:
 
     def drive_motors_to_home(self):
         # RAIL
-        p.setJointMotorControl2(self.sim.sim_robot, joints[0],
+        p.setJointMotorControl2(self.sim_robot, 1,
                                 controlMode=p.POSITION_CONTROL,
-                                targetPosition=home_conf[0])
+                                targetPosition=self.home_conf[0])
 
         # WAIST
         p.setJointMotorControl2(self.sim_robot, 2,
@@ -170,6 +170,5 @@ class Simulation:
                                 targetPosition=self.home_conf[4])
 
     def shutdown(self):
-        self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
-        # self.shutdown_flag = True
+        self.parent.sim_stop()
         self.robot_handler.terminate_robot()

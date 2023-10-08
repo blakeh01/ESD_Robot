@@ -154,26 +154,26 @@
          <item row="1" column="1">
           <widget class="QDoubleSpinBox" name="sbox_prim_field_B">
            <property name="decimals">
-            <number>3</number>
+            <number>2</number>
            </property>
            <property name="minimum">
             <double>1.000000000000000</double>
            </property>
            <property name="maximum">
-            <double>200.000000000000000</double>
+            <double>9999.000000000000000</double>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
           <widget class="QDoubleSpinBox" name="sbox_prim_field_A">
            <property name="decimals">
-            <number>3</number>
+            <number>2</number>
            </property>
            <property name="minimum">
             <double>1.000000000000000</double>
            </property>
            <property name="maximum">
-            <double>200.000000000000000</double>
+            <double>9999.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -226,13 +226,13 @@
          <item row="2" column="1">
           <widget class="QDoubleSpinBox" name="sbox_prim_field_C">
            <property name="decimals">
-            <number>3</number>
+            <number>2</number>
            </property>
            <property name="minimum">
             <double>1.000000000000000</double>
            </property>
            <property name="maximum">
-            <double>200.000000000000000</double>
+            <double>9999.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -537,7 +537,7 @@
       <item row="1" column="1">
        <widget class="QDoubleSpinBox" name="sbox_scan_y">
         <property name="decimals">
-         <number>3</number>
+         <number>2</number>
         </property>
         <property name="minimum">
          <double>1.000000000000000</double>
@@ -550,20 +550,20 @@
       <item row="2" column="1">
        <widget class="QDoubleSpinBox" name="sbox_scan_z">
         <property name="decimals">
-         <number>3</number>
+         <number>2</number>
         </property>
         <property name="minimum">
          <double>1.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>150.000000000000000</double>
+         <double>300.000000000000000</double>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
        <widget class="QDoubleSpinBox" name="sbox_scan_x">
         <property name="decimals">
-         <number>3</number>
+         <number>2</number>
         </property>
         <property name="minimum">
          <double>1.000000000000000</double>
@@ -711,7 +711,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab_object">
      <attribute name="title">
@@ -765,13 +765,13 @@
         <item row="0" column="1">
          <widget class="QDoubleSpinBox" name="sbox_offset_x">
           <property name="decimals">
-           <number>4</number>
+           <number>2</number>
           </property>
           <property name="minimum">
-           <double>-100.000000000000000</double>
+           <double>-150.000000000000000</double>
           </property>
           <property name="maximum">
-           <double>100.000000000000000</double>
+           <double>150.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.050000000000000</double>
@@ -781,13 +781,13 @@
         <item row="1" column="1">
          <widget class="QDoubleSpinBox" name="sbox_offset_y">
           <property name="decimals">
-           <number>4</number>
+           <number>2</number>
           </property>
           <property name="minimum">
-           <double>-100.000000000000000</double>
+           <double>-150.000000000000000</double>
           </property>
           <property name="maximum">
-           <double>100.000000000000000</double>
+           <double>150.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.050000000000000</double>
@@ -843,13 +843,13 @@
         <item row="2" column="1">
          <widget class="QDoubleSpinBox" name="sbox_offset_z">
           <property name="decimals">
-           <number>4</number>
+           <number>2</number>
           </property>
           <property name="minimum">
-           <double>-100.000000000000000</double>
+           <double>-150.000000000000000</double>
           </property>
           <property name="maximum">
-           <double>100.000000000000000</double>
+           <double>150.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.050000000000000</double>
@@ -912,32 +912,32 @@
         <item row="0" column="1">
          <widget class="QDoubleSpinBox" name="sbox_rbt_offset_x">
           <property name="decimals">
-           <number>4</number>
+           <number>2</number>
           </property>
           <property name="minimum">
-           <double>-100.000000000000000</double>
+           <double>-99999.000000000000000</double>
           </property>
           <property name="maximum">
-           <double>100.000000000000000</double>
+           <double>99999.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.050000000000000</double>
           </property>
           <property name="value">
-           <double>-0.400000000000000</double>
+           <double>-400.000000000000000</double>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QDoubleSpinBox" name="sbox_rbt_offset_y">
           <property name="decimals">
-           <number>4</number>
+           <number>2</number>
           </property>
           <property name="minimum">
-           <double>-100.000000000000000</double>
+           <double>-99999.000000000000000</double>
           </property>
           <property name="maximum">
-           <double>100.000000000000000</double>
+           <double>99999.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.050000000000000</double>
@@ -993,13 +993,13 @@
         <item row="2" column="1">
          <widget class="QDoubleSpinBox" name="sbox_rbt_offset_z">
           <property name="decimals">
-           <number>4</number>
+           <number>2</number>
           </property>
           <property name="minimum">
-           <double>-100.000000000000000</double>
+           <double>-99999.000000000000000</double>
           </property>
           <property name="maximum">
-           <double>100.000000000000000</double>
+           <double>99999.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.050000000000000</double>

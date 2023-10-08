@@ -1,3 +1,4 @@
+import nidaqmx
 from Src.sim.simulation import *
 
 

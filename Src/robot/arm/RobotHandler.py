@@ -18,7 +18,8 @@ class RobotHandler:
         self.port_handler = PortHandler(DEVICENAME)
         self.pos_group_writer = GroupSyncWrite(self.port_handler, self.packet_handler, ADDR_GOAL_POSITION,
                                                LEN_GOAL_POSITION)
-        self.group_bulk_read = GroupBulkRead(self.port_handler, self.packet_handler)
+        self.group_bulk_read_pos = GroupBulkRead(self.port_handler, self.packet_handler)
+        self.group_bulk_read_load = GroupBulkRead(self.port_handler, self.packet_handler)
 
         # Open port, terminate if no connection is established.
         try:
@@ -46,7 +47,7 @@ class RobotHandler:
             self.motors.append(m)
 
         for i in range(1, 6):
-            result = self.group_bulk_read.addParam(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
+            result = self.group_bulk_read_pos.addParam(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             print(f"[ROBOT] Created bulk read parameter for motor ID#{i}. (Success? {result})")
 
         for i in range(1, 6):
@@ -108,17 +109,17 @@ class RobotHandler:
         conf = []
 
         # read current robot position
-        res = self.group_bulk_read.txRxPacket()
+        res = self.group_bulk_read_pos.txRxPacket()
         if res != COMM_SUCCESS:
             print("%s" % self.packet_handler.getTxRxResult(res))
             return
 
         for i in DXL_IDS:
-            res = self.group_bulk_read.isAvailable(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
+            res = self.group_bulk_read_pos.isAvailable(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             if not res:
                 print(f"Failed to read motor ID:{i}!")
             conf.append(
-                self.group_bulk_read.getData(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
+                self.group_bulk_read_pos.getData(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             )
 
         # convert to joint states, remove shadow joint
@@ -152,7 +153,7 @@ class RobotHandler:
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
-        if not self.dummy: self.stepper_handler.close()
+        if not self.dummy: self.stepper_board.close()
 
 class DXL_Motor:
 

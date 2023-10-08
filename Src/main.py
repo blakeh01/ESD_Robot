@@ -93,6 +93,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
         self.btn.clicked.connect(self.rbt_stop)  # fix name lol
 
+        self.actionImport_New_Object.clicked.connect(self.new_object_reset)
+
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
 
@@ -180,7 +182,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pp.get_joint_positions(self.controller.simulation_instance.sim_robot, [1, 2, 3, 4, 5]))
 
     def rbt_stop(self):
-        self.controller.simulation_instance.robot_handler.terminateRobot()
+        self.controller.simulation_instance.robot_handler.terminate_robot()
+
+    def new_object_reset(self):
+        # call this function to object the wizard
+        self.sim_stop()
+        self.controller.shutdown()
+        pass
 
     def edit_constants(self):
         pass
@@ -440,8 +448,8 @@ class ObjectWizard(QWizard):
 
     def finish_button(self):
         pp.disconnect()
-        self.rbt.terminate_robot()
-        self.stepper_board.close()
+        #self.rbt.terminate_robot()
+        #self.stepper_board.close()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 
@@ -464,29 +472,40 @@ class ObjectWizard(QWizard):
 skip_wiz = False
 param = []
 
+app = QApplication(sys.argv)
+
+def relaunch_program():
+    global app
+
+    if app:
+        del app
+
+    app = QApplication(sys.argv)
+
+    # show wizard
+    wiz = ObjectWizard()
+    wiz.show()
+    app.exec_()
+
+    # wizard closed, get parameters to send to main window
+    param = [wiz.SIM_ROBOT_OFFSET, wiz.obj_joint_offset]
+
+    # delete to ensure threads are closed.
+    del app
+    del wiz
+
+    # open main app
+    app = QApplication(sys.argv)
+    main = MainWindow(param)
+    main.show()
+    app.exec()
+
+
 if __name__ == '__main__':
+    relaunch_program()
     # current_dir = os.getcwd()
     # print(current_dir)
     #
     # log_file_name = "console_log.txt"
     # log_file_path = os.path.join(current_dir, log_file_name)
     # sys.stdout = open(log_file_path, "w")
-
-    if not skip_wiz:
-        app1 = QApplication(sys.argv)
-        first_window = ObjectWizard()
-        first_window.show()
-        app1.exec_()
-        app1.exit()
-        param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset]
-        del app1
-        del first_window
-
-        print(param)
-
-    # After the first window is closed, this part will run
-
-    app1 = QApplication(sys.argv)
-    second_window = MainWindow(param)
-    second_window.show()
-    sys.exit(app1.exec_())
