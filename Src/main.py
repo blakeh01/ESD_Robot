@@ -129,12 +129,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lbl_time.setText(str(round(self.controller.time_elapsed, 6)))
 
         # Update probe voltage label
-        # TODO UNCOMMENT self.lbl_probe_voltage.setText(str(round(self.controller.probe_voltage, 5)))
+        self.lbl_probe_potential.setText(str(round(self.controller.probe_voltage, 5)))
 
         # If there are normals, allow for probe flow generation
         self.btn_probe_setup.setEnabled(not self.controller.simulation_instance.normal_point_cloud is None)
 
-        # if theere is a probe plan, allow to execute
+        # if there is a probe plan, allow to execute
         self.btn_start_probing.setEnabled(not self.controller.simulation_instance.cur_probe_flow is None)
 
         if self.controller.simulation_instance.cur_probe_flow is not None:
