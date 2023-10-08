@@ -9,7 +9,11 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QTimer, QSettings
+from PyQt5.QtSerialPort import QSerialPort
+from PyQt5.QtWidgets import QDialog
 
+from serial.tools import list_ports
 
 class Ui_dialog_com_port(object):
     def setupUi(self, dialog_com_port):
@@ -172,3 +176,58 @@ class Ui_dialog_com_port(object):
         self.label_3.setText(_translate("dialog_com_port", "COM Port"))
 
 
+class DialogComPorts(QDialog):
+
+    def __init__(self, port_config, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_dialog_com_port()
+        self.ui.setupUi(self)
+
+        self.parent_instance = parent
+        self.port_config = port_config
+
+        self.cmb_list = [self.ui.cmb_dev, self.ui.cmb_dev_2, self.ui.cmb_dev_3, self.ui.cmb_dev_4, self.ui.cmb_dev_5]
+
+        for combo_box in self.cmb_list:
+            combo_box.currentIndexChanged.connect(self.try_connect)  # Connect signal to method
+
+        self.refresh_timer = QTimer()
+        self.refresh_timer.timeout.connect(self.refresh_ports)
+        self.refresh_timer.start(1000) # refresh ports every second
+
+        self.refresh_ports()
+        self.load_settings()
+
+    def try_connect(self):
+        sender = self.sender()
+
+        selected_port = sender.currentText()
+
+        serial = QSerialPort()
+        serial.setPortName(selected_port)
+
+        if serial.open(QSerialPort.ReadOnly):
+            print(f"Connected to {selected_port}!")
+            serial.close()
+
+    def refresh_ports(self):
+        available_ports = [port.device for port in list_ports.comports()]
+
+        for cmb in self.cmb_list:
+            cmb.clear()
+            cmb.addItems(available_ports)
+
+    def save_settings(self):
+        settings = QSettings("esd", "ESDApp")
+        for index, combo_box in enumerate(self.cmb_list):
+            settings.setValue(f"ComboBox{index}", combo_box.currentText())
+
+    def load_settings(self):
+        settings = QSettings("esd", "ESDApp")
+        for index, combo_box in enumerate(self.cmb_list):
+            value = settings.value(f"ComboBox{index}")
+            if value is not None:
+                combo_box.setCurrentText(value)
+
+    def closeEvent(self, event):
+        self.save_settings()  # Save settings when the window is closed

@@ -1,4 +1,3 @@
-### DYNAMIXELS ###
 # Addresses / Address length
 ADDR_TORQUE_ENABLE = 64  # Control table addresses for XL-430
 ADDR_GOAL_POSITION = 116
@@ -18,10 +17,6 @@ ADDR_POS_D_GAIN = 80
 # Protocol version
 PROTOCOL_VERSION = 2
 
-# Default vars
-BAUDRATE = 4000000
-DEVICENAME = "COM6"  # Check which port is being used on your controller
-
 TORQUE_ENABLE = 1  # Value for enabling the torque
 TORQUE_DISABLE = 0  # Value for disabling the torque
 
@@ -31,15 +26,3 @@ COMM_TX_FAIL = -1001  # Communication Tx Failed
 UNIT_POS_TO_DEG = 0.087891  # 1 unit pos = 0.087891 degrees.
 
 DXL_IDS = [1, 2, 3, 4, 5]
-
-### STEPPER MOTORS ###
-STEPPER_PORT = "COM8"
-STEPPER_BAUD = 115200
-
-### FEATHER 0 ###
-FEATHER_PORT = "COM1"
-FEATHER_BAUD = 9600
-
-### LDS ###
-LDS_PORT = "COM7"
-LDS_BAUD = 115200

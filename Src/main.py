@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog, QErrorMessage, QWidget, QVBoxLayout
 )
 from Src.Controller import Controller
+from Src.gui.dialogs.dialog_com_port import DialogComPorts
 from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
@@ -27,7 +28,7 @@ from Src.gui.main_window import Ui_MainWindow
 from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.robot.SerialMonitor import StepperHandler
 from Src.robot.arm.RobotHandler import RobotHandler
-from Src.robot.arm.rbt_constants import STEPPER_PORT, STEPPER_BAUD
+from Src.robot.ports import PortConfiguration
 from Src.robot.scanner.Scanner import Scanner
 from Src.sim.ObjectVisualizer import ObjectVisualizer
 
@@ -40,6 +41,7 @@ URDF_PLAT_NO_OBJ = os.path.join(DATA_DIR, "urdf", "actuated_platform_no_obj.urdf
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
 
+port_config = PortConfiguration()
 
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
@@ -93,7 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
         self.btn.clicked.connect(self.rbt_stop)  # fix name lol
 
-        self.actionImport_New_Object.clicked.connect(self.new_object_reset)
+        self.actionImport_New_Object.triggered.connect(self.new_object_reset())
 
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
@@ -185,10 +187,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.controller.simulation_instance.robot_handler.terminate_robot()
 
     def new_object_reset(self):
-        # call this function to object the wizard
+        return # todo impl
         self.sim_stop()
         self.controller.shutdown()
-        pass
+
+        self.destroy()
 
     def edit_constants(self):
         pass
@@ -233,7 +236,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 class ObjectWizard(QWizard):
 
-    def __init__(self, parent=None):
+    def __init__(self, show_com=True, parent=None):
         super().__init__(parent)
         self.obj_joint_offset = None
         self.obj_const = None
@@ -295,10 +298,15 @@ class ObjectWizard(QWizard):
 
         self.button(QWizard.FinishButton).clicked.connect(self.finish_button)
 
+        if show_com:
+            _dlg = DialogComPorts(self)
+            _dlg.exec()
+
+
     def update(self):
         if self.currentId() == 5 and not self.has_init:
-            #self.rbt = RobotHandler(dummy=True)
-            #self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
+            self.rbt = RobotHandler(dummy=True)
+            self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
             pp.connect(True)
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
@@ -329,7 +337,7 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
-            #pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.rbt.read_cur_conf())
+            pp.set_joint_positions(self.sim_robot, [2, 3, 4, 5], self.rbt.read_cur_conf())
             time.sleep(0.01)
 
     def update_rbt_offset(self):
@@ -431,6 +439,8 @@ class ObjectWizard(QWizard):
         elif self.ui.rbtn_import_obj.isChecked():
             return 2
         elif self.ui.rbt_scan_obj.isChecked():
+            self.update_rbt_offset()
+            self.update_obj_offset()
             return 3
         else:
             return 0
@@ -472,40 +482,29 @@ class ObjectWizard(QWizard):
 skip_wiz = False
 param = []
 
-app = QApplication(sys.argv)
-
-def relaunch_program():
-    global app
-
-    if app:
-        del app
-
-    app = QApplication(sys.argv)
-
-    # show wizard
-    wiz = ObjectWizard()
-    wiz.show()
-    app.exec_()
-
-    # wizard closed, get parameters to send to main window
-    param = [wiz.SIM_ROBOT_OFFSET, wiz.obj_joint_offset]
-
-    # delete to ensure threads are closed.
-    del app
-    del wiz
-
-    # open main app
-    app = QApplication(sys.argv)
-    main = MainWindow(param)
-    main.show()
-    app.exec()
-
-
 if __name__ == '__main__':
-    relaunch_program()
     # current_dir = os.getcwd()
     # print(current_dir)
     #
     # log_file_name = "console_log.txt"
     # log_file_path = os.path.join(current_dir, log_file_name)
     # sys.stdout = open(log_file_path, "w")
+
+    if not skip_wiz:
+        app1 = QApplication(sys.argv)
+        first_window = ObjectWizard()
+        first_window.show()
+        app1.exec_()
+        app1.exit()
+        param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset]
+        del app1
+        del first_window
+
+        print(param)
+
+    # After the first window is closed, this part will run
+
+    app1 = QApplication(sys.argv)
+    second_window = MainWindow(param)
+    second_window.show()
+    sys.exit(app1.exec_())

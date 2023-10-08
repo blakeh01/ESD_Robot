@@ -4,18 +4,18 @@ from Src.robot.SerialMonitor import *
 
 class RobotHandler:
 
-    def __init__(self, dummy=False):
+    def __init__(self, port_config, dummy=False):
         self.dummy = dummy
         if not self.dummy:
-            self.stepper_board = StepperHandler(STEPPER_PORT, STEPPER_BAUD)
-            self.feather0 = SerialMonitor(FEATHER_PORT, FEATHER_BAUD)
+            self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
+            self.feather0 = SerialMonitor(port_config.feather_port, port_config.feather_baud)
 
         # Time management
         self.time_alive = 0
 
         # Conncet to device
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
-        self.port_handler = PortHandler(DEVICENAME)
+        self.port_handler = PortHandler(port_config.rbt_port)
         self.pos_group_writer = GroupSyncWrite(self.port_handler, self.packet_handler, ADDR_GOAL_POSITION,
                                                LEN_GOAL_POSITION)
         self.group_bulk_read_pos = GroupBulkRead(self.port_handler, self.packet_handler)
@@ -24,14 +24,14 @@ class RobotHandler:
         # Open port, terminate if no connection is established.
         try:
             if self.port_handler.openPort():
-                print(f"[DXL] Successfully opened port on {DEVICENAME}!")
+                print(f"[DXL] Successfully opened port on {port_config.rbt_port}!")
             else:
-                input(f"[DXL] Failed to open port on {DEVICENAME}.")
+                input(f"[DXL] Failed to open port on {port_config.rbt_port}.")
                 quit()
 
             # Set the baud rate, terminate under failure.
-            if self.port_handler.setBaudRate(BAUDRATE):
-                print(f"[DXL] Successfully set baud rate to {BAUDRATE} bps!")
+            if self.port_handler.setBaudRate(port_config.rbt_baud):
+                print(f"[DXL] Successfully set baud rate to {port_config.rbt_baud} bps!")
             else:
                 input(f"[DXL] Failed to set baud rate.")
                 quit()

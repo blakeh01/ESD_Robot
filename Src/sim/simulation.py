@@ -23,9 +23,9 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, parent, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
+    def __init__(self, parent, port_config, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
         self.parent = parent
-        self.robot_handler = RobotHandler()
+        self.robot_handler = RobotHandler(port_config)
 
         self.robot_offset = robot_offset
         self.object_offset = object_offset

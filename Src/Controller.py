@@ -65,7 +65,7 @@ class Controller:
             self.obj_distance = 0.2
 
         # Retrieve probe voltage
-        # TODO UNCOMMENT: self.probe_voltage = self.nidaq_vTask.read()
+        self.probe_voltage = self.nidaq_vTask.read()
 
         # Time management ('Tok')
         time.sleep(self.update_rate)

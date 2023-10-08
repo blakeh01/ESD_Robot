@@ -9,7 +9,7 @@ from Src.robot.SerialMonitor import LDS
 class Scanner:
 
     def __init__(self, stepper_board, obj_x, obj_y, obj_z, run_thread=None, percentage_widget=None):
-       # self.LDS = LDS()
+        self.LDS = LDS()
         self.stepper_board = stepper_board
 
         self.percentage_widget = percentage_widget
