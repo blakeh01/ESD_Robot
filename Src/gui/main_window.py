@@ -192,6 +192,9 @@ class Ui_MainWindow(object):
         self.actionExit.setObjectName("actionExit")
         self.actionVersion = QtWidgets.QAction(MainWindow)
         self.actionVersion.setObjectName("actionVersion")
+        self.actionImport_New_Object = QtWidgets.QAction(MainWindow)
+        self.actionImport_New_Object.setObjectName("actionImport_New_Object")
+        self.menuFile.addAction(self.actionImport_New_Object)
         self.menuFile.addAction(self.actionExit)
         self.menuHelp.addAction(self.actionVersion)
         self.menuBar.addAction(self.menuFile.menuAction())
@@ -244,4 +247,5 @@ class Ui_MainWindow(object):
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionVersion.setText(_translate("MainWindow", "Version"))
+        self.actionImport_New_Object.setText(_translate("MainWindow", "Import New Object..."))
 from pyqtgraph import PlotWidget

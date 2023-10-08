@@ -558,6 +558,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionImport_New_Object"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -577,6 +578,11 @@
   <action name="actionVersion">
    <property name="text">
     <string>Version</string>
+   </property>
+  </action>
+  <action name="actionImport_New_Object">
+   <property name="text">
+    <string>Import New Object...</string>
    </property>
   </action>
  </widget>
