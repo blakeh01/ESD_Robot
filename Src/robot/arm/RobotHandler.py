@@ -105,7 +105,7 @@ class RobotHandler:
         addGroupParameter(self.pos_group_writer, DXL_IDS[3], byteIntegerTransform(int(elbow_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[4], byteIntegerTransform(int(wrist_pos)))
 
-        self.stepper_board.write_b(int(rail_pos), 3600)
+        self.stepper_board.write_b(int(rail_pos), 2500)
 
         # Syncwrite goal positions
         self.pos_group_writer.txPacket()  # begins motion of the DXLs
