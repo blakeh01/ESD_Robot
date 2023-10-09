@@ -114,6 +114,8 @@ class Simulation:
         if not self.can_run:
             return
 
+        self.robot_handler.update()
+
         if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
         self.pos_probe_command.onUpdate()
 

@@ -157,8 +157,6 @@ class LDS:
         if distance_mm & 0x8000:
             distance_mm -= 0x10000
 
-        print("Measured dist: ", distance_mm)
-
         # clamp
         # if distance_mm < -5000 or distance_mm > 5000:
         #     distance_mm = 0

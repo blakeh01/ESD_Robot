@@ -10,6 +10,7 @@ class RobotHandler:
 
         # Time management
         self.time_alive = 0
+        self.read_data = []
 
         # Conncet to device
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
@@ -79,9 +80,14 @@ class RobotHandler:
     def update(self):
         self.i += 1
 
-        if i >= 3:
-            print(self.read_cur_conf()[0])
+        if self.i >= 3:
+            self.read_data = self.read_cur_conf()
             self.i = 0
+
+        if self.read_data is not None:
+            if 30 < self.read_data[0][0] < 60000:
+                print("COLLISION DETECTED!")
+
 
     def set_goal_conf(self, joint_states):
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
@@ -120,6 +126,7 @@ class RobotHandler:
             res = self.group_bulk_read_pos.isAvailable(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             if not res:
                 print(f"Failed to read motor ID:{i}!")
+                return
             conf.append(
                 self.group_bulk_read_pos.getData(i, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)
             )
@@ -142,6 +149,7 @@ class RobotHandler:
             res = self.group_bulk_read_load.isAvailable(i, ADDR_PRESENT_LOAD, LEN_PRESENT_LOAD)
             if not res:
                 print(f"Failed to read motor ID:{i}!")
+                return
             forces.append(
                 self.group_bulk_read_load.getData(i, ADDR_PRESENT_LOAD, LEN_PRESENT_LOAD)
             )
