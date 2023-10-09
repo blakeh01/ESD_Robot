@@ -353,7 +353,7 @@ class ObjectWizard(QWizard):
                         np.deg2rad(self.ui.sbox_offset_rz.value())]
 
         p.removeConstraint(self.obj_const)
-        p.resetBasePositionAndOrientation(self.obj, self.obj_joint_offset, p.getQuaternionFromEuler(self.obj_rot))
+        if self.obj_rot != [0, 0, 0]: p.resetBasePositionAndOrientation(self.obj, self.obj_joint_offset, p.getQuaternionFromEuler(self.obj_rot))
         self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
                                             childBodyUniqueId=self.obj,
                                             childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
