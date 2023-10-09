@@ -229,7 +229,7 @@
   </link>
 
 <joint name="probe_ref_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.18 0.0075 0.016"/>
+    <origin rpy="0 0 0" xyz="0.155 0 0.016"/>
     <parent link="rx200/wrist_link"/>
     <child link="rx200/probe_tip_ref"/>
 </joint>

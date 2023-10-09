@@ -57,8 +57,8 @@ class StepperHandler(SerialMonitor):
                 "Failed to connect to DUET Stepper Controller, please ensure the board is powered and all connections are present!")
             quit()
 
-        self.rail_pos = 0
-        self.plat_pos = 0
+        self.rail_pos = -1
+        self.plat_pos = -1
 
         self.initialized = False
         self.initialize_motor()
@@ -98,14 +98,18 @@ class StepperHandler(SerialMonitor):
             print(code)
 
     # this is robot linear rail
-    def write_b(self, pos, feed=3600):
-        print(self.rail_pos, pos)
+    def write_b(self, pos, feed=2500):
+        if pos < 0:
+            return
         if self.rail_pos != pos:
             code = bytes(str(f"G1 B{round(pos)} F{round(feed)}"), "ASCII")
             self.serial_conn.flushInput()
             self.serial_conn.write(code + b'\r\n')
             self.rail_pos = pos
             print(code)
+
+    def write_movement(self, pos_rail, pos_plat):
+        pass
 
     def home_all(self):
         self.write_x(0)
@@ -151,6 +155,8 @@ class LDS:
         # correct for signed-ness
         if distance_mm & 0x8000:
             distance_mm -= 0x10000
+
+        print("Measured dist: ", distance_mm)
 
         # clamp
         # if distance_mm < -5000 or distance_mm > 5000:

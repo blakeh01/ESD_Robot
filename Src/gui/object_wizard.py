@@ -383,7 +383,7 @@ class Ui_ObjectWizard(object):
         self.sbox_rbt_offset_x.setMinimum(-99999.0)
         self.sbox_rbt_offset_x.setMaximum(99999.0)
         self.sbox_rbt_offset_x.setSingleStep(0.05)
-        self.sbox_rbt_offset_x.setProperty("value", -400.0)
+        self.sbox_rbt_offset_x.setProperty("value", -340.0)
         self.sbox_rbt_offset_x.setObjectName("sbox_rbt_offset_x")
         self.gridLayout_8.addWidget(self.sbox_rbt_offset_x, 0, 1, 1, 1)
         self.sbox_rbt_offset_y = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget_8)

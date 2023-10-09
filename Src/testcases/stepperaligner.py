@@ -15,6 +15,6 @@ while 1:
     elif i[0] == 'Z' or i[0] == 'z':
         s.write_z(int(i[1:]), F)
     elif i[0] == 'A' or i[0] == 'a':
-        s.write_a(int(i[1:]), F)
+        s.write_a(int(i[1:]), F*2)
     elif i[0] == 'B' or i[0] == 'b':
         s.write_b(int(i[1:]), F * 2)

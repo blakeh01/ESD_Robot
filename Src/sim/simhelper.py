@@ -4,7 +4,7 @@ from Src.sim.sim_constants import *
 from Src.util.math_util import *
 
 
-def get_normal_point_cloud(pts_per_slice, z_limits, z_density, probe_dist, obj_center, draw_ray_start=True, draw_cloud=True):
+def get_normal_point_cloud(pts_per_slice, z_limits, z_density, probe_dist, obj_center, draw_ray_start=False, draw_cloud=True):
     ray_start = []
     ray_end = []
 

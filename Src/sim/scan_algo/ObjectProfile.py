@@ -26,6 +26,8 @@ from Src.sim.simhelper import *
 from Src.sim.simulation import Simulation
 from Src.util.math_util import *
 
+from Src.robot.SerialMonitor import *
+
 
 class ObjectProfile():
 
@@ -186,7 +188,8 @@ class RotationallySymmetric(ObjectProfile):
         elif isinstance(cur_flow, Discharge):
             if cur_flow.start_time == 0:
                 cur_flow.start_time = time_elasped
-                input("DISCHARGE!")
+                cur_flow.set_stepper(self.sim.robot_handler.stepper_board)
+                cur_flow.discharge()
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
 
@@ -284,10 +287,10 @@ class RotationallySymmetric(ObjectProfile):
         if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
-            new_point = np.add(new_point, [-.1, 0, 0])  # offset probe
+            new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
             self.action_wait_end = time_elasped + 5  # wait 5 seconds to let system ground
-            self.sim.robot_handler.feather0.write_data("1") # tell servo to ground!
+            self.sim.robot_handler.feather0.write_data(b'1') # tell servo to ground!
 
         if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
             self.action_wait_end = 0
@@ -505,9 +508,50 @@ class Charge():
 
 class Discharge():
 
-    def __init__(self):
+    def __init__(self, port_config, obj_z, stepper_board=None):
         self.start_time = 0
         self.end_time = 0
+
+        self.obj_z = obj_z
+
+        self.LDS = LDS(port_config.lds_port, port_config.lds_baud)
+        self.stepper_board = stepper_board
+
+        # def scanner_points(self):
+        self.x_feed = 1500
+        self.y_feed = 500  # This needs to be changed to the equivalent of 50mm/s
+        self.z_feed = 500
+        self.step = 1
+
+    def set_stepper(self, stepper):
+        self.stepper_board = stepper
+
+    def discharge(self):
+        if not self.stepper_board:
+            print("error did not set stepepr board.")
+
+        self.stepper_board.home_scan()
+
+        self.stepper_board.write_z((self.obj_z / 2) - 25, self.z_feed)
+        self.stepper_board.write_x(102, self.x_feed)
+        time.sleep(15)
+
+        y = self.LDS.read_distance() + 10000
+        y = int(y / 100)
+
+        # write to z to half object height (-25 to account for CVR)
+        # write to x to center (102)
+
+        print("writing: ", y)
+
+        self.stepper_board.write_y(y - 30, self.y_feed)
+        self.stepper_board.read_data()
+        time.sleep(10)
+
+        self.stepper_board.write_y(0, self.y_feed)
+        self.stepper_board.write_x(0, self.x_feed)
+        self.stepper_board.write_z(0, self.z_feed)
+        self.LDS.laser.close()
 
 
 class Probe():

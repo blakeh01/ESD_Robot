@@ -1,7 +1,9 @@
 import os
 
+import pybullet as p
 import numpy as np
 import open3d as o3d
+import shutil
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim", "meshes")
 
@@ -15,6 +17,8 @@ class ObjectVisualizer:
 
         self.initialize_visualizer()
 
+        self.is_obj = False
+
     def initialize_visualizer(self):
         render_opt = self.visualizer.get_render_option()
         render_opt.show_coordinate_frame = True
@@ -24,6 +28,14 @@ class ObjectVisualizer:
         self.visualizer.poll_events()
         self.visualizer.update_renderer()
 
+    def load_VHACD(self, path):
+        print("[MAIN] Generating V-HACD... this will take some time.")
+        p.vhacd(path, 'object_exp.obj',
+                "vhacd_log.txt", resolution=10000000)
+
+        shutil.move('object_exp.obj', os.path.join(DATA_DIR, "object_exp.obj"))
+        shutil.move("vhacd_log.txt", os.path.join(DATA_DIR, "vhacd_log.txt"))
+
     def load_mesh_from_path(self, mesh_path):
         _, extension = os.path.splitext(mesh_path)
         if extension.lower() in ['.stl', '.obj']:
@@ -32,7 +44,7 @@ class ObjectVisualizer:
             self.cur_mesh.compute_vertex_normals()
             self.cur_mesh.paint_uniform_color([0.3, 0.3, 0.3])
 
-            self.cur_mesh.scale(2, center=self.cur_mesh.get_center())
+            self.cur_mesh.scale(1, center=self.cur_mesh.get_center())
 
             # Get the vertices of the mesh
             vertices = np.asarray(self.cur_mesh.vertices)

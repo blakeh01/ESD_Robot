@@ -144,7 +144,7 @@ class DialogProbeProfile(QDialog):
         self.ui.btn_probe.clicked.connect(lambda: self.ui.list_probe_flow.addItem("Probe"))
         self.ui.btn_wait.clicked.connect(self.add_wait)
         self.ui.btn_charge.clicked.connect(lambda: self.ui.list_probe_flow.addItem("Charge"))
-        self.ui.btn_discharge.clicked.connect(lambda: self.ui.list_probe_flow.addItem("Discharge"))
+        self.ui.btn_discharge.clicked.connect(self.add_discharge)
 
         self.ui.list_probe_flow.doubleClicked.connect(self.remove_arg)
 
@@ -164,6 +164,15 @@ class DialogProbeProfile(QDialog):
                 self.ui.list_probe_flow.addItem("Wait: " + str(abs(int(value))) + " s")
             except:
                 return  # todo error handling?
+
+    def add_discharge(self):
+        value, ok = QInputDialog.getText(self, "Enter Object Height", 'Object Height (mm)')
+
+        if ok:
+            try:
+                self.ui.list_probe_flow.addItem("Discharge: " + str(abs(int(value))) + " mm")
+            except:
+                return
 
     def parse_flow(self):
         if self.ui.list_probe_flow.count() <= 0:
@@ -185,7 +194,12 @@ class DialogProbeProfile(QDialog):
 
             # yikes... works but yikess...
             if len(data) > 1:
-                flow_arr.append(Wait(int(data[1].split(' ')[1])))
+                d = data[1].split(' ')
+
+                if d[2] == 'mm':
+                    flow_arr.append(Discharge(self.controller_instance.simulation_instance.port_config, int(d[1])))
+                else:
+                    flow_arr.append(Wait(int(d[1])))
             else:
                 if (len(item) == 9): flow_arr.append(Discharge())
                 if (len(item) == 6): flow_arr.append(Charge())

@@ -29,7 +29,7 @@ from Src.gui.object_wizard import Ui_ObjectWizard
 from Src.robot.SerialMonitor import StepperHandler
 from Src.robot.arm.RobotHandler import RobotHandler
 from Src.robot.ports import PortConfiguration
-from Src.robot.scanner.Scanner import Scanner
+from Src.robot.scanner.Scanner import Scanner, PrimitiveScan
 from Src.sim.ObjectVisualizer import ObjectVisualizer
 
 import configparser
@@ -252,7 +252,6 @@ class ObjectWizard(QWizard):
         self.gui_timer.start(25)  # start GUI update thread ~ 40 FPS
 
         self.rbt = None
-        self.stepper_board = None
         self.has_init = False
 
         self.o3d_viz = ObjectVisualizer()
@@ -277,7 +276,7 @@ class ObjectWizard(QWizard):
         self.ui.btn_prompt_path.clicked.connect(self.prompt_path)
         self.ui.rbtn_import_units.clicked.connect(self.update_import)
         self.ui.rbtn_import_scale.clicked.connect(self.update_import)
-        self.ui.wiz_page_import_obj.nextId = lambda: 4 if self.o3d_viz.cur_mesh is not None else 2
+        self.ui.wiz_page_import_obj.nextId = lambda: 5
         self.update_import()
 
         self.ui.rbtn_prim_rect.clicked.connect(self.prim_rect_selected)
@@ -336,6 +335,7 @@ class ObjectWizard(QWizard):
 
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
             self.update_rbt_offset()
+            self.rbt.stepper_board.write_b(165)
             self.has_init = True
 
         if self.currentId() == 4:
@@ -343,8 +343,8 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
-            # conf = self.rbt.read_cur_conf()
-            # if conf is not None: pp.set_joint_positions(self.sim_robot, [1, 2, 3, 4, 5], conf)
+            conf = self.rbt.read_cur_conf()[1]
+            if conf is not None: pp.set_joint_positions(self.sim_robot, [1, 2, 3, 4, 5], conf)
             time.sleep(0.01)
 
     def update_rbt_offset(self):
@@ -430,9 +430,17 @@ class ObjectWizard(QWizard):
         self.prim = 0
 
     def prim_creation(self):
-        self.o3d_viz.display_primitive(self.prim, 1024, float(self.ui.sbox_prim_field_A.text()),
+        if float(self.ui.sbox_prim_field_A.value()) == 1:
+            return 2
+
+        self.o3d_viz.display_primitive(self.prim, 8192, float(self.ui.sbox_prim_field_A.text()),
                                        float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
         self.o3d_viz.disp_cur_mesh()
+
+        # self.prim_scanner = PrimitiveScan(self.rbt.stepper_board, port_config)
+        # self.prim_scanner.run_prim_scan(2, float(self.ui.sbox_prim_field_A.text()),
+        #                                float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
+
         return 4
 
     def pack_object(self):
