@@ -149,7 +149,7 @@ class PrimitiveScan:
             self.stepper_board.write_a(0, feed=1800)
             self.stepper_board.home_scan()
             time.sleep(5)
-        elif primitive == 1:
+        elif primitive == 1: # Cylinder
             self.radius_1 = 101.5 - val / 2
             self.radius_2 = 101.5 + val / 2
             self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
