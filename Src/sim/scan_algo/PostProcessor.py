@@ -161,8 +161,6 @@ def process_cylinder(phimin, phimax, zmin, zmax, r, inmap, a, sig, g, mask_perc)
     # g: PSF
     # fit: PSF
     # mask_perc: mask percentage - how large to make circular mask as a percentage of data size
-    # I had some code in here to de-offset the data around r, but math is nice and the average of r is the radius
-    # no matter where the cylinder is :)
 
     nx, ny = np.shape(inmap)
     xx = np.linspace(phimin, phimax, ny)
@@ -216,7 +214,7 @@ def process_cylinder(phimin, phimax, zmin, zmax, r, inmap, a, sig, g, mask_perc)
     Hdiv = (np.conj(H) / (np.square(np.abs(H)) + 8))
     PHI = v_FFT
 
-    wnrdeconv = Hdiv * PHI  # these are sometimes not the same size, how to fix?
+    wnrdeconv = Hdiv * PHI 
     sigma = ifftshift(wnrdeconv)
     sigma_fft = ifft2(sigma)
     sigma_plot = ifftshift(sigma_fft)
