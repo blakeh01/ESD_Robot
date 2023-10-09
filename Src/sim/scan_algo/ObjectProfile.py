@@ -140,14 +140,6 @@ class RotationallySymmetric(ObjectProfile):
         self.z_slices = sort_and_convert_to_list(self.z_slices)
         print("Generated " + str(len(self.z_slices)) + " slices!")
 
-    '''
-        Do I know what a state machine is? Yes.
-        
-        Do I realize that this would make this code about 10000x cleaner? Yes.
-        
-        But do I have the time to implement a full state machine for clean code? No. (lord forgive me)
-    '''
-
     def update(self, time_elapsed):
         if not self.can_run:
             return
