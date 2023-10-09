@@ -28,13 +28,13 @@ class ObjectVisualizer:
         self.visualizer.poll_events()
         self.visualizer.update_renderer()
 
-    def load_VHACD(self, path):
-        print("[MAIN] Generating V-HACD... this will take some time.")
-        p.vhacd(path, 'object_exp.obj',
-                "vhacd_log.txt", resolution=10000000)
-
-        shutil.move('object_exp.obj', os.path.join(DATA_DIR, "object_exp.obj"))
-        shutil.move("vhacd_log.txt", os.path.join(DATA_DIR, "vhacd_log.txt"))
+    # def load_VHACD(self, path):
+    #     print("[MAIN] Generating V-HACD... this will take some time.")
+    #     p.vhacd(path, 'object_exp.obj',
+    #             "vhacd_log.txt", resolution=10000000)
+    #
+    #     shutil.move('object_exp.obj', os.path.join(DATA_DIR, "object_exp.obj"))
+    #     shutil.move("vhacd_log.txt", os.path.join(DATA_DIR, "vhacd_log.txt"))
 
     def load_mesh_from_path(self, mesh_path):
         _, extension = os.path.splitext(mesh_path)
