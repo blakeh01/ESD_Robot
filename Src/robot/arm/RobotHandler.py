@@ -4,6 +4,23 @@ from Src.robot.SerialMonitor import *
 
 class RobotHandler:
 
+    """
+        This class encompasses the entire 'real' robotic manipulator.
+
+        Features:
+            - DXL position management
+            - Stepper motor management
+            - Feather and other device management
+            - Serial control
+            - A few common sequences
+            - Maneuver control
+
+        The stepper motor is controlled using a class named StepperHandler.
+
+        Note: Shoulder consists of 2 motors, however, motor 3 is shadowing motor 2. This means we can write commands
+        to motor 2 and motor 3 will simply match it.
+    """
+
     def __init__(self, port_config, dummy=False):
         self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
         self.feather0 = SerialMonitor(port_config.feather_port, port_config.feather_baud)
@@ -78,16 +95,15 @@ class RobotHandler:
         self.i = 0
 
     def update(self):
-        pass
-        # self.i += 1
-        #
-        # if self.i >= 3:
-        #     self.read_data = self.read_cur_conf()
-        #     self.i = 0
+        self.i += 1
 
-        # if self.read_data is not None:
-        #     if 30 < self.read_data[0][0] < 60000:
-        #         print("COLLISION DETECTED!")
+        if self.i >= 3:
+            self.read_data = self.read_cur_conf()
+            self.i = 0
+
+        if self.read_data is not None:
+            if 30 < self.read_data[0][0] < 60000:
+                print("COLLISION DETECTED!")
 
 
     def set_goal_conf(self, joint_states):
