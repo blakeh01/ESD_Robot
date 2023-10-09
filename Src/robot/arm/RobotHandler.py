@@ -78,15 +78,16 @@ class RobotHandler:
         self.i = 0
 
     def update(self):
-        self.i += 1
+        pass
+        # self.i += 1
+        #
+        # if self.i >= 3:
+        #     self.read_data = self.read_cur_conf()
+        #     self.i = 0
 
-        if self.i >= 3:
-            self.read_data = self.read_cur_conf()
-            self.i = 0
-
-        if self.read_data is not None:
-            if 30 < self.read_data[0][0] < 60000:
-                print("COLLISION DETECTED!")
+        # if self.read_data is not None:
+        #     if 30 < self.read_data[0][0] < 60000:
+        #         print("COLLISION DETECTED!")
 
 
     def set_goal_conf(self, joint_states):

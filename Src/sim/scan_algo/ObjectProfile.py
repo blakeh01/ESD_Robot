@@ -198,6 +198,7 @@ class RotationallySymmetric(ObjectProfile):
                 self.z_sil_index = 0
                 self.probe_percentage = 0
                 print("START PROBE!")
+                self.ground_flag = True
             else:
 
                 if self.z_sil_index >= len(self.z_slices):
@@ -276,13 +277,13 @@ class RotationallySymmetric(ObjectProfile):
                                 self.action_wait_end = time_elapsed + self.measuring_time
                             elif time_elapsed >= self.action_wait_end:
                                 print("[FIX] BEEP PROBE VOLTAGE!")
-                                self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
+                                self.cur_path[self.cur_point_index].measurement = 10 # self.sim.parent.probe_voltage
                                 self.cur_point_index += 1
                                 self.measure_flag = False
                                 self.action_wait_end = 0
                         else:
                             print("[FIX] BEEP PROBE VOLTAGE!")
-                            self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
+                            self.cur_path[self.cur_point_index].measurement = 10 # self.sim.parent.probe_voltage
                             self.cur_point_index += 1
                             self.measure_flag = False
 
@@ -322,6 +323,9 @@ class RectangularPrisms(ObjectProfile):
         self.next_ground_time = 0
 
         self.measure_flag = False
+
+        self.action_wait_start = 0
+        self.action_wait_end = 0
 
         self.initialize()
 
@@ -441,13 +445,31 @@ class RectangularPrisms(ObjectProfile):
                 cur_flow.start_time = time_elapsed
                 self.side_index = 0
                 print("PROBING! Sending robot home...")
+                self.ground_flag = True
             else:
 
-                if self.side_index >= len(self.normal_slices) - 1:
-                    print("Probing Completed!")
-                    cur_flow.end_time = time_elapsed
-                    self.cur_flow_idx += 1
-                    return
+                if cur_flow.start_time == 0:
+                    cur_flow.start_time = time_elapsed
+                    self.z_sil_index = 0
+                    self.probe_percentage = 0
+                    print("START PROBE!")
+                    self.ground_flag = True
+                else:
+
+                    if self.side_index >= len(self.normal_slices):
+                        print("Probing Completed!")
+                        cur_flow.end_time = time_elapsed
+                        self.cur_flow_idx += 1
+
+                        for i in range(100):
+                            self.sim.drive_motors_to_home()
+                            p.stepSimulation()
+                            time.sleep(1 / 120)
+
+                        self.sim.robot_handler.set_goal_conf(
+                            pp.get_joint_positions(self.sim.sim_robot, [1, 2, 3, 4, 5]))
+
+                        return
 
                 if not self.cur_slice:
                     self.cur_slice = self.normal_slices[self.side_index]
@@ -471,7 +493,7 @@ class RectangularPrisms(ObjectProfile):
                                                                      [0, 0, 0])  # todo get joint orn?
                     return
 
-                if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
                     self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
                     self.sim.parent.lbl_slice_index.setText(str(self.side_index))
                     self.sim.parent.lbl_point_index.setText(str(self.cur_point_index))
@@ -510,13 +532,13 @@ class RectangularPrisms(ObjectProfile):
                             self.action_wait_end = time_elapsed + self.measuring_time
                         elif time_elapsed >= self.action_wait_end:
                             print("[FIX] BEEP PROBE VOLTAGE!")
-                            self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
+                            self.cur_path[self.cur_point_index].measurement = 10 # self.sim.parent.probe_voltage
                             self.cur_point_index += 1
                             self.measure_flag = False
                             self.action_wait_end = 0
                     else:
                         print("[FIX] BEEP PROBE VOLTAGE!")
-                        self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
+                        self.cur_path[self.cur_point_index].measurement = 10 # self.sim.parent.probe_voltage
                         self.cur_point_index += 1
                         self.measure_flag = False
 
@@ -572,13 +594,16 @@ class Discharge():
 
         self.stepper_board.write_z((self.obj_z / 2) - 25, self.z_feed)
         self.stepper_board.write_x(102, self.x_feed)
-        time.sleep(8)
+        time.sleep(15)
 
         y = self.LDS.read_distance() + 10000
         y = int(y / 100)
 
         # write to z to half object height (-25 to account for CVR)
         # write to x to center (102)
+
+        if y > 175:
+            return
 
         self.stepper_board.write_y(y - 30, self.y_feed)
         self.stepper_board.read_data()

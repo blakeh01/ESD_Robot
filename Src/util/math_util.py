@@ -75,8 +75,8 @@ def distance(point1, point2):
     return np.linalg.norm(np.array(point1)[:2] - np.array(point2)[:2])
 
 def weighted_euclidean_distance(point1, point2, z_weight=1.0):
-    x1, y1, z1 = point1.pos
-    x2, y2, z2 = point2.pos
+    x1, y1, z1 = point1
+    x2, y2, z2 = point2
     distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2 + ((z1 - z2) * z_weight) ** 2) ** 0.5
    # z_difference = abs(z1 - z2)
     #weighted_distance = distance + z_weight * z_difference
@@ -104,7 +104,7 @@ def nearest_neighbor_dict_sort(points, start_index=0):
 
     while unvisited_points:
         current_point = sorted_points[-1]
-        nearest_point = min(unvisited_points, key=lambda p: distance(current_point, p))
+        nearest_point = min(unvisited_points, key=lambda p: weighted_euclidean_distance(current_point, p, z_weight=2))
         sorted_points.append(nearest_point)
         unvisited_points.remove(nearest_point)
 

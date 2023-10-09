@@ -484,8 +484,8 @@ class ObjectWizard(QWizard):
             str_write = f'    <origin xyz="{x / 2} {y / 2} {z / 2}"/>\n'
             content[URDF_OFFSET_LINE_NUM - 1] = str_write  # replace contents with modified offset.
 
-            str_write = f'      <origin rpy="{rx} {ry} {rz + np.pi/2}" xyz="0 0 0"/>'
-            content[URDF_ROT_LINE_NUM - 1] = str_write
+            # str_write = f'      <origin rpy="{rx} {ry} {rz + np.pi/2}" xyz="0 0 0"/>\n'
+            # content[URDF_ROT_LINE_NUM - 1] = str _write
 
         with open(URDF_PLAT, 'w') as file:
             file.writelines(content)

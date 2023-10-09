@@ -91,7 +91,7 @@ class Ui_NormalGenerator(object):
         self.sbox_scan_z_4 = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
         self.sbox_scan_z_4.setDecimals(0)
         self.sbox_scan_z_4.setMinimum(1.0)
-        self.sbox_scan_z_4.setProperty("value", 1.0)
+        self.sbox_scan_z_4.setProperty("value", 5)
         self.sbox_scan_z_4.setObjectName("sbox_scan_z_4")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.sbox_scan_z_4)
         self.btn_generate_normals = QtWidgets.QPushButton(NormalGenerator)
@@ -99,9 +99,9 @@ class Ui_NormalGenerator(object):
         self.btn_generate_normals.setObjectName("btn_generate_normals")
 
         self.sbox_scan_z.setMaximum(9999)
-        self.sbox_scan_z.setProperty("value", 160)
+        self.sbox_scan_z.setProperty("value", 0)
         self.sbox_scan_z_3.setMaximum(9999)
-        self.sbox_scan_z_3.setProperty("value", 320)
+        self.sbox_scan_z_3.setProperty("value", 50)
 
 
         self.retranslateUi(NormalGenerator)
@@ -133,9 +133,10 @@ class DialogNormalGenerator(QDialog):
 
     def generate_normals(self):
         #pts_per_slice, z_limits, z_density, probe_dist, obj_center
+        print((((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * 2, ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * 2))
         cloud = get_normal_point_cloud(
             int(self.ui.sbox_scan_resolution.text()),
-            ((float(self.ui.sbox_scan_z.text()) / 1000) * 2, (float(self.ui.sbox_scan_z_3.text()) / 1000) * 2), # scale correction factor
+            (((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * 2, ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * 2), # scale correction factor
             int(self.ui.sbox_scan_z_4.text()),
             (float(self.ui.sbox_probe_distance.text()) / 1000) * 2,
             self.controller_instance.simulation_instance.object_offset
