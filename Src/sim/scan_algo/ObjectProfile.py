@@ -148,7 +148,7 @@ class RotationallySymmetric(ObjectProfile):
         But do I have the time to implement a full state machine for clean code? No. (lord forgive me)
     '''
 
-    def update(self, time_elasped):
+    def update(self, time_elapsed):
         if not self.can_run:
             return
 
@@ -161,40 +161,40 @@ class RotationallySymmetric(ObjectProfile):
 
         if isinstance(cur_flow, Wait):
             if cur_flow.end_time == 0 and cur_flow.start_time == 0:
-                cur_flow.start_time = time_elasped
+                cur_flow.start_time = time_elapsed
                 cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
 
-            if time_elasped >= cur_flow.end_time:
+            if time_elapsed >= cur_flow.end_time:
                 print("Waiting completed... moving to next step!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Charge):
             if cur_flow.start_time == 0:
-                cur_flow.start_time = time_elasped
-                self.action_wait_end = time_elasped + 0.25
+                cur_flow.start_time = time_elapsed
+                self.action_wait_end = time_elapsed + 0.25
                 self.sim.parent.btn_charge_done.setVisible(True)
                 self.sim.parent.lbl_charge_warn.setVisible(True)
             else:
-                if time_elasped >= self.action_wait_end:
-                    self.action_wait_end = time_elasped + 0.25
+                if time_elapsed >= self.action_wait_end:
+                    self.action_wait_end = time_elapsed + 0.25
                     self.sim.parent.lbl_charge_warn.setStyleSheet(
                         "background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             if self.charge_done_flag:
-                cur_flow.end_time = time_elasped
+                cur_flow.end_time = time_elapsed
                 print("[USER] Charge Complete!")
                 self.cur_flow_idx += 1
                 self.charge_done_flag = False
 
         elif isinstance(cur_flow, Discharge):
             if cur_flow.start_time == 0:
-                cur_flow.start_time = time_elasped
+                cur_flow.start_time = time_elapsed
                 cur_flow.set_stepper(self.sim.robot_handler.stepper_board)
                 cur_flow.discharge()
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
 
             if cur_flow.start_time == 0:
-                cur_flow.start_time = time_elasped
+                cur_flow.start_time = time_elapsed
                 self.z_sil_index = 0
                 self.probe_percentage = 0
                 print("START PROBE!")
@@ -202,7 +202,7 @@ class RotationallySymmetric(ObjectProfile):
 
                 if self.z_sil_index >= len(self.z_slices):
                     print("Probing Completed!")
-                    cur_flow.end_time = time_elasped
+                    cur_flow.end_time = time_elapsed
                     self.cur_flow_idx += 1
 
                     for i in range(100):
@@ -240,7 +240,7 @@ class RotationallySymmetric(ObjectProfile):
                         self.sim.parent.lbl_point_index.setText(str(self.cur_point_index))
 
                         if self.next_ground_time == 0:
-                            self.next_ground_time = self.grounding_interval + time_elasped
+                            self.next_ground_time = self.grounding_interval + time_elapsed
                             print("Setting next ground time to: ", self.next_ground_time)
 
                         print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
@@ -273,8 +273,8 @@ class RotationallySymmetric(ObjectProfile):
                     if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
                         if self.measuring_time > 0:
                             if self.action_wait_end == 0:
-                                self.action_wait_end = time_elasped + self.measuring_time
-                            elif time_elasped >= self.action_wait_end:
+                                self.action_wait_end = time_elapsed + self.measuring_time
+                            elif time_elapsed >= self.action_wait_end:
                                 print("[FIX] BEEP PROBE VOLTAGE!")
                                 self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
                                 self.cur_point_index += 1
@@ -286,7 +286,7 @@ class RotationallySymmetric(ObjectProfile):
                             self.cur_point_index += 1
                             self.measure_flag = False
 
-        if self.next_ground_time <= time_elasped and self.next_ground_time != 0:
+        if self.next_ground_time <= time_elapsed and self.next_ground_time != 0:
             print("Time to ground! Raising flag!")
             self.ground_flag = True
             self.next_ground_time = 0
@@ -296,10 +296,10 @@ class RotationallySymmetric(ObjectProfile):
 
             new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
-            self.action_wait_end = time_elasped + 4  # wait 4 seconds to let system ground
+            self.action_wait_end = time_elapsed + 4  # wait 4 seconds to let system ground
             self.sim.robot_handler.feather0.write_data(b'1') # tell servo to ground!
 
-        if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
+        if self.action_wait_end != 0 and time_elapsed >= self.action_wait_end and self.ground_flag:
             self.action_wait_end = 0
             self.ground_flag = False
 
@@ -317,6 +317,11 @@ class RectangularPrisms(ObjectProfile):
         self.cur_slice = None
         self.cur_point_index = 0
         self.side_index = 0
+
+        self.ground_flag = False
+        self.next_ground_time = 0
+
+        self.measure_flag = False
 
         self.initialize()
 
@@ -387,59 +392,60 @@ class RectangularPrisms(ObjectProfile):
 
         print(self.normal_slices)
 
-    def update(self, time_elasped):
+    def update(self, time_elapsed):
         if not self.can_run:
             return
 
         if self.cur_flow_idx + 1 > len(self.flow):
             print("Probe flow completed!")
             self.can_run = False
-            self.sim.parent.sim_stop()
             return
 
         cur_flow = self.flow[self.cur_flow_idx]
 
         if isinstance(cur_flow, Wait):
-            if (cur_flow.end_time == 0 and cur_flow.start_time == 0):
-                cur_flow.start_time = time_elasped
+            if cur_flow.end_time == 0 and cur_flow.start_time == 0:
+                cur_flow.start_time = time_elapsed
                 cur_flow.end_time = cur_flow.start_time + cur_flow.wait_time
 
-            if (cur_flow.end_time <= time_elasped):
+            if time_elapsed >= cur_flow.end_time:
                 print("Waiting completed... moving to next step!")
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Charge):
             if cur_flow.start_time == 0:
-                cur_flow.start_time = time_elasped
-                self.action_wait_end = time_elasped + 0.25
+                cur_flow.start_time = time_elapsed
+                self.action_wait_end = time_elapsed + 0.25
                 self.sim.parent.btn_charge_done.setVisible(True)
                 self.sim.parent.lbl_charge_warn.setVisible(True)
             else:
-                if time_elasped >= self.action_wait_end:
-                    self.action_wait_end = time_elasped + 0.25
+                if time_elapsed >= self.action_wait_end:
+                    self.action_wait_end = time_elapsed + 0.25
                     self.sim.parent.lbl_charge_warn.setStyleSheet(
                         "background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             if self.charge_done_flag:
-                cur_flow.end_time = time_elasped
+                cur_flow.end_time = time_elapsed
                 print("[USER] Charge Complete!")
                 self.cur_flow_idx += 1
                 self.charge_done_flag = False
+
         elif isinstance(cur_flow, Discharge):
-            if (cur_flow.start_time == 0):
-                cur_flow.start_time = time_elasped
-                input("DISCHARGE!")
+            if cur_flow.start_time == 0:
+                cur_flow.start_time = time_elapsed
+                cur_flow.set_stepper(self.sim.robot_handler.stepper_board)
+                cur_flow.discharge()
                 self.cur_flow_idx += 1
         elif isinstance(cur_flow, Probe):
 
-            if (cur_flow.start_time == 0):
-                cur_flow.start_time = time_elasped
+            if cur_flow.start_time == 0:
+                cur_flow.start_time = time_elapsed
                 self.side_index = 0
                 print("PROBING! Sending robot home...")
             else:
 
-                if (self.side_index >= len(self.normal_slices) - 1):
+                if self.side_index >= len(self.normal_slices) - 1:
                     print("Probing Completed!")
-                    cur_flow.end_time = time_elasped
+                    cur_flow.end_time = time_elapsed
                     self.cur_flow_idx += 1
                     return
 
@@ -461,10 +467,13 @@ class RectangularPrisms(ObjectProfile):
                     return
 
                 if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                    self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
+                    self.sim.parent.lbl_slice_index.setText(str(self.side_index))
+                    self.sim.parent.lbl_point_index.setText(str(self.cur_point_index))
 
-                    # if self.next_groud_time == 0:
-                    #     self.next_groud_time = self.grounding_interval + time_elasped
-                    #     print("Setting next ground time to: ", self.next_groud_time)
+                    if self.next_ground_time == 0:
+                        self.next_ground_time = self.grounding_interval + time_elapsed
+                        print("Setting next ground time to: ", self.next_ground_time)
 
                     print("Processing slice i: ", self.side_index, " | Current point index: ",
                           self.cur_point_index)
@@ -487,24 +496,41 @@ class RectangularPrisms(ObjectProfile):
 
                     self.cur_path = temp
                     self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos,
-                                                                     goal_orn=[0, -np.pi/4, 0])
+                                                                     goal_orn=[0, 0, 0])
+                    self.measure_flag = True
 
-                    print("BEEP PROBE VOLTAGE!")
-                    self.cur_path[self.cur_point_index].measurement = 10
+                if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                    if self.measuring_time > 0:
+                        if self.action_wait_end == 0:
+                            self.action_wait_end = time_elapsed + self.measuring_time
+                        elif time_elapsed >= self.action_wait_end:
+                            print("[FIX] BEEP PROBE VOLTAGE!")
+                            self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
+                            self.cur_point_index += 1
+                            self.measure_flag = False
+                            self.action_wait_end = 0
+                    else:
+                        print("[FIX] BEEP PROBE VOLTAGE!")
+                        self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
+                        self.cur_point_index += 1
+                        self.measure_flag = False
 
-                    self.cur_point_index += 1
+        if self.next_ground_time <= time_elapsed and self.next_ground_time != 0:
+            print("Time to ground! Raising flag!")
+            self.ground_flag = True
+            self.next_ground_time = 0
 
-        # if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
-        #     print("Time to ground! Raising flag!")
-        #     self.ground_flag = True
-        #     self.next_groud_time = 0
-        #
-        # if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete:
-        #     new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
-        #
-        #     new_point = np.add(new_point, [-.1, 0, 0]) # offset probe
-        #     self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point)
-        #     self.ground_flag = False
+        if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
+            new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+
+            new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
+            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
+            self.action_wait_end = time_elapsed + 4  # wait 4 seconds to let system ground
+            self.sim.robot_handler.feather0.write_data(b'1') # tell servo to ground!
+
+        if self.action_wait_end != 0 and time_elapsed >= self.action_wait_end and self.ground_flag:
+            self.action_wait_end = 0
+            self.ground_flag = False
 
 
 class Charge():
