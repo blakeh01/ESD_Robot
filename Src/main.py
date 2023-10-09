@@ -279,7 +279,7 @@ class ObjectWizard(QWizard):
         self.ui.btn_scan_halt.clicked.connect(self.halt_scan)
         self.ui.wiz_page_scan_obj.nextId = self.check_scan
         self.scan_thread = None
-        self.s = None
+        self.scanner = None
 
         self.ui.wiz_page_create_primitive.nextId = self.prim_creation
         self.prim = 2
@@ -327,7 +327,7 @@ class ObjectWizard(QWizard):
 
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
             self.update_rbt_offset()
-            self.rbt.stepper_board.write_b(165)
+            # self.rbt.stepper_board.write_b(165)
             self.has_init = True
 
         if self.currentId() == 4:

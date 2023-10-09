@@ -53,7 +53,7 @@ class ObjectProfile():
     def initialize(self):
         pass
 
-    def update(self):
+    def update(self, time_elapsed):
         pass
 
 
