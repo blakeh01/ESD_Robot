@@ -77,10 +77,10 @@ def distance(point1, point2):
 def weighted_euclidean_distance(point1, point2, z_weight=1.0):
     x1, y1, z1 = point1.pos
     x2, y2, z2 = point2.pos
-    distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2) ** 0.5
-    z_difference = abs(z1 - z2)
-    weighted_distance = distance + z_weight * z_difference
-    return weighted_distance
+    distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2 + ((z1 - z2) * z_weight) ** 2) ** 0.5
+   # z_difference = abs(z1 - z2)
+    #weighted_distance = distance + z_weight * z_difference
+    return distance
 
 def find_alignment_point_path(point, alignment_points):
     remaining_points = alignment_points.copy()

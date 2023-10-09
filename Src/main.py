@@ -146,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowcontainer = self.createWindowContainer(self.window, self.widget_pybullet)
         self.windowcontainer.setMinimumSize(1220, 900)
 
-    def plot_slice(self, slice, path, active_idx=0):
+    def plot_slice(self, slice, path):
         self.widget_slice_disp.clear()
         time.sleep(0.1)
 

@@ -464,6 +464,11 @@ class RectangularPrisms(ObjectProfile):
                     self.side_index += 1
                     self.cur_point_index = 0
                     self.cur_slice = None
+
+                    new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+                    new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
+                    self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point,
+                                                                     [0, 0, 0])  # todo get joint orn?
                     return
 
                 if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
