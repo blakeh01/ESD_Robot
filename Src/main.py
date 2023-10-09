@@ -230,8 +230,6 @@ class ObjectWizard(QWizard):
 
     def __init__(self, show_com=False, parent=None):
         super().__init__(parent)
-        self.obj_joint_offset = None
-        self.obj_const = None
         self.ui = Ui_ObjectWizard()
         self.ui.setupUi(self)
 
@@ -256,6 +254,9 @@ class ObjectWizard(QWizard):
 
         self.SIM_ROBOT_OFFSET = np.dot(2, [0, 0, 0])
         self.SIM_PLATFORM_OFFSET = np.dot(2, [0, 0, 0])
+        self.obj_joint_offset = None
+        self.obj_const = None
+        self.obj_rot = [0, 0, 0]
 
         self.ui.sbox_rbt_offset_x.valueChanged.connect(self.update_rbt_offset)
         self.ui.sbox_rbt_offset_y.valueChanged.connect(self.update_rbt_offset)
@@ -348,7 +349,11 @@ class ObjectWizard(QWizard):
     def update_obj_offset(self):
         self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value() / 1000, self.ui.sbox_offset_y.value() / 1000,
                                            .16 + self.ui.sbox_offset_z.value() / 1000])
+        self.obj_rot = [np.deg2rad(self.ui.sbox_offset_rx.value()), np.deg2rad(self.ui.sbox_offset_ry.value()),
+                        np.deg2rad(self.ui.sbox_offset_rz.value())]
+
         p.removeConstraint(self.obj_const)
+        p.resetBasePositionAndOrientation(self.obj, self.obj_joint_offset, p.getQuaternionFromEuler(self.obj_rot))
         self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
                                             childBodyUniqueId=self.obj,
                                             childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
@@ -470,11 +475,17 @@ class ObjectWizard(QWizard):
         # overwrite offsets
         (x, y, z) = self.obj_joint_offset
         URDF_OFFSET_LINE_NUM = 77
+        URDF_ROT_LINE_NUM = 82
+
+        (rx, ry, rz) = self.obj_rot
 
         with open(URDF_PLAT, 'r') as file:
             content = file.readlines()
             str_write = f'    <origin xyz="{x / 2} {y / 2} {z / 2}"/>\n'
             content[URDF_OFFSET_LINE_NUM - 1] = str_write  # replace contents with modified offset.
+
+            str_write = f'      <origin rpy="{rx} {ry} {rz + np.pi/2}" xyz="0 0 0"/>'
+            content[URDF_ROT_LINE_NUM - 1] = str_write
 
         with open(URDF_PLAT, 'w') as file:
             file.writelines(content)
