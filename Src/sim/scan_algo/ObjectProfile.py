@@ -72,7 +72,7 @@ class RotationallySymmetric(ObjectProfile):
         self.cur_path = None
         self.cur_point_index = 0
 
-        self.next_groud_time = 0
+        self.next_ground_time = 0
 
         self.action_wait_start = 0
         self.action_wait_end = 0
@@ -197,13 +197,22 @@ class RotationallySymmetric(ObjectProfile):
                 cur_flow.start_time = time_elasped
                 self.z_sil_index = 0
                 self.probe_percentage = 0
-                print("PROBING! Sending robot home...")
+                print("START PROBE!")
             else:
 
                 if self.z_sil_index >= len(self.z_slices):
                     print("Probing Completed!")
                     cur_flow.end_time = time_elasped
                     self.cur_flow_idx += 1
+
+                    for i in range(100):
+                        self.sim.drive_motors_to_home()
+                        p.stepSimulation()
+                        time.sleep(1 / 120)
+
+                    self.sim.robot_handler.set_goal_conf(
+                        pp.get_joint_positions(self.sim.sim_robot, [1, 2, 3, 4, 5]))
+
                     return
 
                 if not self.cur_slice:
@@ -230,14 +239,16 @@ class RotationallySymmetric(ObjectProfile):
                         self.sim.parent.lbl_slice_index.setText(str(self.z_sil_index))
                         self.sim.parent.lbl_point_index.setText(str(self.cur_point_index))
 
-                        if self.next_groud_time == 0:
-                            self.next_groud_time = self.grounding_interval + time_elasped
-                            print("Setting next ground time to: ", self.next_groud_time)
+                        if self.next_ground_time == 0:
+                            self.next_ground_time = self.grounding_interval + time_elasped
+                            print("Setting next ground time to: ", self.next_ground_time)
 
                         print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
                               self.cur_point_index)
+
                         # get point from current index
                         pt = self.cur_path[self.cur_point_index]
+
                         # find angle between point and lineup vector
                         angle = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
                                               np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
@@ -252,8 +263,6 @@ class RotationallySymmetric(ObjectProfile):
                             dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
                             temp.append(AlignmentPoint(pos, dir))
 
-                        #orn = [0, math.atan2(self.cur_path[self.cur_point_index].direction[2], self.cur_path[self.cur_point_index].direction[1]) - np.pi, 0]
-                        #print(orn)
                         self.cur_path = temp
                         self.sim.pos_probe_command = ProbePositionSetter(self.sim,
                                                                          self.cur_path[self.cur_point_index].pos,
@@ -262,34 +271,32 @@ class RotationallySymmetric(ObjectProfile):
                         self.measure_flag = True
 
                     if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
-                        # i think i will quit coding for a long time after this. I am sick just looking at the
-                        # repetitive code that ive written but have no choice as im enslaved and cannot think :]
                         if self.measuring_time > 0:
                             if self.action_wait_end == 0:
                                 self.action_wait_end = time_elasped + self.measuring_time
                             elif time_elasped >= self.action_wait_end:
                                 print("[FIX] BEEP PROBE VOLTAGE!")
-                                self.cur_path[self.cur_point_index].measurement = 10
+                                self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
                                 self.cur_point_index += 1
                                 self.measure_flag = False
                                 self.action_wait_end = 0
                         else:
                             print("[FIX] BEEP PROBE VOLTAGE!")
-                            self.cur_path[self.cur_point_index].measurement = 10
+                            self.cur_path[self.cur_point_index].measurement = self.sim.parent.probe_voltage
                             self.cur_point_index += 1
                             self.measure_flag = False
 
-        if self.next_groud_time <= time_elasped and self.next_groud_time != 0:
+        if self.next_ground_time <= time_elasped and self.next_ground_time != 0:
             print("Time to ground! Raising flag!")
             self.ground_flag = True
-            self.next_groud_time = 0
+            self.next_ground_time = 0
 
         if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_wait_end == 0:
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
             new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
             self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0]) # todo get joint orn?
-            self.action_wait_end = time_elasped + 5  # wait 5 seconds to let system ground
+            self.action_wait_end = time_elasped + 4  # wait 4 seconds to let system ground
             self.sim.robot_handler.feather0.write_data(b'1') # tell servo to ground!
 
         if self.action_wait_end != 0 and time_elasped >= self.action_wait_end and self.ground_flag:
@@ -528,21 +535,19 @@ class Discharge():
 
     def discharge(self):
         if not self.stepper_board:
-            print("error did not set stepepr board.")
+            print("error did not set stepper board.")
 
         self.stepper_board.home_scan()
 
         self.stepper_board.write_z((self.obj_z / 2) - 25, self.z_feed)
         self.stepper_board.write_x(102, self.x_feed)
-        time.sleep(15)
+        time.sleep(8)
 
         y = self.LDS.read_distance() + 10000
         y = int(y / 100)
 
         # write to z to half object height (-25 to account for CVR)
         # write to x to center (102)
-
-        print("writing: ", y)
 
         self.stepper_board.write_y(y - 30, self.y_feed)
         self.stepper_board.read_data()

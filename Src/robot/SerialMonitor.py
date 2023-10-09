@@ -73,19 +73,19 @@ class StepperHandler(SerialMonitor):
 
     def write_x(self, pos, feed=1500):
         code = bytes(str(f"G1 X{round(pos)} F{round(feed)}"), "ASCII")
-        self.serial_conn.flushInput()
+        #self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
     def write_y(self, pos, feed=1500):
         code = bytes(str(f"G1 Y{round(pos)} F{round(feed)}"), "ASCII")
-        self.serial_conn.flushInput()
+        #self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
     def write_z(self, pos, feed=500):
         code = bytes(str(f"G1 Z{round(pos)} F{round(feed)}"), "ASCII")
-        self.serial_conn.flushInput()
+        #self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
@@ -101,7 +101,8 @@ class StepperHandler(SerialMonitor):
     def write_b(self, pos, feed=2500):
         if pos < 0:
             return
-        if self.rail_pos != pos:
+        # TODO: temp fix for jitter?
+        if self.rail_pos != pos and (abs(self.rail_pos - pos) > 2):
             code = bytes(str(f"G1 B{round(pos)} F{round(feed)}"), "ASCII")
             self.serial_conn.flushInput()
             self.serial_conn.write(code + b'\r\n')

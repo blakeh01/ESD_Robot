@@ -186,19 +186,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def rbt_stop(self):
         self.controller.simulation_instance.robot_handler.terminate_robot()
 
-    def new_object_reset(self):
-        return # todo impl
-        self.sim_stop()
-        self.controller.shutdown()
-
-        self.destroy()
-
     def edit_constants(self):
         pass
 
     def stop_program(self):
         print("[MAIN] Stopping Program!")
-        # self.window.setParent(None)
         self.sim_stop()
         time.sleep(1.5)
         self.update_thread.stop()
@@ -372,7 +364,7 @@ class ObjectWizard(QWizard):
         self.ui.lbl_import_Z.setVisible(self.ui.rbtn_import_scale.isChecked())
 
     def prompt_path(self):
-        file_path, _ = QFileDialog.getOpenFileName(None, "Select Object Mesh", "", "STL Files (*.stl);;OBJ Files (*.obj)")
+        file_path, _ = QFileDialog.getOpenFileName(None, "Select Object Mesh", "")
         self.ui.txt_path.setText(file_path)
         if not self.o3d_viz.load_mesh_from_path(file_path):
             QMessageBox.critical(None,
