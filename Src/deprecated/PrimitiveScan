@@ -8,45 +8,50 @@ class PrimitiveScan:
     
     def __init__(self, stepper_board):
         
-        self.LDS = LDS()
-        self.stepper_board = stepper_board
+        self.LDS = LDS() # Initializes the laser displacement sensor
+        self.stepper_board = stepper_board # Initializes the stepper board
     
         # def scanner_points(self):
-        self.xc = np.array([])
+        self.xc = np.array([]) # Defines arrays for x, y, z and the current axis
         self.yc = np.array([])
         self.zc = np.array([])
         self.ca = np.array([])
     
-        self.x_feed = 1500
-        self.x_start = 0
-        self.z_feed = 500
-        self.z_start = 10
-        self.a_feed = 500
-        self.a_start = 0
+        self.x_feed = 1500 # Feed rate for x axis motor
+        self.x_start = 0 # Start position for x
+        self.z_feed = 500 # Feed rate for z axis motor
+        self.z_start = 10 # Start position for x
+        self.a_feed = 500 # Feed rate for a axis motor (the center platform motor) 
+        self.a_start = 0 # Start position for x
     
-        self.step = 1
+        self.step = 1 # Initializes how far a step is (1mm)
     
-        self.degree = 45
-        self.rotations = 360 / self.degree
+        self.degree = 45 # Degrees we rotate
+        self.rotations = 360 / self.degree # Divies up to 8 angles/faces
     
         # MUST START AT SERVO HOME FOR THIS TO WORK
         if Primitive == RectPrism:
-            self.edge_1 = 101.5 - val/2  # Take data from inputted face and /2 to put you a little edge
+            self.edge_1 = 101.5 - val/2  # Take data from inputted edge value and /2 to put you where the edge should be at if centered
             self.edge_2 = 101.5 + val/2  # Same as above but other direction
-            self.edge_3 = 101.5 - val_2/2  # Ditto
+            self.edge_3 = 101.5 - val_2/2  # Now do the same but for the second face 
             self.edge_4 = 101.5 + val_2/2  # Ditto
-            self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
-            self.offset_2 = 0  # Read in value of LDS and subtract offset based off center for the second side
-            self.edge_actual_1 = 0
-            self.edge_actual_2 = 0
-            for h in range(0, 2):  # Just measure two sides
-                self.stepper_board.write_a(90 * 35.5, F=1800)
-                self.stepper_board.write_z(self.z_start, self.z_feed)
-                self.stepper_board.write_x(self.edge_1 - 5, self.x_feed)
+            self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first face
+            self.offset_2 = 0  # Read in value of LDS and subtract offset based off center for the second face
+            self.edge_actual_1 = 0 # initalize a value to read the exact value from the LDS into
+            self.edge_actual_2 = 0 # same but for the second face
+
+            for h in range(0, 2):  # Set to measure two faces
+                    if h = 0
+                        self.stepper_board.write_a(0, F=1800) # write the center axis to 0 just to make sure
+                    if h = 1
+                        self.stepper_board.write_a(90, F=1800) # This will rotate the platform 90 deg for the second face
+
+                self.stepper_board.write_z(self.z_start, self.z_feed) # Aligns the z axis to 0
+                self.stepper_board.write_x(self.edge_1 - 5, self.x_feed) # Aligns the x axis past the edge of the object so that the sweep correctly determines the edge
     
-                for i in range(self.edge_1 - 5, self.edge_2 + 5):
+                for i in range(self.edge_1 - 5, self.edge_2 + 5): # The range goes from 5mm before the objects centered edge to 5mm after the seond centered edge
                     x_pos = i
-                    self.yc = np.append(self.yc, self.LDS.read_distance()) 
+                    self.yc = np.append(self.yc, self.LDS.read_distance()) # Reads the y axis as the 
                     if self.yc < 7777 and self.edge_actual_1 == 0:
                         self.xc = np.append(self.xc, x_pos)
                         self.edge_actual_1 = self.xc
