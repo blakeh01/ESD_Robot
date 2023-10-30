@@ -10,16 +10,16 @@ import open3d as o3d
 
 
 def ScannedObjectCreation():
-    #Rotation Angle
-    degree = 45
+    # Rotation Angle
+    degree = 45 
     
     # Testing points (Comment these out or delete)
-    xc = np.array([0, 5, 10, 0, 5, 10, 0, 5, 10, 10])
-    yc = np.array([0, 5, 10, 10, 10, 30, 30, 30, 40, 40])
-    zc = np.array([0, 25, 25, 25, 25, 25, 25, 25, 25, 25])
-    ca = np.array([0, 1, 2, 3, 4, 5, 6, 7, 7, 0])
+    # xc = np.array([0, 5, 10, 0, 5, 10, 0, 5, 10, 10])
+    # yc = np.array([0, 5, 10, 10, 10, 30, 30, 30, 40, 40])
+    # zc = np.array([0, 25, 25, 25, 25, 25, 25, 25, 25, 25])
+    # ca = np.array([0, 1, 2, 3, 4, 5, 6, 7, 7, 0])
     
-    # Initialize the arrays
+    # Initialize the arrays for each x, y and z value
     xr1 = np.array([]); yr1 = np.array([]); zr1 = np.array([])
     xr2 = np.array([]); yr2 = np.array([]); zr2 = np.array([])
     xr3 = np.array([]); yr3 = np.array([]); zr3 = np.array([])
@@ -31,10 +31,10 @@ def ScannedObjectCreation():
     
     # Categorize the different scanned points into their correct scanned angle
     for a in range(0, (np.size(ca))):
-        if ca[a] == 0:
-            xr1 = np.append(xr1, xc[a]); yr1 = np.append(yr1, yc[a]); zr1 = np.append(zr1, zc[a])
+        if ca[a] == 0: # We are seperating the coordinates into 8 angles/faces for recreating the object
+            xr1 = np.append(xr1, xc[a]); yr1 = np.append(yr1, yc[a]); zr1 = np.append(zr1, zc[a]) # Adds the x y and z coordinates to their respective categories
         elif ca[a] == 1:
-            xr2 = np.append(xr2, xc[a]); yr2 = np.append(yr2, yc[a]); zr2 = np.append(zr2, zc[a])
+            xr2 = np.append(xr2, xc[a]); yr2 = np.append(yr2, yc[a]); zr2 = np.append(zr2, zc[a]) # repeat but for each angle/face until done
         elif ca[a] == 2:
             xr3 = np.append(xr3, xc[a]); yr3 = np.append(yr3, yc[a]); zr3 = np.append(zr3, zc[a])
         elif ca[a] == 3:
@@ -46,12 +46,12 @@ def ScannedObjectCreation():
         elif ca[a] == 6:
             xr7 = np.append(xr7, xc[a]); yr7 = np.append(yr7, yc[a]); zr7 = np.append(zr7, zc[a])
         else:
-            xr8 = np.append(xr8, xc[a]); yr8 = np.append(yr8, yc[a]); zr8 = np.append(zr8, zc[a])
+            xr8 = np.append(xr8, xc[a]); yr8 = np.append(yr8, yc[a]); zr8 = np.append(zr8, zc[a]) # Last organization
     
     # Generate some n x 3 matrix by organizing the x, y, and z coordinates
-    xyz1 = np.zeros((np.size(xr1), 3))
+    xyz1 = np.zeros((np.size(xr1), 3)) # Here we combine the angle/face x, y, and z values into their categorized into a single matrix
     xyz1[:, 0] = np.reshape(xr1, -1); xyz1[:, 1] = np.reshape(yr1, -1); xyz1[:, 2] = np.reshape(zr1, -1)
-    xyz2 = np.zeros((np.size(xr2), 3))
+    xyz2 = np.zeros((np.size(xr2), 3)) # Same thing but for the next face until done
     xyz2[:, 0] = np.reshape(xr2, -1); xyz2[:, 1] = np.reshape(yr2, -1); xyz2[:, 2] = np.reshape(zr2, -1)
     xyz3 = np.zeros((np.size(xr3), 3))
     xyz3[:, 0] = np.reshape(xr3, -1); xyz3[:, 1] = np.reshape(yr3, -1); xyz3[:, 2] = np.reshape(zr3, -1)
@@ -64,36 +64,37 @@ def ScannedObjectCreation():
     xyz7 = np.zeros((np.size(xr7), 3))
     xyz7[:, 0] = np.reshape(xr7, -1); xyz7[:, 1] = np.reshape(yr7, -1); xyz7[:, 2] = np.reshape(zr7, -1)
     xyz8 = np.zeros((np.size(xr8), 3))
-    xyz8[:, 0] = np.reshape(xr8, -1); xyz8[:, 1] = np.reshape(yr8, -1); xyz8[:, 2] = np.reshape(zr8, -1)
+    xyz8[:, 0] = np.reshape(xr8, -1); xyz8[:, 1] = np.reshape(yr8, -1); xyz8[:, 2] = np.reshape(zr8, -1) # Last combined array
     
     # Create the pcd for each scanned angle
-    pcd = o3d.geometry.PointCloud(); pcd.points = o3d.utility.Vector3dVector(xyz1)
-    pcd2 = o3d.geometry.PointCloud(); pcd2.points = o3d.utility.Vector3dVector(xyz2)
+    pcd = o3d.geometry.PointCloud(); pcd.points = o3d.utility.Vector3dVector(xyz1) # This initalizes and converts the previous xyz values into a point cloud (Open3D Software)
+    pcd2 = o3d.geometry.PointCloud(); pcd2.points = o3d.utility.Vector3dVector(xyz2) # Repeats the process for each angle/face until done
     pcd3 = o3d.geometry.PointCloud(); pcd3.points = o3d.utility.Vector3dVector(xyz3)
     pcd4 = o3d.geometry.PointCloud(); pcd4.points = o3d.utility.Vector3dVector(xyz4)
     pcd5 = o3d.geometry.PointCloud(); pcd5.points = o3d.utility.Vector3dVector(xyz5)
     pcd6 = o3d.geometry.PointCloud(); pcd6.points = o3d.utility.Vector3dVector(xyz6)
     pcd7 = o3d.geometry.PointCloud(); pcd7.points = o3d.utility.Vector3dVector(xyz7)
-    pcd8 = o3d.geometry.PointCloud(); pcd8.points = o3d.utility.Vector3dVector(xyz8)
+    pcd8 = o3d.geometry.PointCloud(); pcd8.points = o3d.utility.Vector3dVector(xyz8) # Last converted pcd
     
     # Calculate the necessary rotation for each angle of scan
-    pcd.rotate(pcd.get_rotation_matrix_from_xyz((0, 0, 0)), center=(0, 0, 0))  
+    pcd.rotate(pcd.get_rotation_matrix_from_xyz((0, 0, 0)), center=(0, 0, 0))  # This takes each angle/face and rotates by pi/4 so we can set up to recreate the object
     pcd2.rotate(pcd2.get_rotation_matrix_from_xyz((0, np.pi / 4, 0)), center=(0, 0, 0))  
     pcd3.rotate(pcd3.get_rotation_matrix_from_xyz((0, np.pi / 2, 0)), center=(0, 0, 0))  
     pcd4.rotate(pcd4.get_rotation_matrix_from_xyz((0, 3 * np.pi / 4, 0)), center=(0, 0, 0)) 
     pcd5.rotate(pcd5.get_rotation_matrix_from_xyz((0, np.pi, 0)), center=(0, 0, 0))  
     pcd6.rotate(pcd6.get_rotation_matrix_from_xyz((0, 5 * np.pi / 4, 0)), center=(0, 0, 0))  
     pcd7.rotate(pcd7.get_rotation_matrix_from_xyz((0, 3 * np.pi / 2, 0)), center=(0, 0, 0))  
-    pcd8.rotate(pcd8.get_rotation_matrix_from_xyz((0, 7 * np.pi / 4, 0)), center=(0, 0, 0))  
+    pcd8.rotate(pcd8.get_rotation_matrix_from_xyz((0, 7 * np.pi / 4, 0)), center=(0, 0, 0))  # Last rotated angle/face
     
-    # Initialized a pcd for integrating all of the pcds into one
-    pcd_combined = o3d.geometry.PointCloud()
-    
+    # Initialized a pcd for combining all of the pcds into one
+    pcd_combined = o3d.geometry.PointCloud() 
+
+# This goes through by angle/face and combines each pcd's values together to form a singular pcd
     for i in range(9):
         if i == 0:
-            pcd_combined += pcd
+            pcd_combined += pcd # Add the first angle/face to the master pcd
         elif i == 1:
-            pcd_combined += pcd2
+            pcd_combined += pcd2 # Same until done
         elif i == 2:
             pcd_combined += pcd3
         elif i == 3:
@@ -105,14 +106,14 @@ def ScannedObjectCreation():
         elif i == 6:
             pcd_combined += pcd7
         else:
-            pcd_combined += pcd8
+            pcd_combined += pcd8 # Last face added to the pcd
     
-    # This works around repeat point by creating a small radius voxel around each point and combining them into a singular point
+    # This works around repeated point by creating a small radius voxel around each point and combining them into a singular point
     pcd_final = pcd.voxel_down_sample(voxel_size=0.05) # Adjust Voxel size as needed
     
-    # Convert Open3D.o3d.geometry.PointCloud to numpy array.
-    o3d.visualization.draw([pcd_combined])
-    xyz_converted = np.asarray(pcd_combined.points)
+    # Convert Open3D.o3d.geometry.PointCloud to numpy array (T
+    # o3d.visualization.draw([pcd_combined]) # This just visualizes the array in a seperate can be commented in to see if it worked
+    # xyz_converted = np.asarray(pcd_combined.points) 
 
-return(pcd_final)
+return(pcd_final) # This is final recreated object.
 
