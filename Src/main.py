@@ -17,7 +17,7 @@ import win32gui
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog, QErrorMessage, QWidget, QVBoxLayout
+    QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog
 )
 from Src.Controller import Controller
 from Src.gui.dialogs.dialog_com_port import DialogComPorts
@@ -26,13 +26,11 @@ from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from Src.gui.main_window import Ui_MainWindow
 from Src.gui.object_wizard import Ui_ObjectWizard
-from Src.robot.SerialMonitor import StepperHandler
 from Src.robot.arm.RobotHandler import RobotHandler
 from Src.robot.ports import PortConfiguration
-from Src.robot.scanner.Scanner import Scanner, PrimitiveScan
+from Src.robot.scanner.Scanner import Scanner
 from Src.sim.ObjectVisualizer import ObjectVisualizer
-
-import configparser
+from Src.sim.scan_algo import ObjectProfile
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
 
@@ -42,6 +40,7 @@ URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
 URDF_OBJ = os.path.join(DATA_DIR, "urdf", "object.urdf")
 
 port_config = PortConfiguration()
+
 
 class UpdateThread(QThread):
     update_frame = pyqtSignal()
@@ -90,7 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)  # robot 'info' button
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
-        self.btn_start_probing.clicked.connect(self.begin_probe_flow)
+        self.btn_start_probing.clicked.connect(self.start_probe_flow)
         self.btn_charge_done.clicked.connect(self.advance_flow)
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
         self.btn.clicked.connect(self.rbt_stop)  # fix name lol
@@ -146,7 +145,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.windowcontainer = self.createWindowContainer(self.window, self.widget_pybullet)
         self.windowcontainer.setMinimumSize(1220, 900)
 
-    def plot_slice(self, slice, path):
+    def plot_slice(self, path):
         self.widget_slice_disp.clear()
         time.sleep(0.1)
 
@@ -167,13 +166,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             text.setPos(x, y)
             self.widget_slice_disp.addItem(text)
 
-    def advance_flow(self):
+    def charge_confirm(self):
+        if not isinstance(self.controller.simulation_instance.cur_probe_flow, ObjectProfile.Charge):
+            print("Charge was set completed without there being a charge command! Ignoring...")
+            return
         self.controller.simulation_instance.cur_probe_flow.charge_done_flag = True
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
 
+    def start_probe_flow(self):
+        self.controller.simulation_instance.can_execute_flow = True
+        print("[MAIN] Beginning probe flow!")
+
     def sim_stop(self):
-        # this function could do many things, but I've decided to make it stop probe flow and return the robot home.
         self.controller.simulation_instance.cur_probe_flow = None
         for i in range(100):
             self.controller.simulation_instance.drive_motors_to_home()
@@ -196,9 +201,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_thread.stop()
         self.controller.shutdown()
         exit()
-
-    def begin_probe_flow(self):
-        self.controller.simulation_instance.can_execute_flow = True
 
     def dialog_probe_setup(self):
         _dlg = DialogProbeProfile(self)
