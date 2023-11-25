@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDialog, QInputDialog
+from PyQt5.QtWidgets import QDialog, QInputDialog, QMessageBox
 
 from Src.sim.scan_algo.ObjectProfile import *
 from Src.sim.scan_algo.ObjectProfile import Discharge, Charge, Wait, Probe
@@ -150,6 +150,11 @@ class DialogProbeProfile(QDialog):
 
         self.ui.btn_done.clicked.connect(self.parse_flow)
 
+        self.flow_list = []
+
+    def add_item(self, item_text):
+        self.ui.list_probe_flow.addItem(item_text)
+
     def remove_arg(self):
         items = self.ui.list_probe_flow.selectedIndexes()
 
@@ -161,63 +166,29 @@ class DialogProbeProfile(QDialog):
 
         if ok:
             try:
-                self.ui.list_probe_flow.addItem("Wait: " + str(abs(int(value))) + " s")
-            except:
-                return  # todo error handling?
+                wait_time = abs(int(value))
+                self.add_item(f"Wait: {wait_time} s")
+            except ValueError:
+                self.handle_input_error()
 
     def add_discharge(self):
-        value, ok = QInputDialog.getText(self, "Enter Object Height", 'Object Height (mm)')
+        value, ok = QInputDialog.getText(self, 'Enter CVR Probe Length', 'Length (mm):')
 
         if ok:
             try:
-                self.ui.list_probe_flow.addItem("Discharge: " + str(abs(int(value))) + " mm")
-            except:
-                return
+                cvr_len = abs(int(value))
+                self.add_item(f"Discharge")
+            except ValueError:
+                self.handle_input_error()
 
     def parse_flow(self):
-        if self.ui.list_probe_flow.count() <= 0:
-            return
+        return
 
-        try:
-            if int(self.ui.txt_max_speed.text()) <= 0 or int(self.ui.txt_measuring_time.text()) < 0 \
-                    or int(self.ui.txt_rotator_feedrate.text()) <= 0 or int(self.ui.txt_grounding_interval.text()) <= 0:
-                return
-        except:
-            return  # error handling for all this. PLEASE
+    def handle_input_error(self):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Warning)
+        error_box.setWindowTitle("Input Error")
+        error_box.setText("Invalid input. Please enter a valid value.")
+        error_box.exec_()
 
-        flow_arr = []
 
-        for i in range(self.ui.list_probe_flow.count()):
-            item = self.ui.list_probe_flow.item(i).text()
-
-            data = item.split(':')
-
-            # yikes... works but yikess...
-            if len(data) > 1:
-                d = data[1].split(' ')
-
-                if d[2] == 'mm':
-                    flow_arr.append(Discharge(self.controller_instance.simulation_instance.port_config, int(d[1])))
-                else:
-                    flow_arr.append(Wait(int(d[1])))
-            else:
-                if (len(item) == 9): flow_arr.append(Discharge())
-                if (len(item) == 6): flow_arr.append(Charge())
-                if (len(item) == 5): flow_arr.append(Probe())
-
-        match self.ui.cmb_object_profile.currentIndex():
-            case 0:  # rot symm
-                self.controller_instance.simulation_instance.cur_probe_flow = RotationallySymmetric(
-                    self.controller_instance.simulation_instance, flow_arr,
-                    [self.ui.txt_max_speed.text(), self.ui.txt_rotator_feedrate.text(),
-                     self.ui.txt_grounding_interval.text(), self.ui.txt_measuring_time.text()]
-                )
-
-            case 1:  # rect
-                self.controller_instance.simulation_instance.cur_probe_flow = RectangularPrisms(
-                    self.controller_instance.simulation_instance, flow_arr,
-                    [self.ui.txt_max_speed.text(), self.ui.txt_rotator_feedrate.text(),
-                     self.ui.txt_grounding_interval.text(), self.ui.txt_measuring_time.text()]
-                )
-
-        self.close()

@@ -36,8 +36,8 @@ class Controller:
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
-        self.nidaq_vTask = nidaqmx.Task()
-        self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+      #  todo self.nidaq_vTask = nidaqmx.Task()
+      #  self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
         self.probe_voltage = 0
 
         # Program mode
@@ -65,7 +65,7 @@ class Controller:
             self.obj_distance = 0.2
 
         # Retrieve probe voltage
-        self.probe_voltage = self.nidaq_vTask.read()
+        # todo self.probe_voltage = self.nidaq_vTask.read()
 
         # Time management ('Tok')
         time.sleep(self.update_rate)
@@ -81,16 +81,3 @@ class Controller:
         if p.isConnected(): p.disconnect()
         print("Shutdown!")
         self.canRun = False
-
-    # def restart_sim(self):
-    #     self.canRun = False
-    #     self.main_instance.window.setParent(None)
-    #     p.disconnect()
-    #
-    #     time.sleep(1)
-    #     del self.simulation_instance
-    #     time.sleep(1)
-    #
-    #     self.simulation_instance = Simulation()
-    #     self.main_instance.embed_pysim()
-    #     self.canRun = True

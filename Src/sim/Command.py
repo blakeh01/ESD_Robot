@@ -3,7 +3,7 @@ import pybullet as p
 import pybullet_planning as pp
 
 
-class ProbePositionSetter():
+class ProbePositionSetter:
 
     def __init__(self, sim, goal_pos, goal_orn, probe_v=2, a_tol=0.01, timeout=0):
         self.sim = sim
@@ -29,9 +29,7 @@ class ProbePositionSetter():
                                                                               0])) <= self.a_tol  # and np.linalg.norm(np.array(joint_poses[1:]) - np.array(self.sim.robot_handler.read_cur_conf())) <= 0.1
 
     def enableMotor(self, joint_pos, joints):
-        # awful code but no better solution atm
-
-        self.sim.robot_handler.set_goal_conf(joint_pos)
+        # self.sim.robot_handler.set_goal_conf(joint_pos)
 
         # RAIL
         p.setJointMotorControl2(self.sim.sim_robot, joints[0],
@@ -84,10 +82,9 @@ class PlatformPositionSetter():
             return
 
         if (abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.00005):
-            print("Done!")
             self.complete = True
 
-        self.sim.robot_handler.stepper_board.write_a(np.rad2deg(self.goal_rot), feed=1600)
+        #self.sim.robot_handler.stepper_board.write_a(np.rad2deg(self.goal_rot), feed=1600)
         p.setJointMotorControl2(self.sim.sim_platform, 1,
                                 controlMode=p.POSITION_CONTROL,
                                 targetPosition=self.goal_rot,

@@ -90,11 +90,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
         self.btn_start_probing.clicked.connect(self.start_probe_flow)
-        self.btn_charge_done.clicked.connect(self.advance_flow)
+        # self.btn_charge_done.clicked.connect(self.advance_flow)
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
         self.btn.clicked.connect(self.rbt_stop)  # fix name lol
 
-#        self.actionImport_New_Object.triggered.connect(self.new_object_reset)
+        #        self.actionImport_New_Object.triggered.connect(self.new_object_reset)
 
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
@@ -296,11 +296,6 @@ class ObjectWizard(QWizard):
         self.rbt = RobotHandler(port_config, dummy=True)
         self.rbt.stepper_board.home_all()
 
-        if show_com:
-            _dlg = DialogComPorts(self)
-            _dlg.exec()
-
-
     def update(self):
         if self.scan_thread and self.scanner:
             self.ui.lbl_current_points.setText(f"{self.scanner.point_index}/{self.scanner.total_points}")
@@ -355,7 +350,8 @@ class ObjectWizard(QWizard):
                         np.deg2rad(self.ui.sbox_offset_rz.value())]
 
         p.removeConstraint(self.obj_const)
-        if self.obj_rot != [0, 0, 0]: p.resetBasePositionAndOrientation(self.obj, self.obj_joint_offset, p.getQuaternionFromEuler(self.obj_rot))
+        if self.obj_rot != [0, 0, 0]: p.resetBasePositionAndOrientation(self.obj, self.obj_joint_offset,
+                                                                        p.getQuaternionFromEuler(self.obj_rot))
         self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
                                             childBodyUniqueId=self.obj,
                                             childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
@@ -384,8 +380,9 @@ class ObjectWizard(QWizard):
             self.scan_thread.join()
             del self.scan_thread
 
-        self.scanner = Scanner(self.rbt.stepper_board, port_config, float(self.ui.sbox_scan_x.value()), float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
-                    self.ui.prg_scan)
+        self.scanner = Scanner(self.rbt.stepper_board, port_config, float(self.ui.sbox_scan_x.value()),
+                               float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
+                               self.ui.prg_scan)
 
         self.scan_thread = threading.Thread(target=self.scanner.begin_scan)
         self.ui.prg_scan.setValue(0)
@@ -435,10 +432,6 @@ class ObjectWizard(QWizard):
         self.o3d_viz.display_primitive(self.prim, 8192, float(self.ui.sbox_prim_field_A.text()),
                                        float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
         self.o3d_viz.disp_cur_mesh()
-
-        # self.prim_scanner = PrimitiveScan(self.rbt.stepper_board, port_config)
-        # self.prim_scanner.run_prim_scan(2, float(self.ui.sbox_prim_field_A.text()),
-        #                                float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
 
         return 4
 
@@ -496,7 +489,7 @@ class ObjectWizard(QWizard):
         self.destroy()
 
 
-skip_wiz = False
+skip_wiz = True
 param = []
 
 if __name__ == '__main__':
@@ -522,6 +515,6 @@ if __name__ == '__main__':
     # After the first window is closed, this part will run
 
     app1 = QApplication(sys.argv)
-    second_window = MainWindow(param)
+    second_window = MainWindow([(-0.8, 0, 0), (0, 0, 0)])
     second_window.show()
     sys.exit(app1.exec_())

@@ -25,7 +25,7 @@ class Simulation:
 
     def __init__(self, parent, port_config, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
         self.parent = parent
-        self.robot_handler = RobotHandler(port_config)
+        # self.robot_handler = RobotHandler(port_config)
         self.port_config = port_config
 
         self.robot_offset = robot_offset
@@ -98,8 +98,8 @@ class Simulation:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
         # SET HOME POSITION TO DEFAULT CONF.
-        self.home_conf = self.robot_handler.read_cur_conf()[1]
-        self.home_conf = np.add(self.home_conf, [0, 0, 0.3, 0, 0])
+        # self.home_conf = self.robot_handler.read_cur_conf()[1]
+        # self.home_conf = np.add(self.home_conf, [0, 0, 0.3, 0, 0])
 
         self.drive_motors_to_home()
         for i in range(100):
@@ -114,7 +114,7 @@ class Simulation:
         if not self.can_run:
             return
 
-        self.robot_handler.update()
+        # todo: self.robot_handler.update()
 
         if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
         self.pos_probe_command.onUpdate()
@@ -147,6 +147,7 @@ class Simulation:
         if p.isConnected(): p.stepSimulation()
 
     def drive_motors_to_home(self):
+        return # todo
         # RAIL
         p.setJointMotorControl2(self.sim_robot, 1,
                                 controlMode=p.POSITION_CONTROL,
