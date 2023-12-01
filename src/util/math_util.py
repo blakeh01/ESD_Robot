@@ -74,13 +74,15 @@ def euclidean_distance(point1, point2):
 def distance(point1, point2):
     return np.linalg.norm(np.array(point1)[:2] - np.array(point2)[:2])
 
+
 def weighted_euclidean_distance(point1, point2, z_weight=1.0):
     x1, y1, z1 = point1
     x2, y2, z2 = point2
     distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2 + ((z1 - z2) * z_weight) ** 2) ** 0.5
-   # z_difference = abs(z1 - z2)
-    #weighted_distance = distance + z_weight * z_difference
+    # z_difference = abs(z1 - z2)
+    # weighted_distance = distance + z_weight * z_difference
     return distance
+
 
 def find_alignment_point_path(point, alignment_points):
     remaining_points = alignment_points.copy()
@@ -135,3 +137,7 @@ def find_closest_point(slice_points, target_point):
             closest_point = point
 
     return closest_point
+
+
+def calculate_cosine_similarity(vec1, vec2):
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
