@@ -164,7 +164,8 @@ class ObjectProfileUpdated:
                 # offset probe by a static amount for backing off to allow room for ground probe
                 new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
                 new_point = np.add(new_point, [-.075, 0, 0])
-                self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0])  # todo: match current joint orn?
+                self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point,
+                                                                 [0, 0, 0])  # todo: match current joint orn?
 
                 self.action_timeout = time_elapsed + 4  # start a 4-second timeout to finish ground action
                 self.sim.robot_handler.feather0.write_data(b'1')  # writing serial 1 to feather is ground command
