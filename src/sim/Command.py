@@ -68,6 +68,7 @@ class ProbePositionSetter:
                                 maxVelocity=self.probe_v)
 
 
+
 class PlatformPositionSetter():
 
     def __init__(self, sim, inc_rot, plat_v=0.5, timeout=0):

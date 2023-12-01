@@ -9,16 +9,13 @@ class Controller:
     """
         Initializes the overseer class.
 
-        Contains 3 instances:
+        Contains 2 main instances:
             * Robot instance (self.robot_instance)
-                - In charge of the low-level control to the robot assembly (arm, stepper motor)
+                - In charge of the low-level control to the robot assembly
             * Simulation instance (self.simulation_instance)
                 - Contains code to properly run simulation and simulation position references.
-            * GUI instance (self.gui)
-                - Allows for user interaction and viewing of data.
-                - Will most likely need to execute on separate thread
 
-        This class also is in control of time, using it's time to pass to all 3 of the instances.
+        This class also is in control of time, using it's time to pass to both of the instances.
         This ensures that each instance has a reference to each other's time.
 
         Upon initialization, the simulation joint states are set to the REAL robot joint states.
