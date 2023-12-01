@@ -1,5 +1,0 @@
-pyqt5 (pyuic if needing to create GUIs)
-pybullet
-pybullet-planning
-dynamixel-sdk
-open3d
