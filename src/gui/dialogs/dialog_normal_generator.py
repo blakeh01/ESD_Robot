@@ -10,8 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
-from Src.Controller import Controller
-from Src.sim.simhelper import get_normal_point_cloud
+from src.Controller import Controller
+from src.sim.simhelper import get_normal_point_cloud
 
 
 class Ui_NormalGenerator(object):

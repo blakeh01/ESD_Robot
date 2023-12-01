@@ -6,7 +6,7 @@ This file will read in the points from the pathing loop and figure out and delet
 
 import numpy as np
 import open3d as o3d
-#  from Src.loop import ScannerPoints (eventually call from another file) ***Needs to bewritten to Z Coords and offset added***
+#  from src.loop import ScannerPoints (eventually call from another file) ***Needs to bewritten to Z Coords and offset added***
 
 
 def ScannedObjectCreation():

@@ -19,20 +19,19 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog
 )
-from Src.Controller import Controller
-from Src.gui.dialogs.dialog_com_port import DialogComPorts
-from Src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
-from Src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
-from Src.gui.dialogs.dialog_robot_info import DialogRobotInfo
-from Src.gui.main_window import Ui_MainWindow
-from Src.gui.object_wizard import Ui_ObjectWizard
-from Src.robot.arm.RobotHandler import RobotHandler
-from Src.robot.ports import PortConfiguration
-from Src.robot.scanner.Scanner import Scanner
-from Src.sim.ObjectVisualizer import ObjectVisualizer
-from Src.sim.scan_algo import ObjectProfile
+from src.Controller import Controller
+from src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
+from src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
+from src.gui.dialogs.dialog_robot_info import DialogRobotInfo
+from src.gui.main_window import Ui_MainWindow
+from src.gui.object_wizard import Ui_ObjectWizard
+from src.robot.arm.RobotHandler import RobotHandler
+from src.robot.ports import PortConfiguration
+from src.robot.scanner.Scanner import Scanner
+from src.sim.ObjectVisualizer import ObjectVisualizer
+from src.sim.scan_algo import ObjectProfile
 
-DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
+DATA_DIR = os.path.join(os.path.abspath('../'), "data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT_NO_OBJ = os.path.join(DATA_DIR, "urdf", "actuated_platform_no_obj.urdf")

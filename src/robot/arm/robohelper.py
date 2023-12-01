@@ -13,7 +13,7 @@
 import os
 
 import numpy as np
-from Src.robot.arm.rbt_constants import *
+from src.robot.arm.rbt_constants import *
 from dynamixel_sdk import *
 
 

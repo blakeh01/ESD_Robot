@@ -13,7 +13,7 @@ import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
 
-DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
+DATA_DIR = os.path.join(os.path.abspath('../'), "data", "sim")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform_no_obj.urdf")
 
 

@@ -1,7 +1,7 @@
 import pybullet as p
 import pybullet_planning as pp
-from Src.sim.sim_constants import *
-from Src.util.math_util import *
+from src.sim.sim_constants import *
+from src.util.math_util import *
 
 
 def get_normal_point_cloud(pts_per_slice, z_limits, z_density, probe_dist, obj_center, draw_ray_start=False, draw_cloud=True):

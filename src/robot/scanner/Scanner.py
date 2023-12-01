@@ -1,8 +1,8 @@
 import time
 
 import numpy as np
-from Src.robot.SerialMonitor import LDS
-from Src.robot.SerialMonitor import *
+from src.robot.SerialMonitor import LDS
+from src.robot.SerialMonitor import *
 
 
 # possibly useful article if 3D board does NOT repsond 'OK' after a move is completed:
@@ -230,7 +230,7 @@ import numpy as np
 import time
 
 from serial import Serial, PARITY_NONE, EIGHTBITS
-from Src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
+from src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
 
 
 class Discharge:

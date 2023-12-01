@@ -1,14 +1,14 @@
 import os.path
 import time
 
-import Src.sim.simhelper as simhelper
-from Src.robot.arm.RobotHandler import RobotHandler
-from Src.sim.Command import *
-from Src.sim.sim_constants import *
-from Src.util.math_util import *
+import src.sim.simhelper as simhelper
+from src.robot.arm.RobotHandler import RobotHandler
+from src.sim.Command import *
+from src.sim.sim_constants import *
+from src.util.math_util import *
 
 # Paths for URDF files.
-DATA_DIR = os.path.join(os.path.abspath('../'), "Data", "sim")
+DATA_DIR = os.path.join(os.path.abspath('../'), "data", "sim")
 
 URDF_RBT = os.path.join(DATA_DIR, "urdf", "rx200pantex.urdf")
 URDF_PLAT = os.path.join(DATA_DIR, "urdf", "actuated_platform.urdf")
@@ -23,9 +23,8 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, parent, port_config, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
-        self.parent = parent
-        # self.robot_handler = RobotHandler(port_config)
+    def __init__(self, controller, port_config, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
+        self.controller = controller
         self.port_config = port_config
 
         self.robot_offset = robot_offset

@@ -121,7 +121,7 @@ ax.set_ylim([0, 150])
 line, = ax.plot(xs, ys)
 
 # set labels
-plt.title("CD-22 Sensor Data")
+plt.title("CD-22 Sensor data")
 plt.ylabel("Distance (mm)")
 plt.xlabel("Sample #")
 

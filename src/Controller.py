@@ -1,5 +1,5 @@
 import nidaqmx
-from Src.sim.simulation import *
+from src.sim.simulation import *
 
 
 class Controller:
@@ -34,6 +34,10 @@ class Controller:
         self.main_instance = main_instance
         self.simulation_instance = Simulation(main_instance, port_config, obj_wiz_data[0], obj_wiz_data[1])
 
+        self.robot_controller = None
+        self.stepper_controller = None
+        self.lds_instance = None
+
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
       #  todo self.nidaq_vTask = nidaqmx.Task()
@@ -45,6 +49,7 @@ class Controller:
 
         # Temp test stuff:
         self.obj_distance = 0
+        self.obj_height = None # obj_wiz_data[2]
 
     def send_update(self):
         if not self.canRun:

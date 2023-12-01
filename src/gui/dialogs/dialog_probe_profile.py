@@ -1,8 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QInputDialog, QMessageBox
+from src.Controller import Controller
 
-from Src.sim.scan_algo.ObjectProfile import *
-from Src.sim.scan_algo.ObjectProfile import Discharge, Charge, Wait, Probe
+from src.sim.scan_algo.ObjectProfile import Discharge, Charge, Wait, Probe, RotationallySymmetric, RectangularPrism
 
 
 class Ui_CreateProbeProfile(object):
@@ -136,19 +136,19 @@ class DialogProbeProfile(QDialog):
         self.ui.setupUi(self)
 
         self.parent_instance = parent
-        self.controller_instance = parent.controller
+        self.controller_instance: Controller = parent.controller
 
         self.ui.cmb_object_profile.addItem("Rot. Symmetric Geometry")
         self.ui.cmb_object_profile.addItem("Rectangular Geometry")
 
-        self.ui.btn_probe.clicked.connect(lambda: self.ui.list_probe_flow.addItem("Probe"))
+        self.ui.btn_probe.clicked.connect(self.add_probe)
         self.ui.btn_wait.clicked.connect(self.add_wait)
-        self.ui.btn_charge.clicked.connect(lambda: self.ui.list_probe_flow.addItem("Charge"))
+        self.ui.btn_charge.clicked.connect(self.add_charge)
         self.ui.btn_discharge.clicked.connect(self.add_discharge)
 
         self.ui.list_probe_flow.doubleClicked.connect(self.remove_arg)
 
-        self.ui.btn_done.clicked.connect(self.parse_flow)
+        self.ui.btn_done.clicked.connect(self.set_flow)
 
         self.flow_list = []
 
@@ -168,6 +168,7 @@ class DialogProbeProfile(QDialog):
             try:
                 wait_time = abs(int(value))
                 self.add_item(f"Wait: {wait_time} s")
+                self.flow_list.append(Wait(wait_time))
             except ValueError:
                 self.handle_input_error()
 
@@ -178,17 +179,55 @@ class DialogProbeProfile(QDialog):
             try:
                 cvr_len = abs(int(value))
                 self.add_item(f"Discharge")
+                self.flow_list.append(Discharge(self.controller_instance.stepper_controller,
+                                                self.controller_instance.lds_instance,
+                                                self.controller_instance.obj_height,
+                                                cvr_len))
             except ValueError:
                 self.handle_input_error()
 
-    def parse_flow(self):
-        return
+    def add_charge(self):
+        self.add_item(f"Charge")
+        self.flow_list.append(Charge())
 
-    def handle_input_error(self):
+    def add_probe(self):
+        self.add_item(f"Probe")
+        self.flow_list.append(Probe())
+
+    def set_flow(self):
+        if len(self.flow_list) == 0:
+            self.handle_input_error("Empty Flow List!", "Please add action arguments to this program!")
+
+        try:
+            flow_args = [
+                int(self.ui.txt_max_speed.text()),
+                int(self.ui.txt_rotator_feedrate.text()),
+                int(self.ui.txt_grounding_interval.text()),
+                int(self.ui.txt_measuring_time.text()) / 1000
+            ]
+        except ValueError:
+            self.handle_input_error()
+            return
+
+        match self.ui.cmb_object_profile.currentIndex():
+
+            case 0:  # rot symm
+                self.controller_instance.simulation_instance.cur_probe_flow = RotationallySymmetric(
+                    self.controller_instance.simulation_instance, self.flow_list,
+                    flow_args
+                )
+
+            case 1:  # rect
+                self.controller_instance.simulation_instance.cur_probe_flow = RectangularPrism(
+                    self.controller_instance.simulation_instance, self.flow_list,
+                    flow_args
+                )
+
+        self.close()
+
+    def handle_input_error(self, title="Input Error", text="Invalid input. Please enter a valid value."):
         error_box = QMessageBox()
         error_box.setIcon(QMessageBox.Warning)
-        error_box.setWindowTitle("Input Error")
-        error_box.setText("Invalid input. Please enter a valid value.")
+        error_box.setWindowTitle(title)
+        error_box.setText(text)
         error_box.exec_()
-
-

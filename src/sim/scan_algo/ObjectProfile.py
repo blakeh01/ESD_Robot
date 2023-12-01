@@ -18,18 +18,18 @@
     Other objects ???
         - Would be cool to have a system for users to extend functionality with a script..?
 """
+from abc import ABC
 
 import matplotlib.pyplot as plt
-from Src.sim.Command import *
-from Src.sim.simhelper import *
-from Src.sim.simulation import Simulation
-from Src.util.math_util import *
+from src.sim.Command import *
+from src.sim.simhelper import *
+from src.sim.simulation import Simulation
+from src.util.math_util import *
 
-from Src.robot.SerialMonitor import *
+from src.robot.SerialMonitor import *
 
 MOVE_TO_POINT = 0
 MEASURE = 1
-GROUND = 2
 
 
 class ObjectProfileUpdated:
@@ -51,8 +51,17 @@ class ObjectProfileUpdated:
         self.measuring_time = float(flow_args[3])  # convert to ms
 
         self.probe_action_state = None
+        self.ground_flag = False
+        self.next_ground_time = 0
         self.action_timeout = 0
         self.probe_percentage = 0
+
+        self.cur_alignment_point = None
+        self.goal_rbt_pos = None
+        self.goal_rbt_orn = None
+        self.goal_plat_rot = None
+
+        self.construct_probe_plan()
 
     def update(self, time_elapsed):
 
@@ -101,30 +110,78 @@ class ObjectProfileUpdated:
 
         ### PROBE ###
         elif isinstance(self.cur_flow, Probe):
-
             if self.cur_flow.start_time == 0:
                 self.cur_flow.start_time = time_elapsed
-                self.probe_action_state = GROUND  # force to ground at first
+                self.ground_flag = True  # force to ground at first
+                print("Probe Begin!")
 
             ### MOVE RBT AND PLATFORM TO NEXT POINT ###
 
-            if self.probe_action_state == MOVE_TO_POINT:
-                rbt_pos, plat_rot = self.get_next_probe_point()
+            if self.probe_action_state == MOVE_TO_POINT and not self.ground_flag:
+                # get next conf
+                (self.goal_rbt_pos, self.goal_rbt_orn), self.goal_plat_rot = self.get_next_confs()
 
                 ### Check if no more moves remaining, therefore we are done ###
-                if rbt_pos is None or plat_rot is None:
+                if self.goal_rbt_pos is None or self.goal_plat_rot is None:
                     self.cur_flow.end_time = time_elapsed
-                    print("Probing Complete!")
+                    print("Probing Complete!")  # todo: add going home here
+                    self.cur_flow_idx += 1
+                    return
+
+                # call command to rotate platform to angle so that the point will be lined up
+                self.sim.pos_plat_command = PlatformPositionSetter(self.sim, self.goal_plat_rot)
+
+                # set the probe position to the newly rotated point.
+                self.sim.pos_probe_command = ProbePositionSetter(self.sim,
+                                                                 self.goal_rbt_pos,
+                                                                 self.goal_rbt_orn
+                                                                 )
+
+                self.probe_action_state = MEASURE  # we have sent the positions, now wait and measure
+
+            ### WAIT FOR MOVEMENT AND MEASURE ###
+            elif self.probe_action_state == MEASURE:
+
+                # exit out if we are still moving to the probe point
+                if not self.sim.pos_probe_command.complete and not self.sim.pos_plat_command.complete:
+                    return
+
+                # if measuring time is greater than 0, wait that time and then probe, otherwise just probe.
+                if self.measuring_time > 0 and self.action_timeout == 0:
+                    self.action_timeout = time_elapsed + self.measuring_time
+                else:
+                    self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
+                    self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
+                    return
+
+                if time_elapsed >= self.action_timeout:
+                    self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
+                    self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
+                    self.action_timeout = 0
+
+            ### GROUND PROBE ###
+            elif self.ground_flag and self.action_timeout == 0:
+                # offset probe by a static amount for backing off to allow room for ground probe
+                new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+                new_point = np.add(new_point, [-.075, 0, 0])
+                self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0])  # todo: match current joint orn?
+
+                self.action_timeout = time_elapsed + 4  # start a 4-second timeout to finish ground action
+                self.sim.robot_handler.feather0.write_data(b'1')  # writing serial 1 to feather is ground command
+
+            ### CONDITIONAL STATE CHANGES ###
+            if not self.ground_flag and time_elapsed >= self.next_ground_time:
+                self.ground_flag = True
+            elif self.ground_flag and time_elapsed >= self.action_timeout:
+                self.ground_flag = False
+                self.next_ground_time = time_elapsed + self.grounding_interval
+                self.action_timeout = 0
 
     def construct_probe_plan(self):
-        """
+        raise NotImplementedError("Please override this method for proper functionality!")
 
-        @return:
-        """
-        pass
-
-    def get_next_probe_point(self):
-        pass
+    def get_next_confs(self):
+        raise NotImplementedError("Please override this method for proper functionality!")
 
 
 class RectangularPrism(ObjectProfileUpdated):
@@ -748,7 +805,7 @@ class Charge:
 
 class Discharge:
 
-    def __init__(self, stepper_inst, lds_inst, obj_z):
+    def __init__(self, stepper_inst, lds_inst, obj_z, cvr_len):
         self.start_time = 0
         self.end_time = 0
 
@@ -763,6 +820,7 @@ class Discharge:
         self.LDS = lds_inst
 
         self.obj_z = obj_z
+        self.cvr_len = cvr_len
 
     def discharge(self):
         self.stepper_board.home_scan()

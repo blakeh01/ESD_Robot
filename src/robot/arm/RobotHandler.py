@@ -1,5 +1,5 @@
-from Src.robot.arm.robohelper import *
-from Src.robot.SerialMonitor import *
+from src.robot.arm.robohelper import *
+from src.robot.SerialMonitor import *
 
 
 class RobotHandler:

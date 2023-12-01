@@ -1,5 +1,5 @@
-from Src.robot.SerialMonitor import *
-from Src.robot.ports import PortConfiguration
+from src.robot.SerialMonitor import *
+from src.robot.ports import PortConfiguration
 
 port = PortConfiguration()
 s = StepperHandler(port.stepper_port, port.stepper_baud)
