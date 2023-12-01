@@ -73,19 +73,19 @@ class StepperHandler(SerialMonitor):
 
     def write_x(self, pos, feed=1500):
         code = bytes(str(f"G1 X{round(pos)} F{round(feed)}"), "ASCII")
-        #self.serial_conn.flushInput()
+        # self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
     def write_y(self, pos, feed=1500):
         code = bytes(str(f"G1 Y{round(pos)} F{round(feed)}"), "ASCII")
-        #self.serial_conn.flushInput()
+        # self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
     def write_z(self, pos, feed=500):
         code = bytes(str(f"G1 Z{round(pos)} F{round(feed)}"), "ASCII")
-        #self.serial_conn.flushInput()
+        # self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
@@ -132,6 +132,7 @@ class StepperHandler(SerialMonitor):
         self.home_all()
         self.close_connection()
 
+
 class LDS:
 
     def __init__(self, port, baud):
@@ -146,7 +147,6 @@ class LDS:
         if data_2 == 100: print("Connection successful! Model: CD22-100-485")
 
     def read_distance(self):
-        # begin read sequence by handshaking with laser TODO
         reply = self.tx_rx(CMD_FUNC, 0xB0, 0x01)
         data_1, data_2 = self.decode_response(reply)
 
@@ -157,13 +157,10 @@ class LDS:
         if distance_mm & 0x8000:
             distance_mm -= 0x10000
 
-        # clamp
-        # if distance_mm < -5000 or distance_mm > 5000:
-        #     distance_mm = 0
-        # else:
-        #     distance_mm += 5000
-
         return distance_mm
+
+    def get_absolute_distance(self):
+        return self.read_distance() + 10_000
 
     def tx_rx(self, command, data_1, data_2, packet_size=6, verbose=False):
         self.laser.flush()
@@ -209,3 +206,7 @@ class LDS:
             raise ValueError("[LASER] Invalid packet: Checksum mismatch")
 
         return data_1, data_2
+
+    def close(self):
+        print(f"[LDS] Exiting... exiting serial communications with laser.")
+        self.laser.close()

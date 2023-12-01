@@ -831,7 +831,7 @@ class Discharge:
         self.stepper_board.write_x(102, self.x_feed)
         time.sleep(15)
 
-        y = self.LDS.read_distance() + 10000
+        y = self.LDS.get_absolute_distance()
         y = int(y / 100)
 
         # write to z to half object height (-25 to account for CVR)

@@ -2,7 +2,6 @@ import os.path
 import time
 
 import src.sim.simhelper as simhelper
-from src.robot.arm.RobotHandler import RobotHandler
 from src.sim.Command import *
 from src.sim.sim_constants import *
 from src.util.math_util import *
@@ -23,9 +22,8 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, controller, port_config, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
+    def __init__(self, controller, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
         self.controller = controller
-        self.port_config = port_config
 
         self.robot_offset = robot_offset
         self.object_offset = object_offset

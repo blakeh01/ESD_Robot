@@ -21,15 +21,13 @@ class RobotHandler:
         to motor 2 and motor 3 will simply match it.
     """
 
-    def __init__(self, port_config, dummy=False):
-        self.stepper_board = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
-        self.feather0 = SerialMonitor(port_config.feather_port, port_config.feather_baud)
-
+    def __init__(self, port_config, stepper_controller: StepperHandler, dummy=False):
         # Time management
         self.time_alive = 0
-        self.read_data = []
 
-        # Conncet to device
+        self.stepper_controller = stepper_controller
+
+        # Connect to device
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
         self.port_handler = PortHandler(port_config.rbt_port)
         self.pos_group_writer = GroupSyncWrite(self.port_handler, self.packet_handler, ADDR_GOAL_POSITION,
@@ -92,19 +90,24 @@ class RobotHandler:
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 5, ADDR_POS_I_GAIN, 1200)
         writeDataAndWait2Byte(self.packet_handler, self.port_handler, 5, ADDR_POS_D_GAIN, 3600)
 
-        self.i = 0
+        self.update_counter = 0
 
     def update(self):
-        self.i += 1
+        self.torque_collision_check()
 
-        if self.i >= 3:
-            self.read_data = self.read_cur_conf()
-            self.i = 0
 
-        if self.read_data is not None:
-            if 30 < self.read_data[0][0] < 60000:
-                print("COLLISION DETECTED!")
 
+
+    def torque_collision_check(self):
+        self.update_counter += 1
+
+        if self.update_counter >= 3:
+            read_data = self.read_cur_conf()
+            self.update_counter = 0
+
+            if read_data is not None:
+                if 30 < read_data[0][0] < 60000:
+                    print("COLLISION DETECTED!")
 
     def set_goal_conf(self, joint_states):
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
@@ -122,7 +125,7 @@ class RobotHandler:
         addGroupParameter(self.pos_group_writer, DXL_IDS[3], byteIntegerTransform(int(elbow_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[4], byteIntegerTransform(int(wrist_pos)))
 
-        self.stepper_board.write_b(int(rail_pos), 2500)
+        self.stepper_controller.write_b(int(rail_pos), 2500)
 
         # Syncwrite goal positions
         self.pos_group_writer.txPacket()  # begins motion of the DXLs
@@ -153,7 +156,7 @@ class RobotHandler:
         del conf[2]
 
         # insert stepper pos @ 0
-        conf.insert(0, self.stepper_board.rail_pos / 1000)
+        conf.insert(0, self.stepper_controller.rail_pos / 1000)
 
         forces = []
         # read current robot loads
@@ -180,7 +183,6 @@ class RobotHandler:
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
-        self.stepper_board.close()
 
 class DXL_Motor:
 

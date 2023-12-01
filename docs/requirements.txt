@@ -1,0 +1,11 @@
+pyqt5
+pybullet
+pybullet-planning
+dynamixel-sdk
+open3d
+matplotlib
+scipy
+numpy
+pyqtgraph
+pyserial
+pyqt5-tools

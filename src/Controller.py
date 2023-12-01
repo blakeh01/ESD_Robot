@@ -1,6 +1,9 @@
 import nidaqmx
+from src.robot.arm.RobotHandler import RobotHandler
 from src.sim.simulation import *
-
+from src.robot.SerialMonitor import StepperHandler
+from src.robot.SerialMonitor import LDS
+from src.robot.ports import *
 
 class Controller:
     """
@@ -23,20 +26,22 @@ class Controller:
         will update each instance class, as well as provide time data.
     """
 
-    def __init__(self, main_instance, port_config, obj_wiz_data):
+    def __init__(self, main_instance, port_config: PortConfiguration, obj_wiz_data):
         # Time Management
         self.update_rate = 1. / UPDATE_RATE
         self.dt = 0
         self.time_ref = 0
         self.time_elapsed = 0
 
+        # get port configuration
+        self.port_conf = port_config
+
         # Instance management
         self.main_instance = main_instance
         self.simulation_instance = Simulation(main_instance, port_config, obj_wiz_data[0], obj_wiz_data[1])
-
-        self.robot_controller = None
-        self.stepper_controller = None
-        self.lds_instance = None
+        self.stepper_controller = StepperHandler(self.port_conf.stepper_port, self.port_conf.stepper_baud)
+        self.lds_instance = LDS(self.port_conf.lds_port, self.port_conf.lds_baud)
+        self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller)
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
@@ -60,6 +65,7 @@ class Controller:
 
         # Update robot/simulation
         self.simulation_instance.update(self.time_elapsed)
+        self.robot_instance.update()
 
         # Collision check
         closest_points = p.getClosestPoints(self.simulation_instance.sim_robot, self.simulation_instance.sim_platform,
@@ -83,6 +89,9 @@ class Controller:
             IF this is not called at end of program life, then the robot will NOT return to home position.
         """
         self.simulation_instance.shutdown()
+        self.robot_instance.terminate_robot()
+        self.stepper_controller.close()
+        self.lds_instance.close()
         if p.isConnected(): p.disconnect()
         print("Shutdown!")
         self.canRun = False
