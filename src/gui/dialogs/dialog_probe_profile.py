@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QInputDialog, QMessageBox
 from src.Controller import Controller
 
-from src.sim.scan_algo.ObjectProfile import Discharge, Charge, Wait, Probe, RotationallySymmetric, RectangularPrism
+from src.sim.scan_algo.ProbingFlowManager import Discharge, Charge, Wait, Probe, RectangularPrism, RotationallySymmetric
 
 
 class Ui_CreateProbeProfile(object):

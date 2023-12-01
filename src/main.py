@@ -29,7 +29,7 @@ from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import PortConfiguration
 from src.robot.scanner.Scanner import Scanner
 from src.sim.ObjectVisualizer import ObjectVisualizer
-from src.sim.scan_algo import ObjectProfile
+from src.sim.scan_algo import ProbingFlowManager
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "data", "sim")
 
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
         self.btn_start_probing.clicked.connect(self.start_probe_flow)
-        # self.btn_charge_done.clicked.connect(self.advance_flow)
+        self.btn_charge_done.clicked.connect(self.charge_confirm)
         self.btn_sim_terminate.clicked.connect(self.sim_stop)
         self.btn.clicked.connect(self.rbt_stop)  # fix name lol
 
@@ -166,10 +166,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.widget_slice_disp.addItem(text)
 
     def charge_confirm(self):
-        if not isinstance(self.controller.simulation_instance.cur_probe_flow, ObjectProfile.Charge):
+        if not isinstance(self.controller.simulation_instance.cur_probe_flow, ProbingFlowManager.Charge):
             print("Charge was set completed without there being a charge command! Ignoring...")
             return
-        self.controller.simulation_instance.cur_probe_flow.charge_done_flag = True
+        self.controller.simulation_instance.cur_probe_flow.is_charged = True
         self.lbl_charge_warn.setVisible(False)
         self.btn_charge_done.setVisible(False)
 

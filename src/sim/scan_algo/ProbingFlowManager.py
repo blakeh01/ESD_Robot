@@ -18,8 +18,6 @@
     Other objects ???
         - Would be cool to have a system for users to extend functionality with a script..?
 """
-from abc import ABC
-
 import matplotlib.pyplot as plt
 from src.sim.Command import *
 from src.sim.simhelper import *
@@ -32,7 +30,7 @@ MOVE_TO_POINT = 0
 MEASURE = 1
 
 
-class ObjectProfile:
+class ProbingFlowManager:
 
     def __init__(self, simulation: Simulation, flow_list, flow_args):
         self.sim = simulation
@@ -61,8 +59,6 @@ class ObjectProfile:
         self.goal_rbt_orn = None
         self.goal_plat_rot = None
 
-        self.construct_probe_plan()
-
     def update(self, time_elapsed):
         if not self.can_run:
             return
@@ -90,13 +86,13 @@ class ObjectProfile:
             if self.cur_flow.start_time == 0:  # if this is the first time this is called, set the btn and label to visible for the user.
                 self.cur_flow.start_time = time_elapsed
                 self.action_timeout = time_elapsed + 0.25  # wait a quarter second
-                self.sim.parent.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
-                self.sim.parent.lbl_charge_warn.setVisible(True)  # set 'charge' label to visible.
+                self.sim.controller.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
+                self.sim.controller.lbl_charge_warn.setVisible(True)  # set 'charge' label to visible.
 
             if time_elapsed >= self.action_timeout:  # flash the background of the charge label to give more urgency.
                 self.action_timeout = time_elapsed + 0.25
-                self.sim.parent.lbl_charge_warn.setStyleSheet(
-                    "background-color: lightgreen" if self.sim.parent.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
+                self.sim.controller.lbl_charge_warn.setStyleSheet(
+                    "background-color: lightgreen" if self.sim.controller.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             if self.cur_flow.is_charged:  # if the charge done flag is set by something, consider this action complete!
                 print("==> Charge Complete!")
@@ -187,7 +183,7 @@ class ObjectProfile:
         raise NotImplementedError("Please override this method for proper functionality!")
 
 
-class RectangularPrism(ObjectProfile):
+class RotationallySymmetric(ProbingFlowManager):
 
     def __init__(self, simulation: Simulation, flow_list, flow_args):
         super().__init__(simulation, flow_list, flow_args)
@@ -201,8 +197,10 @@ class RectangularPrism(ObjectProfile):
         self.cur_path = None  # a list of points (of the cur_slice) that are sorted via a least cost pathing function.
         self.cur_point_index = 0  # the current point we are probing from the current path.
 
+        self.construct_probe_plan()
+
     def update(self, time_elapsed):
-        super(RectangularPrism, self).update(time_elapsed)
+        super(RotationallySymmetric, self).update(time_elapsed)
 
     def construct_probe_plan(self):
         print("Grouping probe points by Z-axis with tolerance of ", self.tolerance, " m!")
@@ -331,7 +329,7 @@ class RectangularPrism(ObjectProfile):
         return None
 
 
-class RectangularPrism(ObjectProfile):
+class RectangularPrism(ProbingFlowManager):
     """
         Rectangular Object Profile is one that has N-faces that can be discretely grouped and pathed between.
 
@@ -350,6 +348,8 @@ class RectangularPrism(ObjectProfile):
         self.side_index = 0
 
         self.visualize = True
+
+        self.construct_probe_plan()
 
     def construct_probe_plan(self):
         # Iterate through each probe point
