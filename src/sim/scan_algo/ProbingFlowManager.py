@@ -126,6 +126,8 @@ class ProbingFlowManager:
                     self.cur_flow_idx += 1
                     return
 
+                print("Moving to next probe point!")
+
                 # call command to rotate platform to angle so that the point will be lined up
                 self.sim.pos_plat_command = PlatformPositionSetter(self.sim, self.goal_plat_rot)
 
@@ -144,6 +146,8 @@ class ProbingFlowManager:
                 if not self.sim.pos_probe_command.complete and not self.sim.pos_plat_command.complete:
                     return
 
+                print("Movement complete, taking measurement!")
+
                 # if measuring time is greater than 0, wait that time and then probe, otherwise just probe.
                 if self.measuring_time > 0 and self.action_timeout == 0:
                     self.action_timeout = time_elapsed + self.measuring_time
@@ -159,6 +163,7 @@ class ProbingFlowManager:
 
             ### GROUND PROBE ###
             elif self.ground_flag and self.action_timeout == 0:
+                print("Ground flag is raised! Grounding...")
                 # offset probe by a static amount for backing off to allow room for ground probe
                 new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
                 new_point = np.add(new_point, [-.075, 0, 0])
@@ -321,10 +326,12 @@ class RotationallySymmetric(ProbingFlowManager):
                 dir = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].direction)
                 temp.append(AlignmentPoint(pos, dir))
 
-            self.cur_path = temp
+            pos, dir = self.cur_path[self.cur_point_index].pos, [0, 0, 0]  # todo rbt orn?
 
-            # TODO calculate robot orn.
-            return (self.cur_path[self.cur_point_index].pos, [0, 0, 0]), goal_plat_rot
+            self.cur_path = temp
+            self.cur_point_index += 1
+
+            return (pos, dir), goal_plat_rot
 
         return None
 
@@ -474,9 +481,12 @@ class RectangularPrism(ProbingFlowManager):
                 dir = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].direction)
                 temp.append(AlignmentPoint(pos, dir))
 
-            self.cur_path = temp
+            pos, dir = self.cur_path[self.cur_point_index].pos, [0, 0, 0]  # todo rbt orn?
 
-            return (self.cur_path[self.cur_point_index].pos, [0, 0, 0]), goal_plat_rot
+            self.cur_path = temp
+            self.cur_point_index += 1
+
+            return (pos, dir), goal_plat_rot
 
 
 class Charge:
