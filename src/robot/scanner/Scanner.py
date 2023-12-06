@@ -123,7 +123,7 @@ class FindEdges:
             self.edge_actual_1 = 0
             self.edge_actual_2 = 0
             for h in range(0, 2):  # Just measure two sides
-                self.stepper_board.write_a(h * 90, feed=1800)
+                self.stepper_board.write_rot_platform(h * 90, feed=1800)
                 self.stepper_board.write_z(self.z_start, self.z_feed)
                 self.stepper_board.write_x(self.edge_1 - 5, self.x_feed)
 
@@ -144,7 +144,7 @@ class FindEdges:
                     else:
                         self.stepper_board.write_x(x_pos + self.step, self.x_feed)
                         self.stepper_board.read_data()  # change this to just longer than feed rate
-            self.stepper_board.write_a(0, feed=1800)
+            self.stepper_board.write_rot_platform(0, feed=1800)
             self.stepper_board.home_scan()
             time.sleep(5)
         elif primitive == "Cylinder":
@@ -156,7 +156,7 @@ class FindEdges:
             self.radius_actual_2 = 0
 
             for h in range(0, 2):  # Just measure two sides
-                self.stepper_board.write_a(90, feed=1800)
+                self.stepper_board.write_rot_platform(90, feed=1800)
                 self.stepper_board.write_z(self.z_start, self.z_feed)
                 self.stepper_board.write_x(self.radius_1 - 5, self.x_feed)
 
@@ -182,7 +182,7 @@ class FindEdges:
                     else:
                         self.stepper_board.write_x(x_pos + self.step, self.x_feed)
                         self.stepper_board.read_data()  # change this to just longer than feed rate
-            self.stepper_board.write_a(90, feed=1800)
+            self.stepper_board.write_rot_platform(90, feed=1800)
             self.LDS.laser.close()
             time.sleep(5)
 
@@ -195,7 +195,7 @@ class FindEdges:
             self.radius_actual_1 = 0
             self.radius_actual_2 = 0
             for h in range(0, 2):  # Just measure two sides
-                self.stepper_board.write_a(90 * 35.5, feed=1800)
+                self.stepper_board.write_rot_platform(90 * 35.5, feed=1800)
                 self.stepper_board.write_z(self.radius, self.z_feed)
                 self.stepper_board.write_x(self.radius_1 - 5, self.x_feed)
 
@@ -218,7 +218,7 @@ class FindEdges:
                     else:
                         self.stepper_board.write_x(x_pos + self.step, self.x_feed)
                         self.stepper_board.read_data()  # change this to just longer than feed rate
-                self.stepper_board.write_a(90, feed=1800)
+                self.stepper_board.write_rot_platform(90, feed=1800)
                 time.sleep(5)
         else:
             print("Primitive Object scan was not properly called")
