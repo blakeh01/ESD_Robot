@@ -35,7 +35,7 @@ class ProbingFlowManager:
     def __init__(self, simulation: Simulation, flow_list, flow_args):
         self.sim = simulation
         self.probe_points = simulation.normal_point_cloud.alignment_points
-        self.robot = simulation.robot_handler
+        # self.robot = simulation.robot_handler
         self.flow_list = flow_list  # list of actions (probe/discharge/charge/wait)
 
         self.cur_flow_idx = 0
@@ -60,6 +60,12 @@ class ProbingFlowManager:
         self.goal_plat_rot = None
 
     def update(self, time_elapsed):
+        """
+        Manages the flow state machine and executes the proper commands depending on the current action.
+        Also checks to see when the probe flow is complete.
+
+        @param time_elapsed: current time of the simulation
+        """
         if not self.can_run:
             return
 
@@ -68,6 +74,7 @@ class ProbingFlowManager:
         else:
             self.can_run = False
             print("Flow completed!")
+            return
 
         ##################### FLOW STATE MACHINE #####################
 
@@ -112,19 +119,24 @@ class ProbingFlowManager:
                 self.cur_flow.start_time = time_elapsed
                 self.ground_flag = True  # force to ground at first
                 print("==> Probe Begin!")
+                self.probe_action_state = MOVE_TO_POINT
 
             ### MOVE RBT AND PLATFORM TO NEXT POINT ###
 
             if self.probe_action_state == MOVE_TO_POINT and not self.ground_flag:
-                # get next conf
-                (self.goal_rbt_pos, self.goal_rbt_orn), self.goal_plat_rot = self.get_next_confs()
+                next_conf = self.get_next_confs()
 
-                ### Check if no more moves remaining, therefore we are done ###
-                if self.goal_rbt_pos is None or self.goal_plat_rot is None:
+                if next_conf is None:  # if None, do nothing for this point
+                    return
+
+                if isinstance(next_conf, bool) and next_conf:  # if a True boolean, consider this complete.
                     self.cur_flow.end_time = time_elapsed
                     print("==> Probe Complete!")  # todo: add going home here
                     self.cur_flow_idx += 1
                     return
+
+                # if a legitimate configuration, set the goals and move!
+                self.cur_alignment_point, self.goal_plat_rot = next_conf
 
                 print("Moving to next probe point!")
 
@@ -133,8 +145,8 @@ class ProbingFlowManager:
 
                 # set the probe position to the newly rotated point.
                 self.sim.pos_probe_command = ProbePositionSetter(self.sim,
-                                                                 self.goal_rbt_pos,
-                                                                 self.goal_rbt_orn
+                                                                 self.cur_alignment_point.pos,
+                                                                 [0, 0, 0]#self.cur_alignment_point.dir
                                                                  )
 
                 self.probe_action_state = MEASURE  # we have sent the positions, now wait and measure
@@ -146,17 +158,17 @@ class ProbingFlowManager:
                 if not self.sim.pos_probe_command.complete and not self.sim.pos_plat_command.complete:
                     return
 
-                print("Movement complete, taking measurement!")
-
                 # if measuring time is greater than 0, wait that time and then probe, otherwise just probe.
                 if self.measuring_time > 0 and self.action_timeout == 0:
                     self.action_timeout = time_elapsed + self.measuring_time
                 else:
+                    print("Movement complete, taking measurement!")
                     self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
                     self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
                     return
 
                 if time_elapsed >= self.action_timeout:
+                    print("Movement complete, taking measurement!")
                     self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
                     self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
                     self.action_timeout = 0
@@ -171,20 +183,36 @@ class ProbingFlowManager:
                                                                  [0, 0, 0])  # todo: match current joint orn?
 
                 self.action_timeout = time_elapsed + 4  # start a 4-second timeout to finish ground action
-                self.sim.robot_handler.feather0.write_data(b'1')  # writing serial 1 to feather is ground command
+                # self.sim.robot_handler.feather0.write_data(b'1')  # writing serial 1 to feather is ground command
 
             ### CONDITIONAL STATE CHANGES ###
             if not self.ground_flag and time_elapsed >= self.next_ground_time:
                 self.ground_flag = True
             elif self.ground_flag and time_elapsed >= self.action_timeout:
+                print("Grounding Complete!")
                 self.ground_flag = False
                 self.next_ground_time = time_elapsed + self.grounding_interval
                 self.action_timeout = 0
 
     def construct_probe_plan(self):
+        """
+        When queried, generate the probe plan given the list of normals. This function can just set class
+        variables that are used in get_next_confs. An implementation is required.
+
+        @return:
+        """
         raise NotImplementedError("Please override this method for proper functionality!")
 
     def get_next_confs(self):
+        """
+        When queried, get the next goal position and orientation for the robot and the angle of the platform.
+        An implementation is required.
+
+        To set a goal robot position and orn, you must pass an alignment point to the tuple. See AlignmentPoint.
+
+        @return: NONE if the robot should not move, TRUE if the probing is complete,
+            return alignment_point, plat_orn to set next robot configuration.
+        """
         raise NotImplementedError("Please override this method for proper functionality!")
 
 
@@ -224,11 +252,11 @@ class RotationallySymmetric(ProbingFlowManager):
                 self.z_slices[z_value] = [point]  # create new key and store the current point
 
         # search for malformed slices, try to assign them to other slices.
-        # if this happens, its relatively a 'bad' thing, so try to warn the user just in case.
+        # if this happens, it's relatively a 'bad' thing, so try to warn the user just in case.
 
         # this is needed as the precision of the normal generate is finite, therefore there could be points from the
         # normal generation that randomly fall between 2 slices, with no apparent group
-        # if this happens, then we assign it to the closes slice, but we warn beacuse if the deviation is significant,
+        # if this happens, then we assign it to the closes slice, but we warn because if the deviation is significant,
         # the time to measure this point will be costly.
         for z_value, points_list in self.z_slices.items():
             if len(points_list) < self.min_points_slice:
@@ -275,7 +303,7 @@ class RotationallySymmetric(ProbingFlowManager):
 
     def get_next_confs(self):
         if self.z_sil_index >= len(self.z_slices):
-            return None
+            return True
 
         if not self.cur_slice:
             self.cur_slice = self.z_slices[self.z_sil_index]
@@ -288,10 +316,10 @@ class RotationallySymmetric(ProbingFlowManager):
 
             # using the closest point, find the least cost path and set that to our current path
             self.cur_path = find_alignment_point_path(closest, self.cur_slice[1])
-            self.sim.controller.plot_slice(self.cur_slice[1],
-                                           self.cur_path)  # plot this slice on the GUI for the user
+            # self.sim.controller.plot_slice(self.cur_slice[1],
+            #                                self.cur_path)  # plot this slice on the GUI for the user
             print("Completed plotting slices! Beginning movements!")
-        else:
+
             # if the current point index is greater than the length of the path, we have reached the end of the path
             # and therefore have scanned the slice.
             if self.cur_point_index >= len(self.cur_path):
@@ -299,41 +327,39 @@ class RotationallySymmetric(ProbingFlowManager):
                 self.z_sil_index += 1  # increment z slice index to go to the next slice
                 self.cur_point_index = 0  # set current point index back to zero
                 self.cur_slice = None  # and set our current slice back to none, so that we recalculate next slice.
-                return  # return as we do not want to do anything else after slice completion
+                return None # return as we do not want to do anything else after slice completion
 
-            # if the platform and robot have finished their movement, and there is no ground flag or measure flag,
-            # rotate the platform to line up point and move robot any incremental amount.
-            # update labels for the current slice for user feedback
-            self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
-            self.sim.controller.lbl_slice_index.setText(str(self.z_sil_index))
-            self.sim.controller.lbl_point_index.setText(str(self.cur_point_index))
+        # if the platform and robot have finished their movement, and there is no ground flag or measure flag,
+        # rotate the platform to line up point and move robot any incremental amount.
+        # update labels for the current slice for user feedback
+        self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
+        self.sim.controller.lbl_slice_index.setText(str(self.z_sil_index))
+        self.sim.controller.lbl_point_index.setText(str(self.cur_point_index))
 
-            print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
-                  self.cur_point_index)
+        print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
+              self.cur_point_index)
 
-            # get point from current index
-            pt = self.cur_path[self.cur_point_index]  # get the current point
+        # get point from current index
+        pt = self.cur_path[self.cur_point_index]  # get the current point
 
-            # find angle between point and lineup vector (lineup vector is the vector that points from the center of
-            # the rotating platform to the robot) todo: diagram for this?
-            goal_plat_rot = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
-                                          np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
+        # find angle between point and lineup vector (lineup vector is the vector that points from the center of
+        # the rotating platform to the robot) todo: diagram for this?
+        goal_plat_rot = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
+                                      np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
 
-            # As we have rotated our object, we must update the point cloud using a rotation matrix
-            temp = []
-            for i in range(len(self.cur_path)):
-                pos = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].pos)
-                dir = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].direction)
-                temp.append(AlignmentPoint(pos, dir))
+        # As we have rotated our object, we must update the point cloud using a rotation matrix
+        temp = []
+        for i in range(len(self.cur_path)):
+            pos = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].pos)
+            dir = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].direction)
+            temp.append(AlignmentPoint(pos, dir))
 
-            pos, dir = self.cur_path[self.cur_point_index].pos, [0, 0, 0]  # todo rbt orn?
+        alignment_point = self.cur_path[self.cur_point_index]  # todo rbt orn?
 
-            self.cur_path = temp
-            self.cur_point_index += 1
+        self.cur_path = temp
+        self.cur_point_index += 1
 
-            return (pos, dir), goal_plat_rot
-
-        return None
+        return alignment_point, goal_plat_rot
 
 
 class RectangularPrism(ProbingFlowManager):
