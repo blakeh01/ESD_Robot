@@ -5,9 +5,9 @@ from src.robot.SerialMonitor import LDS
 from src.robot.SerialMonitor import *
 
 
-# possibly useful article if 3D board does NOT repsond 'OK' after a move is completed:
+# possibly useful article if 3D board does NOT respond 'OK' after a move is completed:
 # https://forum.duet3d.com/topic/18282/tighter-control-for-waiting-for-motion-commands-to-complete/2
-class Scanner:
+class ObjectScan:
 
     def __init__(self, stepper_board, port_conf, obj_x, obj_y, obj_z, run_thread=None, percentage_widget=None):
         self.LDS = LDS(port_conf.lds_port, port_conf.lds_baud)
@@ -39,10 +39,9 @@ class Scanner:
         self.point_index = 0
         self.stop = False
 
-    def begin_scan(self):
+    def start_scan(self):
         for h in range(0, int(self.rotations)):
             cur_axis = h * self.degree
-            print("Current axis: ", cur_axis)
             for j in range(self.z_start, self.z_end):
                 z_pos = j
 
@@ -60,13 +59,12 @@ class Scanner:
                         time.sleep(5)
                     else:
                         self.stepper_board.write_x(x_pos + self.step, self.x_feed)
-                        self.stepper_board.read_data()  # wait for response or wait a fixed amount of time if no work
-                        # time.sleep(0.0001)
-                        # time.sleep(0.05) # ensure that the distance is read before the next move, might need to adjust or maybe we can get rid of entirely
+                        self.stepper_board.read_data()  # wait for response
+
                         xc = np.append(self.xc, x_pos)
                         zc = np.append(self.zc, z_pos)
                         yc = np.append(self.yc,
-                                       self.LDS.read_distance())  # change this to the adjusted read in value from the sensor
+                                       self.LDS.read_distance())
                         ca = np.append(self.ca, cur_axis)
                         self.point_index += 1
 
@@ -88,7 +86,7 @@ class Scanner:
             time.sleep(10)
 
 
-class PrimitiveScan:
+class FindEdges:
 
     def __init__(self, stepper_board: StepperHandler, port_conf):
         self.LDS = LDS(port_conf.lds_port, port_conf.lds_baud)
@@ -111,11 +109,11 @@ class PrimitiveScan:
         self.degree = 45
         self.rotations = 360 / self.degree
 
-    def run_prim_scan(self, primitive, x, y, z):
+    def find_object_edges(self, primitive, x, y, z):
         val = x
         val_2 = y
         self.z_start = z / 4
-        if primitive == 2:
+        if primitive == "Rectangular Prism":
             self.edge_1 = int(101.5 - val / 2)  # Take data from inputted face and /2 to put you a little edge
             self.edge_2 = int(101.5 + val / 2)  # Same as above but other direction
             self.edge_3 = int(101.5 - val_2 / 2)  # Ditto
@@ -149,7 +147,7 @@ class PrimitiveScan:
             self.stepper_board.write_a(0, feed=1800)
             self.stepper_board.home_scan()
             time.sleep(5)
-        elif primitive == 1: # Cylinder
+        elif primitive == "Cylinder":
             self.radius_1 = 101.5 - val / 2
             self.radius_2 = 101.5 + val / 2
             self.offset_1 = 0  # Read in value of LDS and subtract offset based off center for the first side
@@ -188,7 +186,7 @@ class PrimitiveScan:
             self.LDS.laser.close()
             time.sleep(5)
 
-        elif primitive == 2:
+        elif primitive == "Sphere":
             self.radius = val
             self.radius_1 = 101.5 - val / 2
             self.radius_2 = 101.5 + val / 2
@@ -224,55 +222,3 @@ class PrimitiveScan:
                 time.sleep(5)
         else:
             print("Primitive Object scan was not properly called")
-
-
-import numpy as np
-import time
-
-from serial import Serial, PARITY_NONE, EIGHTBITS
-from src.robot.SerialMonitor import LDS, StepperHandler, SerialMonitor
-
-
-class Discharge:
-
-    def __init__(self, obj_pos, stepper_board=None):
-
-        self.LDS = LDS()
-        self.stepper_board = stepper_board
-
-        # def scanner_points(self):
-        self.x_feed = 1500
-        self.y_feed = 500  # This needs to be changed to the equivalent of 50mm/s
-        self.z_feed = 500
-        self.step = 1
-
-        # get z of object
-        self.obj_z = obj_pos[2]
-
-    def set_stepper(self, stepper):
-        self.stepper_board = stepper
-
-    def discharge(self):
-        if not self.stepper_board:
-            print("error did not set stepepr board.")
-
-        self.stepper_board.home_scan()
-
-        self.stepper_board.write_z((self.obj_z / 2) - 25, self.z_feed)
-        self.stepper_board.write_x(102, self.x_feed)
-        time.sleep(10)
-
-        y = 17500 - (self.LDS.read_distance() + 10000)
-
-        # write to z to half object height (-25 to account for CVR)
-        # write to x to center (102)
-
-        print("writing: ", y)
-
-        self.stepper_board.write_y((y-30), self.y_feed)
-        self.stepper_board.read_data()
-        time.sleep(10)
-
-        self.stepper_board.home_scan()
-        self.LDS.laser.close()
-

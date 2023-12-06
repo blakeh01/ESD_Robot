@@ -27,7 +27,7 @@ from src.gui.main_window import Ui_MainWindow
 from src.gui.object_wizard import Ui_ObjectWizard
 from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import PortConfiguration
-from src.robot.scanner.Scanner import Scanner
+from src.robot.scanner.Scanner import ObjectScan
 from src.sim.ObjectVisualizer import ObjectVisualizer
 from src.sim.scan_algo import ProbingFlowManager
 
@@ -42,6 +42,9 @@ port_config = PortConfiguration()
 
 
 class UpdateThread(QThread):
+    """
+        Create an update thread for the simulation to run on. This allows the GUI to run in parallel with the simulation.
+    """
     update_frame = pyqtSignal()
 
     def __init__(self, controller_instance):
@@ -62,7 +65,9 @@ class UpdateThread(QThread):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-
+    """
+        MainWindow is the main GUI of the program and houses the controller and does time management of the whole system.
+    """
     def __init__(self, obj_wiz_data, parent=None):
         super().__init__(parent)
 
@@ -84,19 +89,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Program Signals:
         self.btn_shutdown_program.clicked.connect(self.stop_program)  # shutdown button
-        self.btn_edit_consts.clicked.connect(self.edit_constants)  # set probe pos dialog TODO
+        self.btn_edit_consts.clicked.connect(self.edit_constants)  # edit constants
         self.btn_rbt_info.clicked.connect(self.dialog_rbt_info)  # robot 'info' button
-        self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)
-        self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)
-        self.btn_start_probing.clicked.connect(self.start_probe_flow)
-        self.btn_charge_done.clicked.connect(self.charge_confirm)
-        self.btn_sim_terminate.clicked.connect(self.sim_stop)
-        self.btn.clicked.connect(self.rbt_stop)  # fix name lol
+        self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)  # normal generator
+        self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)  # probe flow setup
+        self.btn_start_probing.clicked.connect(self.start_probe_flow)  # start probe flow
+        self.btn_charge_done.clicked.connect(self.charge_confirm)   # charge done
+        self.btn_sim_terminate.clicked.connect(self.sim_stop)  # stop simulation
+        self.btn_stop.clicked.connect(self.rbt_stop)  # big red stop button
 
-        #        self.actionImport_New_Object.triggered.connect(self.new_object_reset)
-
-        self.lbl_charge_warn.setVisible(False)
-        self.btn_charge_done.setVisible(False)
+        self.lbl_charge_warn.setVisible(False)  # hide charge btn/label
+        self.btn_charge_done.setVisible(False)  # ^
 
         # Set update rate to given value.
         self.lbl_updaterate.setText(str(round(1 / self.controller.update_rate)) + " /s")
@@ -138,13 +141,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.controller.simulation_instance.cur_probe_flow is not None:
             self.probe_progress_bar.setValue(self.controller.simulation_instance.cur_probe_flow.probe_percentage)
 
-    def embed_pysim(self):
-        hwnd = win32gui.FindWindowEx(0, 0, None, "Bullet Physics ExampleBrowser using OpenGL3+ [btgl] Release build")
-        self.window = QtGui.QWindow.fromWinId(hwnd)
-        self.windowcontainer = self.createWindowContainer(self.window, self.widget_pybullet)
-        self.windowcontainer.setMinimumSize(1220, 900)
-
     def plot_slice(self, path):
+        """
+        Given a path, plot it to the pyqtgraph on the main window for user feedback. NOTE: this only works for rot.
+        symmetric objects at the moment.
+
+        @param path: current path which is a list of alignment points.
+        """
         self.widget_slice_disp.clear()
         time.sleep(0.1)
 
@@ -166,6 +169,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.widget_slice_disp.addItem(text)
 
     def charge_confirm(self):
+        """
+        Sets the charge to complete when pressed. Does a simple check to ensure that the charge is being executed
+        before setting it to true.
+        @return:
+        """
         if not isinstance(self.controller.simulation_instance.cur_probe_flow, ProbingFlowManager.Charge):
             print("Charge was set completed without there being a charge command! Ignoring...")
             return
@@ -174,10 +182,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_charge_done.setVisible(False)
 
     def start_probe_flow(self):
+        """
+        Allows the program to start the probe flow commands.
+        """
         self.controller.simulation_instance.can_execute_flow = True
         print("[MAIN] Beginning probe flow!")
 
-    def sim_stop(self):
+    def stop_flow_and_home(self):
+        """
+        Stops the current probe flow and homes the robot.
+        @return:
+        """
         self.controller.simulation_instance.cur_probe_flow = None
         for i in range(100):
             self.controller.simulation_instance.drive_motors_to_home()
@@ -188,32 +203,55 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pp.get_joint_positions(self.controller.simulation_instance.sim_robot, [1, 2, 3, 4, 5]))
 
     def rbt_stop(self):
+        """
+        Terminates the robot.
+        @return:
+        """
         self.controller.simulation_instance.robot_handler.terminate_robot()
 
     def edit_constants(self):
+        """
+        No functionality at the moment, but can be used to modify any program constants as necessary.
+        """
         pass
 
     def stop_program(self):
+        """
+        Stops the program which kills all the threads and shutdown the controller. Ensures that the robot homes first.
+        @return:
+        """
         print("[MAIN] Stopping Program!")
-        self.sim_stop()
+        self.stop_flow_and_home()
         time.sleep(1.5)
         self.update_thread.stop()
         self.controller.shutdown()
         exit()
 
     def dialog_probe_setup(self):
+        """
+        Opens the probe profile dialog
+        """
         _dlg = DialogProbeProfile(self)
         _dlg.exec()
 
     def dialog_rbt_info(self):
+        """
+        Opens the robot info dialog
+        """
         _dlg = DialogRobotInfo(self)
         _dlg.exec()
 
     def dialog_normal_generator(self):
+        """
+        Opens the normal generator dialog
+        """
         _dlg = DialogNormalGenerator(self)
         _dlg.exec()
 
     def show_information_box(self, title, content, icon=QMessageBox.Information):
+        """
+        Creates a generic message box
+        """
         msg = QMessageBox()
         msg.setText(content)
         msg.setIcon(icon)
@@ -222,14 +260,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msg.exec_()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
+        """
+        Ensures proper closing of the program on exit.
+        """
         self.update_thread.quit()
         self.stop_program()
         a0.accept()
 
 
 class ObjectWizard(QWizard):
+    """
+    Object wizard gives the user the capability of importing/creating/scanning any objects to be probed.
+    """
 
-    def __init__(self, show_com=False, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_ObjectWizard()
         self.ui.setupUi(self)
@@ -238,62 +282,70 @@ class ObjectWizard(QWizard):
         self.sim_platform = None
         self.obj = None
 
+        # start GUI update thread ~ 40 FPS
         self.gui_timer = QTimer(self)
         self.gui_timer.timeout.connect(self.update)
-        self.gui_timer.start(25)  # start GUI update thread ~ 40 FPS
+        self.gui_timer.start(25)
 
-        self.rbt = None
         self.has_init = False
 
+        # create an object visualizer instance for viewing objects
         self.o3d_viz = ObjectVisualizer()
 
+        # embed that window into the proper container inside the wizard
         hwnd = win32gui.FindWindowEx(0, 0, None, "Open3D")
         self.window = QtGui.QWindow.fromWinId(hwnd)
         self.window.resize(551, 291)
         self.windowcontainer = self.createWindowContainer(self.window, self.ui.widget_visualize)
         self.windowcontainer.setMinimumSize(551, 291)
 
+        # variables to store offset
         self.SIM_ROBOT_OFFSET = np.dot(2, [0, 0, 0])
         self.SIM_PLATFORM_OFFSET = np.dot(2, [0, 0, 0])
+
+        # using a pybullet fixed joint that moves depending on the user selected parameter to provide visual feedback
         self.obj_joint_offset = None
         self.obj_const = None
         self.obj_rot = [0, 0, 0]
 
+        # if any of the X,Y,Z offsets of the robot are changed, update it inside the simulation
         self.ui.sbox_rbt_offset_x.valueChanged.connect(self.update_rbt_offset)
         self.ui.sbox_rbt_offset_y.valueChanged.connect(self.update_rbt_offset)
         self.ui.sbox_rbt_offset_z.valueChanged.connect(self.update_rbt_offset)
 
+        # if any of the X, Y, Z offsets of the object are changed, update it
         self.ui.sbox_offset_x.valueChanged.connect(self.update_obj_offset)
         self.ui.sbox_offset_y.valueChanged.connect(self.update_obj_offset)
         self.ui.sbox_offset_z.valueChanged.connect(self.update_obj_offset)
 
+        # signals for the import wizard page.
         self.ui.btn_prompt_path.clicked.connect(self.prompt_path)
         self.ui.rbtn_import_units.clicked.connect(self.update_import)
         self.ui.rbtn_import_scale.clicked.connect(self.update_import)
-        self.ui.wiz_page_import_obj.nextId = lambda: 5
+        self.ui.wiz_page_import_obj.nextId = lambda: 5  # skip and go to the visualization page
         self.update_import()
 
+        # signals for primitive creation
         self.ui.rbtn_prim_rect.clicked.connect(self.prim_rect_selected)
         self.ui.rbtn_prim_sphere.clicked.connect(self.prim_sphere_selected)
         self.ui.rbtn_prim_cylinder.clicked.connect(self.prim_cylinder_selected)
+        self.ui.wiz_page_create_primitive.nextId = self.prim_creation  # once we hit next on this page, create the primitive
 
+        # signals & thread for object scanning
         self.ui.btn_start_scan.clicked.connect(self.start_scan)
         self.ui.btn_scan_halt.clicked.connect(self.halt_scan)
         self.ui.wiz_page_scan_obj.nextId = self.check_scan
         self.scan_thread = None
         self.scanner = None
 
-        self.ui.wiz_page_create_primitive.nextId = self.prim_creation
         self.prim = 2
+        self.ui.wiz_page_visualize_obj.nextId = self.pack_object  # once we hit next on this page, pack the object to send to simulation
+        self.ui.wiz_page_method.nextId = self.select_method  # determines the next id depending on the method of object creation.
 
-        self.ui.wiz_page_visualize_obj.nextId = self.pack_object
+        self.button(QWizard.FinishButton).clicked.connect(self.finish_button)  # do something when we hit finish
 
-        self.ui.wiz_page_method.nextId = self.select_method
-
-        self.button(QWizard.FinishButton).clicked.connect(self.finish_button)
-
-        self.rbt = RobotHandler(port_config, dummy=True)
-        self.rbt.stepper_board.home_all()
+        # self.rbt = RobotHandler(port_config, dummy=True)
+        # self.rbt.stepper_board.home_all()
 
     def update(self):
         if self.scan_thread and self.scanner:
@@ -324,7 +376,6 @@ class ObjectWizard(QWizard):
 
             pp.set_camera_pose(tuple(np.array((0, 0, 0.25)) + np.array([0.25, -0.25, 0.25])), (0, 0, 0.25))
             self.update_rbt_offset()
-            # self.rbt.stepper_board.write_b(165)
             self.has_init = True
 
         if self.currentId() == 4:
@@ -337,12 +388,28 @@ class ObjectWizard(QWizard):
             time.sleep(0.01)
 
     def update_rbt_offset(self):
+        """
+           Updates the robot position depending on the user provided offset
+        """
         self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value() / 1000,
                                            self.ui.sbox_rbt_offset_y.value() / 1000,
                                            self.ui.sbox_rbt_offset_z.value() / 1000])
         p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
 
     def update_obj_offset(self):
+        """
+           Updates the object position depending on the user provided offset.
+
+           This one is more complicated as a constraint is used to provide to allow the user to
+           actively see the offset.
+
+           As the model of a pybullet object CANNOT be changed, the platform without the object is the one being
+           created (above). Then the object is placed on top of it using a constraint.
+
+           This is different from the actual simulation where the model of the platform includes the object. The reason
+           this was done is that constraints are not perfectly rigid, so if the platform is rotating during a probe
+           pass, the object lags behind, causing inaccuracies.
+        """
         self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value() / 1000, self.ui.sbox_offset_y.value() / 1000,
                                            .16 + self.ui.sbox_offset_z.value() / 1000])
         self.obj_rot = [np.deg2rad(self.ui.sbox_offset_rx.value()), np.deg2rad(self.ui.sbox_offset_ry.value()),
@@ -357,6 +424,9 @@ class ObjectWizard(QWizard):
                                             parentFramePosition=self.obj_joint_offset, childFramePosition=[0, 0, 0])
 
     def update_import(self):
+        """
+        Update lables/textboxes if certain things are checked.
+        """
         self.ui.cbox_import_units.setVisible(self.ui.rbtn_import_units.isChecked())
         self.ui.sbox_import_X.setVisible(self.ui.rbtn_import_scale.isChecked())
         self.ui.sbox_import_Y.setVisible(self.ui.rbtn_import_scale.isChecked())
@@ -366,6 +436,10 @@ class ObjectWizard(QWizard):
         self.ui.lbl_import_Z.setVisible(self.ui.rbtn_import_scale.isChecked())
 
     def prompt_path(self):
+        """
+        If the user decides to import an object, open a dialog allowing them to slect a mesh. Check if that mesh
+        of proper type.
+        """
         file_path, _ = QFileDialog.getOpenFileName(None, "Select Object Mesh", "")
         self.ui.txt_path.setText(file_path)
         if not self.o3d_viz.load_mesh_from_path(file_path):
@@ -375,11 +449,14 @@ class ObjectWizard(QWizard):
                                  QMessageBox.Ok)
 
     def start_scan(self):
+        """
+        Create a scan thread and run the scanning algorithm.
+        """
         if self.scan_thread:
             self.scan_thread.join()
             del self.scan_thread
 
-        self.scanner = Scanner(self.rbt.stepper_board, port_config, float(self.ui.sbox_scan_x.value()),
+        self.scanner = ObjectScan(self.stepper_board, port_config, float(self.ui.sbox_scan_x.value()),
                                float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
                                self.ui.prg_scan)
 
@@ -388,24 +465,37 @@ class ObjectWizard(QWizard):
         self.scan_thread.start()
 
     def halt_scan(self):
+        """
+        If the halt scan is pressed, stop it and home the scanning system.
+        @return:
+        """
         self.scanner.stop = True
         self.rbt.stepper_board.home_scan()
 
     def check_scan(self):
+        """
+        Allow the user to continue along the wizard only if the scanning has completed.
+        """
         if self.ui.prg_scan.value() == 100:
             return 4
         else:
             return 3
 
     def prim_rect_selected(self):
-        self.show_all()
+        """
+        If a rectangular prism is selected, set the primitive type and textbox labels.
+        """
+        self.prim_show_all()
         self.ui.lbl_prim_field_A.setText("X")
         self.ui.lbl_prim_field_B.setText("Y")
         self.ui.lbl_prim_field_C.setText("Z")
-        self.prim = 2
+        self.prim = "Rectangular Prism"
 
     def prim_sphere_selected(self):
-        self.show_all()
+        """
+        If a sphere is selected, set the primitive type and textbox labels.
+        """
+        self.prim_show_all()
         self.ui.lbl_prim_field_B.setVisible(False)
         self.ui.lbl_prim_field_C.setVisible(False)
         self.ui.lbl_prim_field_units_B.setVisible(False)
@@ -413,18 +503,25 @@ class ObjectWizard(QWizard):
         self.ui.sbox_prim_field_B.setVisible(False)
         self.ui.sbox_prim_field_C.setVisible(False)
         self.ui.lbl_prim_field_A.setText("Radius")
-        self.prim = 1
+        self.prim = "Sphere"
 
     def prim_cylinder_selected(self):
-        self.show_all()
+        """
+        If a cylinder is selected, set the primitive type and textbox labels.
+        """
+        self.prim_show_all()
         self.ui.lbl_prim_field_C.setVisible(False)
         self.ui.lbl_prim_field_units_C.setVisible(False)
         self.ui.sbox_prim_field_C.setVisible(False)
         self.ui.lbl_prim_field_A.setText("Radius")
         self.ui.lbl_prim_field_B.setText("Height")
-        self.prim = 0
+        self.prim = "Cylinder"
 
     def prim_creation(self):
+        """
+        This is called once the next button on the primitive page is clicked. This creates a primitive depending on
+        the textboxes and selective prim.
+        """
         if float(self.ui.sbox_prim_field_A.value()) == 1:
             return 2
 
@@ -435,11 +532,19 @@ class ObjectWizard(QWizard):
         return 4
 
     def pack_object(self):
+        """
+        Packing object saves it to the disk so that the simulation can use it.
+        """
         self.o3d_viz.pack_object()
         time.sleep(1)
         return 5
 
     def select_method(self):
+        """
+        Changes the next page of the wizard depending on which primitive is checked. This gives the non-linearity
+        that the wizard exhibits.
+        @return:
+        """
         if self.ui.rbt_primitive.isChecked():
             return 1
         elif self.ui.rbtn_import_obj.isChecked():
@@ -449,7 +554,11 @@ class ObjectWizard(QWizard):
         else:
             return 0
 
-    def show_all(self):
+    def prim_show_all(self):
+        """
+        Shows all of the primitive textboxes/label fields inside the prim creation page.
+        @return:
+        """
         self.ui.lbl_prim_field_A.setVisible(True)
         self.ui.lbl_prim_field_B.setVisible(True)
         self.ui.lbl_prim_field_C.setVisible(True)
@@ -461,6 +570,11 @@ class ObjectWizard(QWizard):
         self.ui.sbox_prim_field_C.setVisible(True)
 
     def finish_button(self):
+        """
+        Once the finish button is pressed, terminate the robot, simulation, o3d visualzier and stop the gui.
+
+        Then write the offsets to the URDF file so that it is saved. Then destroy itself.
+        """
         pp.disconnect()
         self.rbt.terminate_robot()
         self.o3d_viz.visualizer.destroy_window()
@@ -488,7 +602,7 @@ class ObjectWizard(QWizard):
         self.destroy()
 
 
-skip_wiz = True
+skip_wiz = False
 param = []
 
 if __name__ == '__main__':

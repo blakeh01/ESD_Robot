@@ -62,11 +62,11 @@ class ObjectVisualizer:
         return False
 
     def display_primitive(self, primitive, resolution, *args):
-        if primitive == "cylinder" or primitive == 0:
+        if primitive == "Cylinder":
             self.cur_mesh = o3d.geometry.TriangleMesh.create_cylinder(args[0], args[1], resolution)
-        elif primitive == "sphere" or primitive == 1:
+        elif primitive == "Sphere":
             self.cur_mesh = o3d.geometry.TriangleMesh.create_sphere(args[0], resolution)
-        elif primitive == "rectangular prism" or primitive == 2:
+        elif primitive == "Rectangular Prism":
             self.cur_mesh = o3d.geometry.TriangleMesh.create_box(args[0], args[1], args[2], resolution)
         else:
             print("[OBJ] Invalid primitive given!")
@@ -95,7 +95,7 @@ class ObjectVisualizer:
 
     def pack_object(self, path=None):
         '''
-            Writes 'self.curmesh' to disk for simulation usage.
+        Writes 'self.curmesh' to disk for simulation usage.
         :param path: Path to export the .STL file to. (including filename)
         :return:
         '''
