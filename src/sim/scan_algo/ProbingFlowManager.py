@@ -16,9 +16,12 @@
         - repeat
 
     Other objects ???
-        - Would be cool to have a system for users to extend functionality with a script..?
+        - Would be cool to have a system for users to extend functionality with a script..? (somewhat acheived)
 """
+from datetime import datetime
+
 import matplotlib.pyplot as plt
+import pandas as pd
 from src.sim.Command import *
 from src.sim.simhelper import *
 from src.sim.simulation import Simulation
@@ -165,12 +168,14 @@ class ProbingFlowManager:
                     print("Movement complete, taking measurement!")
                     self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
                     self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
+                    self.cur_flow.add_measured_point(self.cur_alignment_point)
                     return
 
                 if time_elapsed >= self.action_timeout:
                     print("Movement complete, taking measurement!")
                     self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
                     self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
+                    self.cur_flow.add_measured_point(self.cur_alignment_point)
                     self.action_timeout = 0
 
             ### GROUND PROBE ###
@@ -544,28 +549,29 @@ class Discharge:
         self.cvr_len = cvr_len
 
     def discharge(self):
+        # home steppers
         self.stepper_board.home_scan()
         time.sleep(15)
 
+        # move probe up to center of object with a small offset for center of CVR
         self.stepper_board.write_z((self.obj_z / 2) - 25, self.z_feed)
-        self.stepper_board.write_x(102, self.x_feed)
         time.sleep(15)
 
+        # get distance to the object
         y = self.LDS.get_absolute_distance()
-        y = int(y / 100)
-
-        # write to z to half object height (-25 to account for CVR)
-        # write to x to center (102)
-
+        y = int(y / 100)  # convert units
         print("writing to y: ", y)
 
+        # basic limit checking
         if y > 175 or y < 0:
             return
 
-        self.stepper_board.write_y(y - 30, self.y_feed)
+        # move y in offsetting by CVR length.
+        self.stepper_board.write_y(y - self.cvr_len, self.y_feed)
         self.stepper_board.read_data()
-        time.sleep(10)
+        time.sleep(10)  # wait for discharge
 
+        # rehome
         self.stepper_board.home_scan()
 
 
@@ -574,6 +580,30 @@ class Probe:
     def __init__(self):
         self.start_time = 0
         self.end_time = 0
+
+        self.measured_points = []
+
+    def add_measured_point(self, apt):
+        self.measured_points.append(apt)
+
+    def export_measured_points(self):
+        data = []
+        for point in self.measured_points:
+            data.append({
+                'X': point.pos[0],
+                'Y': point.pos[1],
+                'Z': point.pos[2],
+                'NORM_X': point.direction[0],
+                'NORM_Y': point.direction[1],
+                'NORM_Z': point.direction[2],
+                'MEASUREMENT': point.measurement
+            })
+
+        # Create a DataFrame from the list of dictionaries
+        df = pd.DataFrame(data)
+
+        # Write the DataFrame to an Excel file
+        df.to_excel(f'{datetime.now().strftime("%Y%m%d_%H%M%S")}-probe_data.xlsx', index=False)
 
 
 class Wait:

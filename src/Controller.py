@@ -36,14 +36,14 @@ class Controller:
         # Instance management
         self.main_instance = main_instance
         self.simulation_instance = Simulation(main_instance, obj_wiz_data[0], obj_wiz_data[1])
-        # self.stepper_controller = StepperHandler(self.port_conf.stepper_port, self.port_conf.stepper_baud)
-        # self.lds_instance = LDS(self.port_conf.lds_port, self.port_conf.lds_baud)
-        # self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller)
+        self.stepper_controller = StepperHandler(self.port_conf.stepper_port, self.port_conf.stepper_baud)
+        self.lds_instance = LDS(self.port_conf.lds_port, self.port_conf.lds_baud)
+        self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller)
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
-      #  todo self.nidaq_vTask = nidaqmx.Task()
-      #  self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+        self.nidaq_vTask = nidaqmx.Task()
+        self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
         self.probe_voltage = 0
 
         # Program mode
@@ -54,6 +54,9 @@ class Controller:
         self.obj_height = None # obj_wiz_data[2]
 
     def send_update(self):
+        """
+        updates the simulation and robot while also sleeping for the update rate to maintain proper ticks.
+        """
         if not self.canRun:
             return
 
@@ -62,7 +65,7 @@ class Controller:
 
         # Update robot/simulation
         self.simulation_instance.update(self.time_elapsed)
-        # self.robot_instance.update()
+        self.robot_instance.update()
 
         # Collision check
         closest_points = p.getClosestPoints(self.simulation_instance.sim_robot, self.simulation_instance.sim_platform,

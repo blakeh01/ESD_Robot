@@ -73,32 +73,26 @@ class StepperHandler(SerialMonitor):
 
     def write_x(self, pos, feed=1500):
         code = bytes(str(f"G1 X{round(pos)} F{round(feed)}"), "ASCII")
-        # self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
-        print(code)
 
     def write_y(self, pos, feed=1500):
         code = bytes(str(f"G1 Y{round(pos)} F{round(feed)}"), "ASCII")
-        # self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
-        print(code)
 
     def write_z(self, pos, feed=500):
         code = bytes(str(f"G1 Z{round(pos)} F{round(feed)}"), "ASCII")
-        # self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
         print(code)
 
-    def write_a(self, pos, feed=1600):
+    def write_rot_platform(self, pos, feed=1600):
         if self.plat_pos != pos:
             code = bytes(str(f"G1 A{round(pos)} F{round(feed)}"), "ASCII")
             self.serial_conn.flushInput()
             self.serial_conn.write(code + b'\r\n')
             self.plat_pos = pos
-            print(code)
 
     # this is robot linear rail
-    def write_b(self, pos, feed=2500):
+    def write_linear_rail(self, pos, feed=2500):
         if pos < 0:
             return
         # TODO: temp fix for jitter?
@@ -107,25 +101,21 @@ class StepperHandler(SerialMonitor):
             self.serial_conn.flushInput()
             self.serial_conn.write(code + b'\r\n')
             self.rail_pos = pos
-            print(code)
-
-    def write_movement(self, pos_rail, pos_plat):
-        pass
 
     def home_all(self):
-        self.write_x(0)
-        self.write_y(0)
-        self.write_z(0)
-        self.write_a(0)
-        self.write_b(0)
+        code = bytes(str(f"G28"), "ASCII")
+        self.serial_conn.flushInput()
+        self.serial_conn.write(code + b'\r\n')
 
-    def home_robot(self):
-        self.write_b(0, 3000)
+    def home_linear_rai(self):
+        code = bytes(str(f"G28 B"), "ASCII")
+        self.serial_conn.flushInput()
+        self.serial_conn.write(code + b'\r\n')
 
     def home_scan(self):
-        self.write_x(0)
-        self.write_y(0)
-        self.write_z(0)
+        code = bytes(str(f"G28 X Y Z"), "ASCII")
+        self.serial_conn.flushInput()
+        self.serial_conn.write(code + b'\r\n')
 
     def close(self):
         print(f"[DUET] Exiting... going home.")
