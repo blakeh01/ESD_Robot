@@ -121,6 +121,7 @@ class EdgeFinder:
         if primitive == "Rectangular Prism":
             # get object parameters
             x, y, z = obj_data[0], obj_data[1], obj_data[2]
+            print("Finding cylinder edges... expected edges at: (x) ", (X_PLAT_MIDDLE - x/2), " and ", (X_PLAT_MIDDLE - x/2), ", and (y), ", (X_PLAT_MIDDLE - y/2), " and ", (X_PLAT_MIDDLE - y/2))
 
             ####### (from perspective of laser) find left most edge #######
 
