@@ -189,7 +189,6 @@ class EdgeFinder:
 
             print("Y Right edge found @ ", right_edge_x)
 
-
         elif primitive == "Cylinder":
             # get object parameters
             r, h = obj_data[0], obj_data[1]
