@@ -25,11 +25,13 @@ from src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
 from src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from src.gui.main_window import Ui_MainWindow
 from src.gui.object_wizard import Ui_ObjectWizard
+from src.robot.SerialMonitor import StepperHandler, LDS
 from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import PortConfiguration
-from src.robot.scanner.Scanner import ObjectScan
+from src.robot.scanner.Scanner import ObjectScan, ObjectScanner, EdgeFinder
 from src.sim.ObjectVisualizer import ObjectVisualizer
 from src.sim.scan_algo import ProbingFlowManager
+from src.sim.sim_constants import SIM_SCALE
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "data", "sim")
 
@@ -68,6 +70,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     """
         MainWindow is the main GUI of the program and houses the controller and does time management of the whole system.
     """
+
     def __init__(self, obj_wiz_data, parent=None):
         super().__init__(parent)
 
@@ -94,7 +97,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_normal_generator.clicked.connect(self.dialog_normal_generator)  # normal generator
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)  # probe flow setup
         self.btn_start_probing.clicked.connect(self.start_probe_flow)  # start probe flow
-        self.btn_charge_done.clicked.connect(self.charge_confirm)   # charge done
+        self.btn_charge_done.clicked.connect(self.charge_confirm)  # charge done
         self.btn_sim_terminate.clicked.connect(self.sim_stop)  # stop simulation
         self.btn_stop.clicked.connect(self.rbt_stop)  # big red stop button
 
@@ -268,6 +271,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         a0.accept()
 
 
+PLATFORM_HEIGHT = 0.16
+
+
 class ObjectWizard(QWizard):
     """
     Object wizard gives the user the capability of importing/creating/scanning any objects to be probed.
@@ -344,8 +350,11 @@ class ObjectWizard(QWizard):
 
         self.button(QWizard.FinishButton).clicked.connect(self.finish_button)  # do something when we hit finish
 
-        # self.rbt = RobotHandler(port_config, dummy=True)
-        # self.rbt.stepper_board.home_all()
+        self.ui.btn_find.clicked.connect(self.find_offsets)  # find offsets when pressed
+
+        self.stepper_controller = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
+        self.lds_instance = LDS(port_config.lds_port, port_config.lds_baud)
+        self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller, dummy=True)
 
     def update(self):
         if self.scan_thread and self.scanner:
@@ -355,20 +364,20 @@ class ObjectWizard(QWizard):
             pp.connect(True)
             p.setGravity(0, 0, 0)
             # Add robot into PyBullet environment
-            self.sim_robot = pp.load_pybullet(URDF_RBT, fixed_base=True, scale=2)
+            self.sim_robot = pp.load_pybullet(URDF_RBT, fixed_base=True, scale=SIM_SCALE)
             p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET,
                                               p.getQuaternionFromEuler([0, 0, 0]))
             print(f"[SIM] Initialized robot with ID: {self.sim_robot}")
 
             # Add center platform AND OBJECT into PyBullet environment
-            self.sim_platform = pp.load_pybullet(URDF_PLAT_NO_OBJ, fixed_base=True, scale=2)
+            self.sim_platform = pp.load_pybullet(URDF_PLAT_NO_OBJ, fixed_base=True, scale=SIM_SCALE)
             p.resetBasePositionAndOrientation(self.sim_platform, self.SIM_PLATFORM_OFFSET,
                                               p.getQuaternionFromEuler([0, 0, 0]))
             print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
-            self.obj = pp.load_pybullet(URDF_OBJ, scale=2)
-            p.resetBasePositionAndOrientation(self.obj, np.dot(2, [0, 0, .15875]), [0, 0, 0, 1])
+            self.obj = pp.load_pybullet(URDF_OBJ, scale=SIM_SCALE)
+            p.resetBasePositionAndOrientation(self.obj, np.dot(2, [0, 0, PLATFORM_HEIGHT]), [0, 0, 0, 1])
 
-            self.obj_joint_offset = [0, 0, .16 * 2]
+            self.obj_joint_offset = [0, 0, PLATFORM_HEIGHT * SIM_SCALE]
             self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
                                                 childBodyUniqueId=self.obj,
                                                 childLinkIndex=-1, jointType=p.JOINT_FIXED, jointAxis=[0, 0, 0],
@@ -383,9 +392,12 @@ class ObjectWizard(QWizard):
 
         if pp.is_connected():
             pp.step_simulation()
-            conf = self.rbt.read_cur_conf()[1]
-            if conf is not None: pp.set_joint_positions(self.sim_robot, [1, 2, 3, 4, 5], conf)
             time.sleep(0.01)
+            return
+            # conf = self.robot_instance.read_cur_conf()[1]
+            # if conf is not None:
+            #     pp.set_joint_positions(self.sim_robot, [1, 2, 3, 4, 5], conf)
+            # time.sleep(0.01)
 
     def update_rbt_offset(self):
         """
@@ -411,7 +423,7 @@ class ObjectWizard(QWizard):
            pass, the object lags behind, causing inaccuracies.
         """
         self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value() / 1000, self.ui.sbox_offset_y.value() / 1000,
-                                           .16 + self.ui.sbox_offset_z.value() / 1000])
+                                           PLATFORM_HEIGHT + self.ui.sbox_offset_z.value() / 1000])
         self.obj_rot = [np.deg2rad(self.ui.sbox_offset_rx.value()), np.deg2rad(self.ui.sbox_offset_ry.value()),
                         np.deg2rad(self.ui.sbox_offset_rz.value())]
 
@@ -448,6 +460,15 @@ class ObjectWizard(QWizard):
                                  "Invalid object filetype was selected, please select an object in .stl or .obj format!",
                                  QMessageBox.Ok)
 
+    def find_offsets(self):
+        print("==> Finding object offsets!")
+
+        e = EdgeFinder(self.stepper_controller, self.lds_instance)
+        x, y = e.find_object_edges(self.prim, float(self.ui.sbox_prim_field_A.text()),
+                                   float(self.ui.sbox_prim_field_B.text()), float(self.ui.sbox_prim_field_C.text()))
+
+        print("==> Returned with offsets ", x, " , ", y)
+
     def start_scan(self):
         """
         Create a scan thread and run the scanning algorithm.
@@ -456,11 +477,11 @@ class ObjectWizard(QWizard):
             self.scan_thread.join()
             del self.scan_thread
 
-        self.scanner = ObjectScan(self.stepper_board, port_config, float(self.ui.sbox_scan_x.value()),
-                               float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
-                               self.ui.prg_scan)
+        self.scanner = ObjectScanner(self.stepper_controller, port_config, float(self.ui.sbox_scan_x.value()),
+                                     float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
+                                     self.ui.prg_scan)
 
-        self.scan_thread = threading.Thread(target=self.scanner.begin_scan)
+        self.scan_thread = threading.Thread(target=self.scanner.start_scan)
         self.ui.prg_scan.setValue(0)
         self.scan_thread.start()
 
@@ -470,7 +491,7 @@ class ObjectWizard(QWizard):
         @return:
         """
         self.scanner.stop = True
-        self.rbt.stepper_board.home_scan()
+        self.stepper_controller.write_xyz(0, 0, 0)
 
     def check_scan(self):
         """
@@ -576,7 +597,9 @@ class ObjectWizard(QWizard):
         Then write the offsets to the URDF file so that it is saved. Then destroy itself.
         """
         pp.disconnect()
-        self.rbt.terminate_robot()
+        self.robot_instance.terminate_robot()
+        self.stepper_controller.close()
+        self.lds_instance.close()
         self.o3d_viz.visualizer.destroy_window()
         self.gui_timer.stop()
 

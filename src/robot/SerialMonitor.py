@@ -82,7 +82,10 @@ class StepperHandler(SerialMonitor):
     def write_z(self, pos, feed=500):
         code = bytes(str(f"G1 Z{round(pos)} F{round(feed)}"), "ASCII")
         self.serial_conn.write(code + b'\r\n')
-        print(code)
+
+    def write_xyz(self, x_pos, y_pos, z_pos, feed=1000):
+        code = bytes(str(f"G1 X{round(x_pos)} Y{round(y_pos)} Z{round(z_pos)} F{round(feed)}"), "ASCII")
+        self.serial_conn.write(code + b'\r\n')
 
     def write_rot_platform(self, pos, feed=1600):
         if self.plat_pos != pos:
@@ -91,7 +94,6 @@ class StepperHandler(SerialMonitor):
             self.serial_conn.write(code + b'\r\n')
             self.plat_pos = pos
 
-    # this is robot linear rail
     def write_linear_rail(self, pos, feed=2500):
         if pos < 0:
             return

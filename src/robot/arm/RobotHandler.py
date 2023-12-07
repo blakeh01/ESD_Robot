@@ -3,7 +3,6 @@ from src.robot.SerialMonitor import *
 
 
 class RobotHandler:
-
     """
         This class encompasses the entire 'real' robotic manipulator.
 
@@ -95,9 +94,6 @@ class RobotHandler:
     def update(self):
         self.torque_collision_check()
 
-
-
-
     def torque_collision_check(self):
         self.update_counter += 1
 
@@ -183,6 +179,7 @@ class RobotHandler:
             m.set_torque(TORQUE_DISABLE)
 
         self.port_handler.closePort()
+
 
 class DXL_Motor:
 
