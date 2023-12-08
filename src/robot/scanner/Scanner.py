@@ -93,7 +93,8 @@ class ObjectScanner:
                 self.data_arr = []  # clear array after writing
 
             self.stepper_board.write_rot_platform(rot, self.rot_feed)
-            time.sleep(2.5)
+            self.stepper_board.read_data()
+            # time.sleep(2.5)
 
     def update_live_plot(self, ax, df):
         # Update the 3D scatter plot for the current slice along the x-axis
