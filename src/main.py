@@ -28,7 +28,7 @@ from src.gui.object_wizard import Ui_ObjectWizard
 from src.robot.SerialMonitor import StepperHandler, LDS
 from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import PortConfiguration
-from src.robot.scanner.Scanner import ObjectScan, ObjectScanner, EdgeFinder
+from src.robot.scanner.Scanner import ObjectScanner, EdgeFinder
 from src.sim.ObjectVisualizer import ObjectVisualizer
 from src.sim.scan_algo import ProbingFlowManager
 from src.sim.sim_constants import SIM_SCALE
@@ -354,7 +354,7 @@ class ObjectWizard(QWizard):
 
         self.stepper_controller = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
         self.lds_instance = LDS(port_config.lds_port, port_config.lds_baud)
-        self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller, dummy=True)
+        # self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller, dummy=True)
 
     def update(self):
         if self.scan_thread and self.scanner:
@@ -477,7 +477,7 @@ class ObjectWizard(QWizard):
             self.scan_thread.join()
             del self.scan_thread
 
-        self.scanner = ObjectScanner(self.stepper_controller, port_config, float(self.ui.sbox_scan_x.value()),
+        self.scanner = ObjectScanner(self.stepper_controller, self.lds_instance, float(self.ui.sbox_scan_x.value()),
                                      float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),
                                      self.ui.prg_scan)
 
