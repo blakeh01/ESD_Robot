@@ -1,10 +1,12 @@
 import os
 import time
-from datetime import datetime
-
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
+from mpl_toolkits.mplot3d import Axes3D
 from src.robot.SerialMonitor import *
+from datetime import datetime
 
 
 # possibly useful article if 3D board does NOT respond 'OK' after a move is completed:
@@ -46,6 +48,10 @@ class ObjectScanner:
         df = pd.DataFrame(self.data_arr, columns=['Rotation', 'X-Pos', 'Y-Pos', 'Z-Pos'])
         df.to_excel(self.file_path, index=False, sheet_name='ObjectData')
 
+        # create a 3D plot to view points on the current slice:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
         # rotate object 45 degrees 7 times (0-315, covering entire object)
         for h in range(0, int(self.rotations)):
             rot = h * self.degree
@@ -77,7 +83,8 @@ class ObjectScanner:
 
                 print("Saving points for this z-slice...")
 
-                df = pd.DataFrame(self.data_arr, columns=['rot', 'x', 'y', 'z'])
+                df = pd.DataFrame(self.data_arr, columns=['rot', 'x', 'y', 'z'])  # create pandas df of data
+                self.update_live_plot(ax, df)  # update plot
 
                 # Append to the existing file
                 with pd.ExcelWriter(self.file_path, engine='openpyxl', mode='a') as writer:
@@ -87,6 +94,15 @@ class ObjectScanner:
 
             self.stepper_board.write_rot_platform(rot, self.rot_feed)
             time.sleep(2.5)
+
+    def update_live_plot(self, ax, df):
+        # Update the 3D scatter plot for the current slice along the x-axis
+        ax.clear()
+        ax.scatter(df['x'], df['y'], df['z'], c=df['rot'], cmap='viridis')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        plt.show()
 
 
 X_PLAT_MIDDLE = 101  # corresponds to middle of platform when x pos is set to 101
