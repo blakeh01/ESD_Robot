@@ -106,20 +106,26 @@ class RobotHandler:
                     print("COLLISION DETECTED!")
 
     def set_goal_conf(self, joint_states):
-        # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
+        """
+        Using the DynamixelSDK to write to the goal position register of the servos.
+
+        @param joint_states: Simulated joint state values, ultimately converted to dxl units before writing to servos.
+        """
+
+        # get DXL units for each joint state. Revolute joints are + np.pi due to PyBullet -pi -> pi instead of
+        # dynamixels 0 -> 2pi.
         rail_pos = radiansToDxlUnits(joint_states[0])
-#        waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
         shoulder_pos = radiansToDxlUnits(joint_states[2] + np.pi)
         elbow_pos = radiansToDxlUnits(joint_states[3] + np.pi)
         wrist_pos = radiansToDxlUnits(joint_states[4] + np.pi)
 
         # add a group write parameter containing the positional data to the DXLs
- #       addGroupParameter(self.pos_group_writer, DXL_IDS[0], byteIntegerTransform(int(waist_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[1], byteIntegerTransform(int(shoulder_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[2], byteIntegerTransform(int(shoulder_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[3], byteIntegerTransform(int(elbow_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[4], byteIntegerTransform(int(wrist_pos)))
 
+        # use stepper controller to write to linear rail
         self.stepper_controller.write_linear_rail(int(rail_pos), 2500)
 
         # Syncwrite goal positions
@@ -129,6 +135,11 @@ class RobotHandler:
         self.pos_group_writer.clearParam()
 
     def read_cur_conf(self):
+        """
+        Uses the bulk readers initialized in init to quickly read position and force data
+
+        @return: [forces, positions] where each is a 5 element array corresponding to each motor.
+        """
         conf = []
 
         # read current robot position
