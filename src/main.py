@@ -271,7 +271,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         a0.accept()
 
 
-PLATFORM_HEIGHT = 0.16
+PLATFORM_HEIGHT = 0.16  # height of the rotating platform in m.
 
 
 class ObjectWizard(QWizard):
@@ -354,7 +354,6 @@ class ObjectWizard(QWizard):
 
         self.stepper_controller = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
         self.lds_instance = LDS(port_config.lds_port, port_config.lds_baud)
-        # self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller, dummy=True)
 
     def update(self):
         if self.scan_thread and self.scanner:
@@ -394,10 +393,6 @@ class ObjectWizard(QWizard):
             pp.step_simulation()
             time.sleep(0.01)
             return
-            # conf = self.robot_instance.read_cur_conf()[1]
-            # if conf is not None:
-            #     pp.set_joint_positions(self.sim_robot, [1, 2, 3, 4, 5], conf)
-            # time.sleep(0.01)
 
     def update_rbt_offset(self):
         """
@@ -461,6 +456,18 @@ class ObjectWizard(QWizard):
                                  QMessageBox.Ok)
 
     def find_offsets(self):
+        """
+        Use the edge finding algorithm to find the edges of primitive objects for calculating offsets automatically.
+        @return:
+        """
+
+        if self.prim is None or self.prim not in ["Cylinder", "Rectangular Prism", "Sphere"]:
+            QMessageBox.critical(None,
+                                 "Automatic Offset Not Supported!",
+                                 "Automatic offsets are only supported for primitive objects!",
+                                 QMessageBox.Ok)
+            return
+
         print("==> Finding object offsets!")
 
         e = EdgeFinder(self.stepper_controller, self.lds_instance)
@@ -476,6 +483,8 @@ class ObjectWizard(QWizard):
         if self.scan_thread:
             self.scan_thread.join()
             del self.scan_thread
+
+        print("==> Generating object using scanner...")
 
         self.scanner = ObjectScanner(self.stepper_controller, self.lds_instance, float(self.ui.sbox_scan_x.value()),
                                      float(self.ui.sbox_scan_y.value()), float(self.ui.sbox_scan_z.value()),

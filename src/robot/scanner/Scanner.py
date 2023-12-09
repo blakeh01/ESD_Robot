@@ -13,7 +13,8 @@ from datetime import datetime
 # https://forum.duet3d.com/topic/18282/tighter-control-for-waiting-for-motion-commands-to-complete/2
 class ObjectScanner:
 
-    def __init__(self, stepper_board: StepperHandler, lds: LDS, obj_x, obj_y, obj_z, run_thread=None, percentage_widget=None):
+    def __init__(self, stepper_board: StepperHandler, lds: LDS, obj_x, obj_y, obj_z, run_thread=None,
+                 percentage_widget=None):
         self.stepper_board = stepper_board
         self.lds = lds
 
@@ -43,14 +44,13 @@ class ObjectScanner:
 
         self.file_path = f"scanned-points_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-    def start_scan(self):
+    def start_scan_interp(self):
+        """
+        Uses interpolation of stepper position to more quickly scan an object at a cost of accuracy.
+        """
         # create excel to write points to
         df = pd.DataFrame(self.data_arr, columns=['Rotation', 'X-Pos', 'Y-Pos', 'Z-Pos'])
         df.to_excel(self.file_path, index=False, sheet_name='ObjectData')
-
-        # create a 3D plot to view points on the current slice:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
 
         # rotate object 45 degrees 7 times (0-315, covering entire object)
         for h in range(0, int(self.rotations)):
@@ -59,33 +59,33 @@ class ObjectScanner:
             # iterate through z_start to z_end
             for z_pos in range(self.z_start, self.z_end):
                 self.stepper_board.write_z(z_pos, self.z_feed)
-                self.stepper_board.read_data()  # a way to wait for response from stepper before continuing
+                time.sleep(1)
 
-                for x_pos in range(self.x_start, self.x_end):
+                steps = range(self.x_start, self.x_end)
+                dt = 8.118 / len(steps)  # 8.118 is time it takes for rail to move from x_start to x_end
 
-                    if self.stop:  # allows the for loop to be interrupted if halt is called
-                        return
+                self.stepper_board.write_x(self.x_end, self.x_feed)  # begin motion to end of rail
+                for x_pos in steps:  # go through each step, sleeping for dt so scanning only on proper interval.
+                    dist_mm = self.lds.get_absolute_distance() / 100  # / 100 to get into mm.
 
-                    self.stepper_board.write_x(x_pos, self.x_feed)
-                    self.stepper_board.read_data()  # a way to wait for response from stepper before reading data
+                    # read LDS and append position/rot to the data arr. ignore points that are 'maxed' out.
+                    if dist_mm < 420:
+                        self.data_arr.append([rot, x_pos, dist_mm, z_pos])
 
-                    # read LDS and append position/rot to the data arr
-                    self.data_arr.append([rot, x_pos, self.lds.get_absolute_distance(), z_pos])
                     self.point_index += 1
-
                     if self.percentage_widget:
                         self.percentage_widget.setValue(int((self.point_index / self.total_points) * 100))
 
-                    print("Saved point: ", x_pos, self.lds.get_absolute_distance(), z_pos, " degree: ", rot)
+                    print("Saved point: ", x_pos, dist_mm, z_pos, " degree: ", rot)
+
+                    time.sleep(dt)
 
                 self.stepper_board.write_x(self.x_start, self.x_feed)  # move x rail back to start
-                self.stepper_board.read_data()  # wait for response
+                time.sleep(8.5)
 
                 print("Saving points for this z-slice...")
 
                 df = pd.DataFrame(self.data_arr, columns=['rot', 'x', 'y', 'z'])  # create pandas df of data
-                self.update_live_plot(ax, df)  # update plot
-
                 # Append to the existing file
                 with pd.ExcelWriter(self.file_path, engine='openpyxl', mode='a') as writer:
                     df.to_excel(writer, index=False, sheet_name='ObjectData', header=False)
@@ -93,17 +93,66 @@ class ObjectScanner:
                 self.data_arr = []  # clear array after writing
 
             self.stepper_board.write_rot_platform(rot, self.rot_feed)
-            self.stepper_board.read_data()
-            # time.sleep(2.5)
+            self.stepper_board.write_xyz(0, 0, 0)
+            time.sleep(10)
 
-    def update_live_plot(self, ax, df):
-        # Update the 3D scatter plot for the current slice along the x-axis
-        ax.clear()
-        ax.scatter(df['x'], df['y'], df['z'], c=df['rot'], cmap='viridis')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        plt.show()
+        return True
+
+    def start_scan(self):
+        """
+        Waits a static amount of time between each stepper movement to ensure the stepper position is known. Highest
+        accuracy, but slowest performance.
+        """
+        # create excel to write points to
+        df = pd.DataFrame(self.data_arr, columns=['Rotation', 'X-Pos', 'Y-Pos', 'Z-Pos'])
+        df.to_excel(self.file_path, index=False, sheet_name='ObjectData')
+
+        # rotate object 45 degrees 7 times (0-315, covering entire object)
+        for h in range(0, int(self.rotations)):
+            rot = h * self.degree
+
+            # iterate through z_start to z_end
+            for z_pos in range(self.z_start, self.z_end):
+                self.stepper_board.write_z(z_pos, self.z_feed)
+                time.sleep(0.5)
+
+                for x_pos in range(self.x_start, self.x_end):
+
+                    if self.stop:  # allows the for loop to be interrupted if halt is called
+                        return False
+
+                    self.stepper_board.write_x(x_pos, self.x_feed)
+                    time.sleep(0.2)
+
+                    dist_mm = self.lds.get_absolute_distance() / 100  # / 100 to get into mm.
+
+                    # read LDS and append position/rot to the data arr. ignore points that are 'maxed' out.
+                    if dist_mm < 420:
+                        self.data_arr.append([rot, x_pos, dist_mm, z_pos])
+
+                    self.point_index += 1
+                    if self.percentage_widget:
+                        self.percentage_widget.setValue(int((self.point_index / self.total_points) * 100))
+
+                    print("Saved point: ", x_pos, dist_mm, z_pos, " degree: ", rot)
+
+                self.stepper_board.write_x(self.x_start, self.x_feed)  # move x rail back to start
+                time.sleep(8.5)
+
+                print("Saving points for this z-slice...")
+
+                df = pd.DataFrame(self.data_arr, columns=['rot', 'x', 'y', 'z'])  # create pandas df of data
+                # Append to the existing file
+                with pd.ExcelWriter(self.file_path, engine='openpyxl', mode='a') as writer:
+                    df.to_excel(writer, index=False, sheet_name='ObjectData', header=False)
+
+                self.data_arr = []  # clear array after writing
+
+            self.stepper_board.write_rot_platform(rot, self.rot_feed)
+            self.stepper_board.write_xyz(0, 0, 0)
+            time.sleep(7.5)
+
+        return True
 
 
 X_PLAT_MIDDLE = 101  # corresponds to middle of platform when x pos is set to 101
@@ -138,7 +187,8 @@ class EdgeFinder:
         if primitive == "Rectangular Prism":
             # get object parameters
             x, y, z = obj_data[0], obj_data[1], obj_data[2]
-            print("Finding rect edges... expected edges at: (x) ", (X_PLAT_MIDDLE - x/2), " and ", (X_PLAT_MIDDLE - x/2), ", and (y), ", (X_PLAT_MIDDLE - y/2), " and ", (X_PLAT_MIDDLE - y/2))
+            print("Finding rect edges... expected edges at: (x) ", (X_PLAT_MIDDLE - x / 2), " and ",
+                  (X_PLAT_MIDDLE - x / 2), ", and (y), ", (X_PLAT_MIDDLE - y / 2), " and ", (X_PLAT_MIDDLE - y / 2))
             ####### (from perspective of laser) find left most edge #######
 
             y = self.lds.get_absolute_distance()  # get current distance
@@ -162,7 +212,7 @@ class EdgeFinder:
             right_edge_x = X_PLAT_MIDDLE
             while y <= LDS_MAX_RANGE:  # while the LDS is in range (on the object)
                 # move stepper board by 1 mm, wait, then check laser again to see if edge was detected
-                self.stepper_board.write_x(right_edge_x, self.x_feed*2)
+                self.stepper_board.write_x(right_edge_x, self.x_feed * 2)
                 right_edge_x += 1
                 time.sleep(0.2)
 
@@ -181,7 +231,7 @@ class EdgeFinder:
             left_edge_x = 0  # coordinate of left edge, shifted 101
             while y >= LDS_MAX_RANGE:  # while LDS is out of range (no edge detected)
                 # move stepper board by 1 mm, wait, then check laser again to see if edge was detected
-                self.stepper_board.write_x(left_edge_x, self.x_feed*2)
+                self.stepper_board.write_x(left_edge_x, self.x_feed * 2)
                 left_edge_x += 1
                 time.sleep(0.2)
 
@@ -215,7 +265,7 @@ class EdgeFinder:
             print("Finding cylinder edges... expected edges at: ", (X_PLAT_MIDDLE - r))
 
             ####### (from perspective of laser) move left until off of the object #######
-            self.stepper_board.write_xyz(X_PLAT_MIDDLE, 0, h/2 - 15)  # minus 15 for LDS offset
+            self.stepper_board.write_xyz(X_PLAT_MIDDLE, 0, h / 2 - 15)  # minus 15 for LDS offset
             time.sleep(10)
 
             y = self.lds.get_absolute_distance()
