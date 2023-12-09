@@ -561,16 +561,18 @@ class Discharge:
         time.sleep(10)
 
         # get distance to the object
-        y = self.LDS.get_absolute_distance()
-        y = int(y / 100)  # convert units
-        print("writing to y: ", y)
+        y = self.LDS.get_dist_mm()
+        print("measured y: ", y)
+
+        # offset measured pos by CVR length and discharge gap
+        y_pos = y - (self.cvr_len + self.discharge_gap)
 
         # basic limit checking
-        if y > 175 or y < 0:
+        if y_pos > 175 or y_pos < 0:
             return False
 
-        # move y in offsetting by CVR length and discharge gap.
-        self.stepper_board.write_y(y - (self.cvr_len + self.discharge_gap), self.y_feed)
+        # move in to calculated y_pos
+        self.stepper_board.write_y(y_pos, self.y_feed)
         time.sleep(10)  # wait for discharge
 
         # rehome
@@ -592,6 +594,9 @@ class Probe:
         self.measured_points.append(apt)
 
     def export_measured_points(self):
+        """
+        Writes raw data from measured points to an Excel file
+        """
         data = []
         for point in self.measured_points:
             data.append({

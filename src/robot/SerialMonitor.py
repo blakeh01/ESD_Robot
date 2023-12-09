@@ -126,6 +126,11 @@ class StepperHandler(SerialMonitor):
 
 
 class LDS:
+    """
+    Uses an RS485 protocol to communicate serially with the LDS.
+
+    All byte codes are in the datasheet featured in docs/datasheets/CDS-100
+    """
 
     def __init__(self, port, baud):
         try:
@@ -153,6 +158,9 @@ class LDS:
 
     def get_absolute_distance(self):
         return self.read_distance() + 10_000
+
+    def get_dist_mm(self):
+        return self.get_absolute_distance() / 100
 
     def tx_rx(self, command, data_1, data_2, packet_size=6, verbose=False):
         self.laser.flush()
