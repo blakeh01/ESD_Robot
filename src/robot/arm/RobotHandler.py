@@ -108,20 +108,19 @@ class RobotHandler:
     def set_goal_conf(self, joint_states):
         # Simulation rotation -> DXL position (add pi to joint state, turn into degrees, divide by position unit per deg)
         rail_pos = radiansToDxlUnits(joint_states[0])
-        waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
+#        waist_pos = radiansToDxlUnits(joint_states[1] + np.pi)
         shoulder_pos = radiansToDxlUnits(joint_states[2] + np.pi)
         elbow_pos = radiansToDxlUnits(joint_states[3] + np.pi)
         wrist_pos = radiansToDxlUnits(joint_states[4] + np.pi)
-        waist_pos = 2005  # todo care
 
         # add a group write parameter containing the positional data to the DXLs
-        addGroupParameter(self.pos_group_writer, DXL_IDS[0], byteIntegerTransform(int(waist_pos)))
+ #       addGroupParameter(self.pos_group_writer, DXL_IDS[0], byteIntegerTransform(int(waist_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[1], byteIntegerTransform(int(shoulder_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[2], byteIntegerTransform(int(shoulder_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[3], byteIntegerTransform(int(elbow_pos)))
         addGroupParameter(self.pos_group_writer, DXL_IDS[4], byteIntegerTransform(int(wrist_pos)))
 
-        self.stepper_controller.write_b(int(rail_pos), 2500)
+        self.stepper_controller.write_linear_rail(int(rail_pos), 2500)
 
         # Syncwrite goal positions
         self.pos_group_writer.txPacket()  # begins motion of the DXLs

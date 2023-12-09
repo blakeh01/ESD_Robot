@@ -109,7 +109,7 @@ class StepperHandler(SerialMonitor):
         self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
 
-    def home_linear_rai(self):
+    def home_linear_rail(self):
         code = bytes(str(f"G28 B"), "ASCII")
         self.serial_conn.flushInput()
         self.serial_conn.write(code + b'\r\n')
