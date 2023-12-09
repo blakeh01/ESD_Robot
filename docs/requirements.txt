@@ -9,3 +9,6 @@ numpy
 pyqtgraph
 pyserial
 pyqt5-tools
+openpyxl
+pandas
+nidaqmx

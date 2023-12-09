@@ -127,9 +127,9 @@ class StepperHandler(SerialMonitor):
 
 class LDS:
     """
-    Uses an RS485 protocol to communicate serially with the LDS.
+    Uses an RS-485 protocol to communicate serially with the LDS.
 
-    All byte codes are in the datasheet featured in docs/datasheets/CDS-100
+    All byte codes are in the datasheet featured in docs/datasheets/CD22-100
     """
 
     def __init__(self, port, baud):
