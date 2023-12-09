@@ -25,14 +25,12 @@ class ObjectScanner:
 
         self.x_start = 0
         self.z_start = 0
-        self.x_end = 203
-        self.z_end = 203
+        self.x_end = 203  # in mm
+        self.z_end = 203  # in mm
 
-        self.x_feed = 1500
-        self.z_feed = 500
-        self.rot_feed = 1600
-
-        self.step = 1
+        self.x_feed = 1500  # in mm/min
+        self.z_feed = 500   # in mm/min
+        self.rot_feed = 1600    # in mm/min
 
         self.degree = 45
         self.rotations = 360 / self.degree
@@ -47,6 +45,13 @@ class ObjectScanner:
     def start_scan_interp(self):
         """
         Uses interpolation of stepper position to more quickly scan an object at a cost of accuracy.
+
+        This algorithm works by calculating how long it takes for the X axis rail to complete the self.x_start
+        to self.x_end movement based on self.x_feed. It then divides this time by the number of points needing
+        to be scanned to get a 'scanning rate' by sleeping at this interval, we can expect the laser to report a
+        measurement at each mm.
+
+        In other words, time system will sleep for 1 mm, scan, then repeat. Where 1 mm travel time is simply dt.
         """
         # create excel to write points to
         df = pd.DataFrame(self.data_arr, columns=['Rotation', 'X-Pos', 'Y-Pos', 'Z-Pos'])
@@ -62,7 +67,10 @@ class ObjectScanner:
                 time.sleep(1)
 
                 steps = range(self.x_start, self.x_end)
-                dt = 8.118 / len(steps)  # 8.118 is time it takes for rail to move from x_start to x_end
+
+                # calculate how long it takes to reach x_end going x_feed mm/min, then divide by number of steps
+                # to get the interval at which the scanner should scan.
+                dt = ((self.x_end - self.x_start) / (self.x_feed/60)) / len(steps)
 
                 self.stepper_board.write_x(self.x_end, self.x_feed)  # begin motion to end of rail
                 for x_pos in steps:  # go through each step, sleeping for dt so scanning only on proper interval.
@@ -78,7 +86,7 @@ class ObjectScanner:
 
                     print("Saved point: ", x_pos, dist_mm, z_pos, " degree: ", rot)
 
-                    time.sleep(dt)
+                    time.sleep(dt)  # sleep interval time.
 
                 self.stepper_board.write_x(self.x_start, self.x_feed)  # move x rail back to start
                 time.sleep(8.5)
@@ -112,11 +120,11 @@ class ObjectScanner:
             rot = h * self.degree
 
             # iterate through z_start to z_end
-            for z_pos in range(self.z_start, self.z_end):
+            for z_pos in np.arange(self.z_start, self.z_end, step=1):
                 self.stepper_board.write_z(z_pos, self.z_feed)
                 time.sleep(0.5)
 
-                for x_pos in range(self.x_start, self.x_end):
+                for x_pos in np.arange(self.x_start, self.x_end, step=1):
 
                     if self.stop:  # allows the for loop to be interrupted if halt is called
                         return False
