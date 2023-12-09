@@ -531,31 +531,34 @@ class Charge:
 
 class Discharge:
 
-    def __init__(self, stepper_inst, lds_inst, obj_z, cvr_len):
+    def __init__(self, stepper_inst: StepperHandler, lds_inst: LDS, obj_z, cvr_len):
         self.start_time = 0
         self.end_time = 0
 
-        self.x_feed = 1500
-        self.y_feed = 500  # This needs to be changed to the equivalent of 50mm/s
-        self.z_feed = 500
-        self.step = 1
-
-        self.complete = False
-
         self.stepper_board = stepper_inst
         self.LDS = lds_inst
-
         self.obj_z = obj_z
         self.cvr_len = cvr_len
 
+        self.discharge_gap = 10  # discharge gap in mm -> space between object and probe once discharge is in place.
+
+        self.x_feed = 1500  # in mm/min
+        self.y_feed = 500   # ^
+        self.z_feed = 500   # ^
+
     def discharge(self):
+        """
+        Using the LDS sensor, calculate where the object is and approach it to 1 cm.
+
+        @return: True if successful, False if failed
+        """
         # home steppers
-        self.stepper_board.home_scan()
-        time.sleep(15)
+        self.stepper_board.write_xyz(0, 0, 0)
+        time.sleep(10)
 
         # move probe up to center of object with a small offset for center of CVR
-        self.stepper_board.write_z((self.obj_z / 2) - 25, self.z_feed)
-        time.sleep(15)
+        self.stepper_board.write_z((self.obj_z / 2) - 15, self.z_feed)
+        time.sleep(10)
 
         # get distance to the object
         y = self.LDS.get_absolute_distance()
@@ -564,15 +567,17 @@ class Discharge:
 
         # basic limit checking
         if y > 175 or y < 0:
-            return
+            return False
 
-        # move y in offsetting by CVR length.
-        self.stepper_board.write_y(y - self.cvr_len, self.y_feed)
-        self.stepper_board.read_data()
+        # move y in offsetting by CVR length and discharge gap.
+        self.stepper_board.write_y(y - (self.cvr_len + self.discharge_gap), self.y_feed)
         time.sleep(10)  # wait for discharge
 
         # rehome
-        self.stepper_board.home_scan()
+        self.stepper_board.write_xyz(0, 0, 0)
+        time.sleep(10)
+
+        return True
 
 
 class Probe:
