@@ -159,7 +159,7 @@ class DialogRobotInfo(QDialog):
     def update(self):
         self.t.append(self.t[-1] + self.REFRESH_RATE)
 
-        ## SIM POSITIONS (todo, add check for mode to select between pos/vel/accel)
+        ## SIM POSITIONS
 
         # read positions and assign the time and position to dict
         read_pos = pp.get_joint_positions(self.sim.sim_robot, [1, 2, 3, 4])
@@ -183,9 +183,6 @@ class DialogRobotInfo(QDialog):
         self.sim_elbow_line.setData(x_plot_data, elbow_plot_data)
         self.sim_wrist_line.setData(x_plot_data, wrist_plot_data)
         self.probe_pot_line.setData(x_plot_data, probe_plot_data)
-
-    def trim(self):
-        pass  # trims list to avoid huge memory usage, might not be neccessary.
 
     def toggle_pause(self):
         if self.update_timer.isActive():

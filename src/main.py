@@ -497,7 +497,6 @@ class ObjectWizard(QWizard):
     def halt_scan(self):
         """
         If the halt scan is pressed, stop it and home the scanning system.
-        @return:
         """
         self.scanner.stop = True
         self.stepper_controller.write_xyz(0, 0, 0)

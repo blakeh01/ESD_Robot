@@ -11,6 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
 from src.Controller import Controller
+from src.sim.sim_constants import SIM_SCALE
 from src.sim.simhelper import get_normal_point_cloud
 
 
@@ -132,13 +133,17 @@ class DialogNormalGenerator(QDialog):
         self.ui.btn_generate_normals.clicked.connect(self.generate_normals)
 
     def generate_normals(self):
-        #pts_per_slice, z_limits, z_density, probe_dist, obj_center
-        print((((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * 2, ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * 2))
+        """
+        Call the get_normal_point_cloud function based on the user defined parameters.
+
+        When generated, this point cloud is set to the simulation instance's stored PC ready for probing.
+        """
+
         cloud = get_normal_point_cloud(
             int(self.ui.sbox_scan_resolution.text()),
-            (((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * 2, ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * 2), # scale correction factor
+            (((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * SIM_SCALE, ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * SIM_SCALE), # scale correction factor
             int(self.ui.sbox_scan_z_4.text()),
-            (float(self.ui.sbox_probe_distance.text()) / 1000) * 2,
+            (float(self.ui.sbox_probe_distance.text()) / 1000) * SIM_SCALE,
             self.controller_instance.simulation_instance.object_offset
         )
 

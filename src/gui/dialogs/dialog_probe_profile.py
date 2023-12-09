@@ -160,6 +160,7 @@ class DialogProbeProfile(QDialog):
 
         for i in items:
             self.ui.list_probe_flow.takeItem(i.row())
+            self.flow_list.pop(i.row())
 
     def add_wait(self):
         value, ok = QInputDialog.getText(self, 'Enter Wait Time', 'Wait Time (s):')
