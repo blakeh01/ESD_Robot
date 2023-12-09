@@ -20,22 +20,29 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  if (Serial.available() > 0)
-  {
-    int cmd = Serial.parseInt();
-
-    if(cmd == 1)
+    if (Serial.available() > 0)
     {
-      delay(1000);
-      digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
-      digitalWrite(relay_pin, HIGH);
-      ground_servo.write(servo_lowered);
-      delay(1000);              // wait for a second
-      digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
-      digitalWrite(relay_pin, LOW);
-      ground_servo.write(servo_raised);
-      delay(250);
-      Serial.println("ok");     // movement completed, reply ok. 
+      String command = Serial.readStringUntil('\n');  // Read the string until a newline character is encountered
+
+      if (command == "ground")
+      {
+        delay(1000);
+        digitalWrite(13, HIGH);   // Turn the LED on (HIGH is the voltage level)
+        digitalWrite(relay_pin, HIGH);
+        ground_servo.write(servo_lowered);
+        delay(1000);              // Wait for a second
+        digitalWrite(13, LOW);    // Turn the LED off by making the voltage LOW
+        digitalWrite(relay_pin, LOW);
+        ground_servo.write(servo_raised);
+        delay(250);
+        Serial.println("ACK");     // Movement completed, reply with "ok"
+      }
+      else if(command == "charge")
+      {
+      }
+      else
+      {
+        Serial.println("NAK")
+      }
     }
-  }
 }
