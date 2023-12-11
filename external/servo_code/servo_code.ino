@@ -8,6 +8,8 @@ int relay_pin = 10;
 int servo_raised = 180;
 int servo_lowered = 10;
 
+boolean charge_state = False;  // False is off, True is on
+
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600);
@@ -39,6 +41,7 @@ void loop() {
       }
       else if(command == "charge")
       {
+        charge = !charge;
       }
       else
       {

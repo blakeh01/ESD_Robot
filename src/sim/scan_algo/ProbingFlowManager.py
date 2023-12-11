@@ -22,6 +22,7 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from src.robot.arm.RobotHandler import RobotHandler
 from src.sim.Command import *
 from src.sim.simhelper import *
 from src.sim.simulation import Simulation
@@ -29,17 +30,16 @@ from src.util.math_util import *
 
 from src.robot.SerialMonitor import *
 
-MOVE_TO_POINT = 0
-MEASURE = 1
-
 
 class ProbingFlowManager:
 
-    def __init__(self, simulation: Simulation, flow_list, flow_args):
-        self.sim = simulation
-        self.probe_points = simulation.normal_point_cloud.alignment_points
-        # self.robot = simulation.robot_handler
+    def __init__(self, sim_instance: Simulation, robot_instance: RobotHandler, feather_instance, flow_list, flow_args):
+        self.sim = sim_instance
+        self.probe_points = sim_instance.normal_point_cloud.alignment_points
         self.flow_list = flow_list  # list of actions (probe/discharge/charge/wait)
+
+        self.robot = robot_instance
+        self.feather = feather_instance
 
         self.cur_flow_idx = 0
         self.cur_flow = None
@@ -51,9 +51,9 @@ class ProbingFlowManager:
         self.grounding_interval = float(flow_args[2])  # in ms
         self.measuring_time = float(flow_args[3])  # convert to ms
 
-        self.probe_action_state = None
         self.ground_flag = False
         self.next_ground_time = 0
+        self.charge_timeout = 0  # used in automatic charging via. Slapper 9001
         self.action_timeout = 0
         self.probe_percentage = 0
 
@@ -93,21 +93,36 @@ class ProbingFlowManager:
 
         ### CHARGE ###
         elif isinstance(self.cur_flow, Charge):
-            if self.cur_flow.start_time == 0:  # if this is the first time this is called, set the btn and label to visible for the user.
-                self.cur_flow.start_time = time_elapsed
-                self.action_timeout = time_elapsed + 0.25  # wait a quarter second
-                self.sim.controller.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
-                self.sim.controller.lbl_charge_warn.setVisible(True)  # set 'charge' label to visible.
 
-            if time_elapsed >= self.action_timeout:  # flash the background of the charge label to give more urgency.
+            if self.cur_flow.start_time == 0:
+                self.cur_flow.start_time = time_elapsed
+                self.sim.controller.lbl_charge_warn.setVisible(True)  # set 'charge' label to visible.
+                self.action_timeout = time_elapsed + 0.25  # wait a quarter second for flashing effect!
+
+                if not self.cur_flow.manual_charge:
+                    self.feather.write_data("charge\n".encode())  # tell servo to begin charging!
+                    self.charge_timeout = time_elapsed + self.cur_flow.duration
+                else:
+                    self.sim.controller.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
+
+            # flash the background of the charge label to give more urgency.
+            if time_elapsed >= self.action_timeout:
                 self.action_timeout = time_elapsed + 0.25
                 self.sim.controller.lbl_charge_warn.setStyleSheet(
                     "background-color: lightgreen" if self.sim.controller.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
-            if self.cur_flow.is_charged:  # if the charge done flag is set by something, consider this action complete!
+            # if the charge done flag is set by something, consider this action complete!
+            # or if the charge time is up.
+            if self.cur_flow.is_charged or time_elapsed >= self.charge_timeout:
+
+                if not self.cur_flow.manual_charge:
+                    self.feather.write_data("charge\n".encode())  # tell servo to stop charging! (toggle command)
+
                 print("==> Charge Complete!")
                 self.cur_flow.end_time = time_elapsed
                 self.cur_flow_idx += 1  # advance to next action
+                self.sim.controller.lbl_charge_warn.setVisible(False)  # set 'charge' label to visible.
+                self.sim.controller.btn_charge_done.setVisible(False)  # set 'charge done' button to visible
 
         ### DISCHARGE ###
         elif isinstance(self.cur_flow, Discharge):  # if the action is discharge
@@ -120,84 +135,9 @@ class ProbingFlowManager:
         elif isinstance(self.cur_flow, Probe):
             if self.cur_flow.start_time == 0:
                 self.cur_flow.start_time = time_elapsed
-                self.ground_flag = True  # force to ground at first
                 print("==> Probe Begin!")
-                self.probe_action_state = MOVE_TO_POINT
-
-            ### MOVE RBT AND PLATFORM TO NEXT POINT ###
-
-            if self.probe_action_state == MOVE_TO_POINT and not self.ground_flag:
-                next_conf = self.get_next_confs()
-
-                if next_conf is None:  # if None, do nothing for this point
-                    return
-
-                if isinstance(next_conf, bool) and next_conf:  # if a True boolean, consider this complete.
-                    self.cur_flow.end_time = time_elapsed
-                    print("==> Probe Complete!")  # todo: add going home here
-                    self.cur_flow_idx += 1
-                    return
-
-                # if a legitimate configuration, set the goals and move!
-                self.cur_alignment_point, self.goal_plat_rot = next_conf
-
-                print("Moving to next probe point!")
-
-                # call command to rotate platform to angle so that the point will be lined up
-                self.sim.pos_plat_command = PlatformPositionSetter(self.sim, self.goal_plat_rot)
-
-                # set the probe position to the newly rotated point.
-                self.sim.pos_probe_command = ProbePositionSetter(self.sim,
-                                                                 self.cur_alignment_point.pos,
-                                                                 [0, 0, 0]#self.cur_alignment_point.dir
-                                                                 )
-
-                self.probe_action_state = MEASURE  # we have sent the positions, now wait and measure
-
-            ### WAIT FOR MOVEMENT AND MEASURE ###
-            elif self.probe_action_state == MEASURE:
-
-                # exit out if we are still moving to the probe point
-                if not self.sim.pos_probe_command.complete and not self.sim.pos_plat_command.complete:
-                    return
-
-                # if measuring time is greater than 0, wait that time and then probe, otherwise just probe.
-                if self.measuring_time > 0 and self.action_timeout == 0:
-                    self.action_timeout = time_elapsed + self.measuring_time
-                else:
-                    print("Movement complete, taking measurement!")
-                    self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
-                    self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
-                    self.cur_flow.add_measured_point(self.cur_alignment_point)
-                    return
-
-                if time_elapsed >= self.action_timeout:
-                    print("Movement complete, taking measurement!")
-                    self.cur_alignment_point.measurement = 1  # TODO: set to NIDAQ reading
-                    self.probe_action_state = MOVE_TO_POINT  # now move to point once we are done measuring
-                    self.cur_flow.add_measured_point(self.cur_alignment_point)
-                    self.action_timeout = 0
-
-            ### GROUND PROBE ###
-            elif self.ground_flag and self.action_timeout == 0:
-                print("Ground flag is raised! Grounding...")
-                # offset probe by a static amount for backing off to allow room for ground probe
-                new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
-                new_point = np.add(new_point, [-.075, 0, 0])
-                self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point,
-                                                                 [0, 0, 0])  # todo: match current joint orn?
-
-                self.action_timeout = time_elapsed + 4  # start a 4-second timeout to finish ground action
-                # self.sim.robot_handler.feather0.write_data(b'1')  # writing serial 1 to feather is ground command
-
-            ### CONDITIONAL STATE CHANGES ###
-            if not self.ground_flag and time_elapsed >= self.next_ground_time:
-                self.ground_flag = True
-            elif self.ground_flag and time_elapsed >= self.action_timeout:
-                print("Grounding Complete!")
-                self.ground_flag = False
-                self.next_ground_time = time_elapsed + self.grounding_interval
-                self.action_timeout = 0
+            else:
+                self.update_probing(time_elapsed)  # the current flow is probing, start probing!
 
     def construct_probe_plan(self):
         """
@@ -208,23 +148,18 @@ class ProbingFlowManager:
         """
         raise NotImplementedError("Please override this method for proper functionality!")
 
-    def get_next_confs(self):
+    def update_probing(self, time_elapsed):
         """
-        When queried, get the next goal position and orientation for the robot and the angle of the platform.
-        An implementation is required.
-
-        To set a goal robot position and orn, you must pass an alignment point to the tuple. See AlignmentPoint.
-
-        @return: NONE if the robot should not move, TRUE if the probing is complete,
-            return alignment_point, plat_orn to set next robot configuration.
+        This function is called when the current flow state is probe. Do all necessary movements / next movement
+        / measuring and other calculations here.
         """
         raise NotImplementedError("Please override this method for proper functionality!")
 
 
 class RotationallySymmetric(ProbingFlowManager):
 
-    def __init__(self, simulation: Simulation, flow_list, flow_args):
-        super().__init__(simulation, flow_list, flow_args)
+    def __init__(self, sim_instance: Simulation, robot_instance: RobotHandler, flow_list, flow_args):
+        super().__init__(sim_instance, robot_instance, flow_list, flow_args)
         self.z_slices = {}  # a list of slices made along the Z-axis for probing
         self.z_sil_index = 0  # the current index of Z-slice being probed
         self.cur_slice = None  # a reference to the current slice (this is z_slices[] @ index z_sil_index)
@@ -234,6 +169,8 @@ class RotationallySymmetric(ProbingFlowManager):
 
         self.cur_path = None  # a list of points (of the cur_slice) that are sorted via a least cost pathing function.
         self.cur_point_index = 0  # the current point we are probing from the current path.
+
+        self.measure_flag = False  # a flag that is raised when the robot has reached the point and is ready to measure.
 
         self.construct_probe_plan()
 
@@ -306,65 +243,133 @@ class RotationallySymmetric(ProbingFlowManager):
         self.z_slices = sort_and_convert_to_list(self.z_slices)
         print("Generated " + str(len(self.z_slices)) + " slices!")
 
-    def get_next_confs(self):
+    def update_probing(self, time_elapsed):
+        # if the current z slice index is GREATER THAN (or EQ) than the number of slices, we have computed all slices.
+        # mark as complete, advance flow, and drive the mootors home.
         if self.z_sil_index >= len(self.z_slices):
-            return True
+            print("Probing Completed!")
+            self.cur_flow.end_time = time_elapsed
+            self.cur_flow_idx += 1
 
+            # hacky way to quickly step simulation to move the motors home
+            # this is purely a quirk of pybullet.
+            for i in range(100):
+                self.sim.drive_motors_to_home()
+                p.stepSimulation()
+                time.sleep(1 / 120)
+
+            # after the simulation robot has been driven home, then set goal conf of robot to those home states.
+            self.robot.set_goal_conf(
+                pp.get_joint_positions(self.sim.sim_robot, [1, 2, 3, 4, 5]))
+
+            return  # exit as we have completed, no need to do further checks.
+
+        # if the current slice is NULL (which happens either at the start, or after a slice is complete)
+        # get the slice at z-slice-index and start doing magic
         if not self.cur_slice:
             self.cur_slice = self.z_slices[self.z_sil_index]
             print("Starting probe on Z-slice: ", self.z_sil_index, " Z-val: ", self.cur_slice[0])
 
             print("Selecting point closest to robot!")
-            # in the slice (which contains a bunch of points) find the nearest point from the probe to any point to
-            # determine a start location.
+            # in the slice (which contains a bunch of points)
+            # find the nearest point from the probe to any point to determine a start location.
             closest = find_closest_point(self.cur_slice[1], pp.get_link_pose(self.sim.sim_robot, 6)[0])
 
-            # using the closest point, find the least cost path and set that to our current path
+            # using closest point, find least cost path and set that to our current path
             self.cur_path = find_alignment_point_path(closest, self.cur_slice[1])
-            # self.sim.controller.plot_slice(self.cur_slice[1],
-            #                                self.cur_path)  # plot this slice on the GUI for the user
+            # plot this slice on the GUI for the user
+            self.sim.controller.plot_slice(self.cur_slice[1], self.cur_path)
             print("Completed plotting slices! Beginning movements!")
+        else:
 
-            # if the current point index is greater than the length of the path, we have reached the end of the path
-            # and therefore have scanned the slice.
+            # if the current point index is greater than the lenght of the path,
+            # we have reached the end of the path and therefore have scanned the slice.
             if self.cur_point_index >= len(self.cur_path):
                 print("Reached end of slice!")
                 self.z_sil_index += 1  # increment z slice index to go to the next slice
                 self.cur_point_index = 0  # set current point index back to zero
-                self.cur_slice = None  # and set our current slice back to none, so that we recalculate next slice.
-                return None # return as we do not want to do anything else after slice completion
+                self.cur_slice = None  # and set our current slice back to none to recalculate next slice.
+                return  # return as we do not wan to do anything else after slice completion
 
-        # if the platform and robot have finished their movement, and there is no ground flag or measure flag,
-        # rotate the platform to line up point and move robot any incremental amount.
-        # update labels for the current slice for user feedback
-        self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
-        self.sim.controller.lbl_slice_index.setText(str(self.z_sil_index))
-        self.sim.controller.lbl_point_index.setText(str(self.cur_point_index))
+            # if the platform and robot have finished their movement, and there is no ground flag or measure flag,
+            # rotate the platform to line up point and move robot any incremental amount.
+            if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
+                # update labels for the current slice for user feedback
+                self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
+                self.sim.controller.lbl_slice_index.setText(str(self.z_sil_index))
+                self.sim.controller.lbl_point_index.setText(str(self.cur_point_index))
 
-        print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
-              self.cur_point_index)
+                # if next ground time has NOT been set... SET IT!
+                if self.next_ground_time == 0:
+                    self.next_ground_time = self.grounding_interval + time_elapsed  # setting grounding time to the current time + grounding interval
+                    print("Setting next ground time to: ", self.next_ground_time)
 
-        # get point from current index
-        pt = self.cur_path[self.cur_point_index]  # get the current point
+                print("Processing slice i: ", self.z_sil_index, " | Current point index: ",
+                      self.cur_point_index)
 
-        # find angle between point and lineup vector (lineup vector is the vector that points from the center of
-        # the rotating platform to the robot) todo: diagram for this?
-        goal_plat_rot = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
+                # get point from current index
+                pt = self.cur_path[self.cur_point_index]  # get the current point
+
+                # Rotate point in point cloud such that it lines up with the robotic arm.
+                angle = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
                                       np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
 
-        # As we have rotated our object, we must update the point cloud using a rotation matrix
-        temp = []
-        for i in range(len(self.cur_path)):
-            pos = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].pos)
-            dir = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].direction)
-            temp.append(AlignmentPoint(pos, dir))
+                # call command to rotate platform to angle so that the point will be lined up
+                self.sim.pos_plat_command = PlatformPositionSetter(self.sim, angle)
 
-        alignment_point = self.cur_path[self.cur_point_index]  # todo rbt orn?
+                # As we have rotated our object, we must update the point cloud using a rotation matrix
+                temp = []
+                for i in range(len(self.cur_path)):
+                    pos = np.dot(rotation_matrix_z(angle), self.cur_path[i].pos)
+                    dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
+                    temp.append(AlignmentPoint(pos, dir))
 
-        self.cur_path = temp
-        self.cur_point_index += 1
+                self.cur_path = temp
 
-        return alignment_point, goal_plat_rot
+                # set the probe position to the newly rotated point.
+                self.sim.pos_probe_command = ProbePositionSetter(self.sim,
+                                                                 self.cur_path[self.cur_point_index].pos,
+                                                                 [0, 0, 0]
+                                                                 )
+                self.measure_flag = True  # after these two positions have been queued, we can now measure when they arrive!
+
+            # if our measure flag has been set, and the movement has been completed --> TAKE MEASUREMENT
+            if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                # if we have a finite measuring time, wait that amount of time before measuring, otherwise just measure
+
+                if self.measuring_time > 0 and self.action_timeout == 0:
+                    self.action_timeout = time_elapsed + self.measuring_time
+
+                if time_elapsed >= self.action_timeout or self.measuring_time == 0:
+                    print("Scanned current point: ", self.cur_path[self.cur_point_index].pos,
+                          " Measured: ", self.sim.controller.probe_voltage)
+                    self.cur_path[self.cur_point_index].measurement = self.sim.controller.probe_voltage
+                    self.cur_point_index += 1
+                    self.measure_flag = False
+                    self.action_timeout = 0
+
+        # if the next grounding time is less than time elapsed (i.e. its time to ground), then raise ground flag!
+
+        if self.next_ground_time <= time_elapsed and self.next_ground_time != 0:
+            print("Time to ground! Raising flag!")
+            self.ground_flag = True
+            self.next_ground_time = 0
+
+            # if there are no current movements (i.e. movement is complete) AND the ground flag is set:
+            # Offset the current probe position by a small amount such that it backs away from the object
+            # write to our action timer to wait 4 seconds, and send a serial comm to the feather telling it to ground
+        if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_timeout == 0:
+            new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+
+            new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
+            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0])  # todo get joint orn?
+            self.feather.write_data("ground\n".encode())  # tell servo to ground!
+            self.action_timeout = time_elapsed + 4  # wait 4 seconds to let system ground
+
+            # after our grounding action, reset ground flag and action wait timer.
+        if self.action_timeout != 0 and time_elapsed >= self.action_timeout and self.ground_flag:
+            self.action_timeout = 0
+            self.ground_flag = False
 
 
 class RectangularPrism(ProbingFlowManager):
@@ -503,7 +508,7 @@ class RectangularPrism(ProbingFlowManager):
 
             # find angle between point and lineup vector
             goal_plat_rot = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
-                                  np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
+                                          np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
 
             # rotate cur path
             temp = []
@@ -526,6 +531,10 @@ class Charge:
         self.start_time = 0
         self.end_time = 0
 
+        # automatic charge using slapper
+        self.manual_charge = False
+        self.duration = 0
+
         self.is_charged = False
 
 
@@ -543,8 +552,8 @@ class Discharge:
         self.discharge_gap = 10  # discharge gap in mm -> space between object and probe once discharge is in place.
 
         self.x_feed = 1500  # in mm/min
-        self.y_feed = 500   # ^
-        self.z_feed = 500   # ^
+        self.y_feed = 500  # ^
+        self.z_feed = 500  # ^
 
     def discharge(self):
         """
