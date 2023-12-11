@@ -42,6 +42,8 @@ void loop() {
       else if(command == "charge")
       {
         charge = !charge;
+        digitalWrite(14, charge);
+        Serial.println("ACK");
       }
       else
       {
