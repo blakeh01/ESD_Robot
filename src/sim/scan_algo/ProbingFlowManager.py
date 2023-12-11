@@ -249,6 +249,7 @@ class RotationallySymmetric(ProbingFlowManager):
         if self.z_sil_index >= len(self.z_slices):
             print("Probing Completed!")
             self.cur_flow.end_time = time_elapsed
+            self.save_data()
             self.cur_flow_idx += 1
 
             # hacky way to quickly step simulation to move the motors home
@@ -319,9 +320,9 @@ class RotationallySymmetric(ProbingFlowManager):
 
                 # As we have rotated our object, we must update the point cloud using a rotation matrix
                 temp = []
-                for i in range(len(self.cur_path)):
-                    pos = np.dot(rotation_matrix_z(angle), self.cur_path[i].pos)
-                    dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
+                for i in range(len(self.z_slices)):
+                    pos = np.dot(rotation_matrix_z(angle), self.z_slices[i].pos)
+                    dir = np.dot(rotation_matrix_z(angle), self.z_slices[i].direction)
                     temp.append(AlignmentPoint(pos, dir))
 
                 self.cur_path = temp
@@ -370,6 +371,10 @@ class RotationallySymmetric(ProbingFlowManager):
         if self.action_timeout != 0 and time_elapsed >= self.action_timeout and self.ground_flag:
             self.action_timeout = 0
             self.ground_flag = False
+
+    def save_data(self):
+        pass
+
 
 
 class RectangularPrism(ProbingFlowManager):
