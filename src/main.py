@@ -607,7 +607,6 @@ class ObjectWizard(QWizard):
         Then write the offsets to the URDF file so that it is saved. Then destroy itself.
         """
         pp.disconnect()
-        self.robot_instance.terminate_robot()
         self.stepper_controller.close()
         self.lds_instance.close()
         self.o3d_viz.visualizer.destroy_window()

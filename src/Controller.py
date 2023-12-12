@@ -40,7 +40,7 @@ class Controller:
         self.stepper_controller = StepperHandler(self.port_conf.stepper_port, self.port_conf.stepper_baud)
         self.lds_instance = LDS(self.port_conf.lds_port, self.port_conf.lds_baud)
         self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller)
-        self.feather_instance = SerialMonitor(port=port_config.feather_port, baud=port_config.feather_baud)
+        self.feather_instance = SerialMonitor(port=port_config.feather_port, baud_rate=port_config.feather_baud)
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
