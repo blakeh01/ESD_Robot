@@ -137,7 +137,13 @@ class DialogProbeProfile(QDialog):
 
         self.parent_instance = parent
         self.controller_instance: Controller = parent.controller
+        self.sim_instance = self.controller_instance.simulation_instance
+        self.robot_instance = self.controller_instance.robot_instance
+        self.stepper_instance = self.controller_instance.simulation_instance
+        self.feather = self.controller_instance.simulation_instance
 
+
+        # add the supported object profiles
         self.ui.cmb_object_profile.addItem("Rot. Symmetric Geometry")
         self.ui.cmb_object_profile.addItem("Rectangular Geometry")
 
@@ -214,13 +220,13 @@ class DialogProbeProfile(QDialog):
 
             case 0:  # rot symm
                 self.controller_instance.simulation_instance.cur_probe_flow = RotationallySymmetric(
-                    self.controller_instance.simulation_instance, self.flow_list,
+                    self.sim_instance, self.robot_instance, self.feather, self.flow_list,
                     flow_args
                 )
 
             case 1:  # rect
                 self.controller_instance.simulation_instance.cur_probe_flow = RectangularPrism(
-                    self.controller_instance.simulation_instance, self.flow_list,
+                    self.sim_instance, self.robot_instance, self.feather, self.flow_list,
                     flow_args
                 )
 

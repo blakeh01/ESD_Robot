@@ -158,8 +158,8 @@ class ProbingFlowManager:
 
 class RotationallySymmetric(ProbingFlowManager):
 
-    def __init__(self, sim_instance: Simulation, robot_instance: RobotHandler, flow_list, flow_args):
-        super().__init__(sim_instance, robot_instance, flow_list, flow_args)
+    def __init__(self, sim_instance: Simulation, robot_instance: RobotHandler, feather_instance, flow_list, flow_args):
+        super().__init__(sim_instance, robot_instance, feather_instance, flow_list, flow_args)
         self.z_slices = {}  # a list of slices made along the Z-axis for probing
         self.z_sil_index = 0  # the current index of Z-slice being probed
         self.cur_slice = None  # a reference to the current slice (this is z_slices[] @ index z_sil_index)
@@ -382,8 +382,8 @@ class RectangularPrism(ProbingFlowManager):
 
     """
 
-    def __init__(self, simulation: Simulation, flow_list, flow_args):
-        super().__init__(simulation, flow_list, flow_args)
+    def __init__(self, sim_instance: Simulation, robot_instance: RobotHandler, feather_instance, flow_list, flow_args):
+        super().__init__(sim_instance, robot_instance, feather_instance, flow_list, flow_args)
 
         self.normal_slices = {}
         self.tolerance = 0.9
