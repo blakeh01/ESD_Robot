@@ -355,6 +355,8 @@ class ObjectWizard(QWizard):
         self.stepper_controller = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
         self.lds_instance = LDS(port_config.lds_port, port_config.lds_baud)
 
+        self.stepper_controller.home_all()
+
     def update(self):
         if self.scan_thread and self.scanner:
             self.ui.lbl_current_points.setText(f"{self.scanner.point_index}/{self.scanner.total_points}")

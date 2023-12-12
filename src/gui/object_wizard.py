@@ -285,7 +285,7 @@ class Ui_ObjectWizard(object):
         self.wiz_page_sim_offsets = QtWidgets.QWizardPage()
         self.wiz_page_sim_offsets.setObjectName("wiz_page_sim_offsets")
         self.btn_find = QtWidgets.QPushButton(self.wiz_page_sim_offsets)
-        self.btn_find.setEnabled(False)
+        self.btn_find.setEnabled(True)
         self.btn_find.setGeometry(QtCore.QRect(250, 270, 75, 23))
         self.btn_find.setObjectName("btn_find")
         self.tabWidget = QtWidgets.QTabWidget(self.wiz_page_sim_offsets)
