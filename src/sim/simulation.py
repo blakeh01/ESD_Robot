@@ -2,6 +2,7 @@ import os.path
 import time
 
 import src.sim.simhelper as simhelper
+from src.main import MainWindow
 from src.sim.Command import *
 from src.sim.sim_constants import *
 from src.util.math_util import *
@@ -22,7 +23,8 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, controller, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
+    def __init__(self, main_inst: MainWindow, controller, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
+        self.main_inst = main_inst
         self.controller = controller
 
         self.robot_offset = robot_offset
@@ -60,8 +62,6 @@ class Simulation:
 
         p.addUserDebugLine([0, 0, 0], self.lineup_normal, [255, 0, 0], 5)
 
-        # self.debug_platform_normal_line = p.addUserDebugLine([0, 0, 0], [0, 1, 0], [255, 0, 0], 5)
-
     def initialize_sim(self):
         # Instantiate and start a PyBullet physics client
         self.sim_id = pp.connect(use_gui=True)
@@ -95,8 +95,8 @@ class Simulation:
             simhelper.draw_tip_axis(self.sim_robot, self.tip_ref_axes)
 
         # SET HOME POSITION TO DEFAULT CONF.
-        # self.home_conf = self.robot_handler.read_cur_conf()[1]
-        # self.home_conf = np.add(self.home_conf, [0, 0, 0.3, 0, 0])
+        self.home_conf = self.controller.robot_instance.read_cur_conf()[1]
+        self.home_conf = np.add(self.home_conf, [0, 0, 0.3, 0, 0])
 
         self.drive_motors_to_home()
         for i in range(100):
@@ -110,8 +110,6 @@ class Simulation:
     def update(self, time_elapsed):
         if not self.can_run:
             return
-
-        # todo: self.robot_handler.update()
 
         if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
         self.pos_probe_command.onUpdate()
@@ -137,14 +135,13 @@ class Simulation:
 
         if self.col_flag and self.home_flag:
             print("[SIM] Going home!")
-            self.parent.sim_stop()
-            self.parent.lbl_rbt_status.setText("Collision Error!")
+            self.main_inst.stop_flow_and_home()
+            self.main_inst.lbl_rbt_status.setText("Collision Error!")
 
         # Step the simulation
         if p.isConnected(): p.stepSimulation()
 
     def drive_motors_to_home(self):
-        return  # todo
         # RAIL
         p.setJointMotorControl2(self.sim_robot, 1,
                                 controlMode=p.POSITION_CONTROL,
@@ -171,5 +168,4 @@ class Simulation:
                                 targetPosition=self.home_conf[4])
 
     def shutdown(self):
-        self.parent.sim_stop()
-        self.robot_handler.terminate_robot()
+        self.main_inst.stop_flow_and_home()

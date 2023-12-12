@@ -638,12 +638,12 @@ skip_wiz = False
 param = []
 
 if __name__ == '__main__':
-    current_dir = os.getcwd()
-    print(current_dir)
-
-    log_file_name = "console_log.txt"
-    log_file_path = os.path.join(current_dir, log_file_name)
-    sys.stdout = open(log_file_path, "w")
+    # current_dir = os.getcwd()
+    # print(current_dir)
+    #
+    # log_file_name = "console_log.txt"
+    # log_file_path = os.path.join(current_dir, log_file_name)
+    # sys.stdout = open(log_file_path, "w")
 
     if not skip_wiz:
         app1 = QApplication(sys.argv)
