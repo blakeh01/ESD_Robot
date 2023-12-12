@@ -374,7 +374,7 @@ class ObjectWizard(QWizard):
                                               p.getQuaternionFromEuler([0, 0, 0]))
             print(f"[SIM] Initialized platform with ID: {self.sim_platform}")
             self.obj = pp.load_pybullet(URDF_OBJ, scale=SIM_SCALE)
-            p.resetBasePositionAndOrientation(self.obj, np.dot(2, [0, 0, PLATFORM_HEIGHT]), [0, 0, 0, 1])
+            p.resetBasePositionAndOrientation(self.obj, np.dot(SIM_SCALE, [0, 0, PLATFORM_HEIGHT]), [0, 0, 0, 1])
 
             self.obj_joint_offset = [0, 0, PLATFORM_HEIGHT * SIM_SCALE]
             self.obj_const = p.createConstraint(parentBodyUniqueId=self.sim_platform, parentLinkIndex=1,
@@ -398,7 +398,7 @@ class ObjectWizard(QWizard):
         """
            Updates the robot position depending on the user provided offset
         """
-        self.SIM_ROBOT_OFFSET = np.dot(2, [self.ui.sbox_rbt_offset_x.value() / 1000,
+        self.SIM_ROBOT_OFFSET = np.dot(SIM_SCALE, [self.ui.sbox_rbt_offset_x.value() / 1000,
                                            self.ui.sbox_rbt_offset_y.value() / 1000,
                                            self.ui.sbox_rbt_offset_z.value() / 1000])
         p.resetBasePositionAndOrientation(self.sim_robot, self.SIM_ROBOT_OFFSET, p.getQuaternionFromEuler([0, 0, 0]))
@@ -417,7 +417,7 @@ class ObjectWizard(QWizard):
            this was done is that constraints are not perfectly rigid, so if the platform is rotating during a probe
            pass, the object lags behind, causing inaccuracies.
         """
-        self.obj_joint_offset = np.dot(2, [self.ui.sbox_offset_x.value() / 1000, self.ui.sbox_offset_y.value() / 1000,
+        self.obj_joint_offset = np.dot(SIM_SCALE, [self.ui.sbox_offset_x.value() / 1000, self.ui.sbox_offset_y.value() / 1000,
                                            PLATFORM_HEIGHT + self.ui.sbox_offset_z.value() / 1000])
         self.obj_rot = [np.deg2rad(self.ui.sbox_offset_rx.value()), np.deg2rad(self.ui.sbox_offset_ry.value()),
                         np.deg2rad(self.ui.sbox_offset_rz.value())]
@@ -605,7 +605,6 @@ class ObjectWizard(QWizard):
         Then write the offsets to the URDF file so that it is saved. Then destroy itself.
         """
         pp.disconnect()
-        self.robot_instance.terminate_robot()
         self.stepper_controller.close()
         self.lds_instance.close()
         self.o3d_viz.visualizer.destroy_window()
@@ -637,12 +636,12 @@ skip_wiz = False
 param = []
 
 if __name__ == '__main__':
-    # current_dir = os.getcwd()
-    # print(current_dir)
-    #
-    # log_file_name = "console_log.txt"
-    # log_file_path = os.path.join(current_dir, log_file_name)
-    # sys.stdout = open(log_file_path, "w")
+    current_dir = os.getcwd()
+    print(current_dir)
+
+    log_file_name = "console_log.txt"
+    log_file_path = os.path.join(current_dir, log_file_name)
+    sys.stdout = open(log_file_path, "w")
 
     if not skip_wiz:
         app1 = QApplication(sys.argv)
@@ -654,11 +653,9 @@ if __name__ == '__main__':
         del app1
         del first_window
 
-        print(param)
-
     # After the first window is closed, this part will run
 
     app1 = QApplication(sys.argv)
-    second_window = MainWindow([(-0.8, 0, 0), (0, 0, 0)])
+    second_window = MainWindow(param)
     second_window.show()
     sys.exit(app1.exec_())
