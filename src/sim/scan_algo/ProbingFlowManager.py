@@ -35,6 +35,9 @@ class ProbingFlowManager:
 
     def __init__(self, sim_instance: Simulation, robot_instance: RobotHandler, feather_instance, flow_list, flow_args):
         self.sim = sim_instance
+        self.controller = self.sim.controller
+        self.gui = self.controller.main_instance
+
         self.probe_points = sim_instance.normal_point_cloud.alignment_points
         self.flow_list = flow_list  # list of actions (probe/discharge/charge/wait)
 
@@ -96,19 +99,19 @@ class ProbingFlowManager:
 
             if self.cur_flow.start_time == 0:
                 self.cur_flow.start_time = time_elapsed
-                self.sim.controller.lbl_charge_warn.setVisible(True)  # set 'charge' label to visible.
+                self.gui.lbl_charge_warn.setVisible(True)  # set 'charge' label to visible.
                 self.action_timeout = time_elapsed + 0.25  # wait a quarter second for flashing effect!
 
                 if not self.cur_flow.manual_charge:
                     self.feather.write_data("charge\n".encode())  # tell servo to begin charging!
                     self.charge_timeout = time_elapsed + self.cur_flow.duration
                 else:
-                    self.sim.controller.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
+                    self.gui.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
 
             # flash the background of the charge label to give more urgency.
             if time_elapsed >= self.action_timeout:
                 self.action_timeout = time_elapsed + 0.25
-                self.sim.controller.lbl_charge_warn.setStyleSheet(
+                self.gui.lbl_charge_warn.setStyleSheet(
                     "background-color: lightgreen" if self.sim.controller.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             # if the charge done flag is set by something, consider this action complete!
@@ -121,8 +124,8 @@ class ProbingFlowManager:
                 print("==> Charge Complete!")
                 self.cur_flow.end_time = time_elapsed
                 self.cur_flow_idx += 1  # advance to next action
-                self.sim.controller.lbl_charge_warn.setVisible(False)  # set 'charge' label to visible.
-                self.sim.controller.btn_charge_done.setVisible(False)  # set 'charge done' button to visible
+                self.gui.lbl_charge_warn.setVisible(False)  # set 'charge' label to visible.
+                self.gui.btn_charge_done.setVisible(False)  # set 'charge done' button to visible
 
         ### DISCHARGE ###
         elif isinstance(self.cur_flow, Discharge):  # if the action is discharge
@@ -279,7 +282,7 @@ class RotationallySymmetric(ProbingFlowManager):
             # using closest point, find least cost path and set that to our current path
             self.cur_path = find_alignment_point_path(closest, self.cur_slice[1])
             # plot this slice on the GUI for the user
-            self.sim.controller.plot_slice(self.cur_slice[1], self.cur_path)
+            self.gui.plot_slice(self.cur_path)
             print("Completed plotting slices! Beginning movements!")
         else:
 
@@ -297,8 +300,8 @@ class RotationallySymmetric(ProbingFlowManager):
             if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
                 # update labels for the current slice for user feedback
                 self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
-                self.sim.controller.lbl_slice_index.setText(str(self.z_sil_index))
-                self.sim.controller.lbl_point_index.setText(str(self.cur_point_index))
+                self.gui.lbl_slice_index.setText(str(self.z_sil_index))
+                self.gui.lbl_point_index.setText(str(self.cur_point_index))
 
                 # if next ground time has NOT been set... SET IT!
                 if self.next_ground_time == 0:
@@ -316,19 +319,19 @@ class RotationallySymmetric(ProbingFlowManager):
                                       np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
 
                 # call command to rotate platform to angle so that the point will be lined up
-                self.sim.pos_plat_command = PlatformPositionSetter(self.sim, angle)
+                self.sim.pos_plat_command = PlatformPositionSetter(self.controller, angle)
 
                 # As we have rotated our object, we must update the point cloud using a rotation matrix
                 temp = []
-                for i in range(len(self.z_slices)):
-                    pos = np.dot(rotation_matrix_z(angle), self.z_slices[i].pos)
-                    dir = np.dot(rotation_matrix_z(angle), self.z_slices[i].direction)
+                for i in range(len(self.cur_path)):
+                    pos = np.dot(rotation_matrix_z(angle), self.cur_path[i].pos)
+                    dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
                     temp.append(AlignmentPoint(pos, dir))
 
                 self.cur_path = temp
 
                 # set the probe position to the newly rotated point.
-                self.sim.pos_probe_command = ProbePositionSetter(self.sim,
+                self.sim.pos_probe_command = ProbePositionSetter(self.controller,
                                                                  self.cur_path[self.cur_point_index].pos,
                                                                  [0, 0, 0]
                                                                  )
@@ -363,7 +366,7 @@ class RotationallySymmetric(ProbingFlowManager):
             new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
 
             new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
-            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point, [0, 0, 0])  # todo get joint orn?
+            self.sim.pos_probe_command = ProbePositionSetter(self.controller, new_point, [0, 0, 0])
             self.feather.write_data("ground\n".encode())  # tell servo to ground!
             self.action_timeout = time_elapsed + 4  # wait 4 seconds to let system ground
 
@@ -501,8 +504,8 @@ class RectangularPrism(ProbingFlowManager):
             #                                                  [0, 0, 0])
         else:
             self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
-            self.sim.controller.lbl_slice_index.setText(str(self.side_index))
-            self.sim.controller.lbl_point_index.setText(str(self.cur_point_index))
+            self.gui.lbl_slice_index.setText(str(self.side_index))
+            self.gui.lbl_point_index.setText(str(self.cur_point_index))
 
             print("Processing slice i: ", self.side_index, " | Current point index: ",
                   self.cur_point_index)

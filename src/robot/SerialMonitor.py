@@ -91,6 +91,7 @@ class StepperHandler(SerialMonitor):
             code = bytes(str(f"G1 A{round(pos)} F{round(feed)}"), "ASCII")
             self.serial_conn.flushInput()
             self.serial_conn.write(code + b'\r\n')
+            print(code)
             self.plat_pos = pos
 
     def write_linear_rail(self, pos, feed=2500):

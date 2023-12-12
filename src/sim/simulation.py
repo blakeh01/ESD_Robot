@@ -2,7 +2,6 @@ import os.path
 import time
 
 import src.sim.simhelper as simhelper
-from src.main import MainWindow
 from src.sim.Command import *
 from src.sim.sim_constants import *
 from src.util.math_util import *
@@ -23,7 +22,7 @@ class Simulation:
         Interruptable via. self.can_run
     """
 
-    def __init__(self, main_inst: MainWindow, controller, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
+    def __init__(self, main_inst, controller, robot_offset, object_offset, time_step=1. / UPDATE_RATE):
         self.main_inst = main_inst
         self.controller = controller
 
@@ -96,13 +95,16 @@ class Simulation:
 
         # SET HOME POSITION TO DEFAULT CONF.
         self.home_conf = self.controller.robot_instance.read_cur_conf()[1]
+        # move home conf elbow servo up a bit to indicate ready for scan
         self.home_conf = np.add(self.home_conf, [0, 0, 0.3, 0, 0])
 
+        # drive motors to home position, this is a pybullet workaround.
         self.drive_motors_to_home()
         for i in range(100):
             p.stepSimulation()
             time.sleep(0.01)
 
+        # get the probe position at home
         self.probe_home = pp.get_link_pose(self.sim_robot, 6)[0]
 
         print("[SIM] Successfully initialized PyBullet environment...")
@@ -111,10 +113,10 @@ class Simulation:
         if not self.can_run:
             return
 
-        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self, self.probe_home, [0, 0, 0])
+        if not self.pos_probe_command: self.pos_probe_command = ProbePositionSetter(self.controller, self.probe_home, [0, 0, 0])
         self.pos_probe_command.onUpdate()
 
-        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self, pp.get_joint_position(
+        if not self.pos_plat_command: self.pos_plat_command = PlatformPositionSetter(self.controller, pp.get_joint_position(
             self.sim_platform, 1), 0)
         self.pos_plat_command.onUpdate()
 

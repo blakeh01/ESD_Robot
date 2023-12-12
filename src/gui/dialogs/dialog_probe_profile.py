@@ -140,7 +140,7 @@ class DialogProbeProfile(QDialog):
         self.sim_instance = self.controller_instance.simulation_instance
         self.robot_instance = self.controller_instance.robot_instance
         self.stepper_instance = self.controller_instance.simulation_instance
-        self.feather = self.controller_instance.simulation_instance
+        self.feather = self.controller_instance.feather_instance
 
 
         # add the supported object profiles

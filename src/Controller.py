@@ -36,14 +36,14 @@ class Controller:
 
         # Instance management
         self.main_instance = main_instance
-        self.simulation_instance = Simulation(main_instance, self, obj_wiz_data[0], obj_wiz_data[1])
         self.stepper_controller = StepperHandler(self.port_conf.stepper_port, self.port_conf.stepper_baud)
         self.lds_instance = LDS(self.port_conf.lds_port, self.port_conf.lds_baud)
         self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller)
         self.feather_instance = SerialMonitor(port=port_config.feather_port, baud_rate=port_config.feather_baud)
+        self.simulation_instance = Simulation(main_instance, self, obj_wiz_data[0], obj_wiz_data[1])
 
         # NIDAQ probing
-        print("Connecting to NI-DAQ @ Dev1/ai0... [DISABLED, PLEASE FIX]")
+        print("Connecting to NI-DAQ @ Dev1/ai0...")
         self.nidaq_vTask = nidaqmx.Task()
         self.nidaq_vTask.ai_channels.add_ai_voltage_chan("Dev1/ai0")
         self.probe_voltage = 0
@@ -53,7 +53,7 @@ class Controller:
 
         # Temp test stuff:
         self.obj_distance = 0
-        self.obj_height = None  # obj_wiz_data[2]
+        self.obj_height = obj_wiz_data[2][2]
 
     def send_update(self):
         """
@@ -78,7 +78,7 @@ class Controller:
             self.obj_distance = 0.2
 
         # Retrieve probe voltage
-        # todo self.probe_voltage = self.nidaq_vTask.read()
+        self.probe_voltage = self.nidaq_vTask.read()
 
         # Time management ('Tok')
         time.sleep(self.update_rate)
