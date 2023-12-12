@@ -98,7 +98,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)  # probe flow setup
         self.btn_start_probing.clicked.connect(self.start_probe_flow)  # start probe flow
         self.btn_charge_done.clicked.connect(self.charge_confirm)  # charge done
-        self.btn_sim_terminate.clicked.connect(self.sim_stop)  # stop simulation
+        self.btn_sim_terminate.clicked.connect(self.stop_flow_and_home)  # stop simulation
         self.btn_stop.clicked.connect(self.rbt_stop)  # big red stop button
 
         self.lbl_charge_warn.setVisible(False)  # hide charge btn/label
