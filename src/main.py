@@ -19,6 +19,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog
 )
+
 from src.Controller import Controller
 from src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
@@ -26,7 +27,6 @@ from src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from src.gui.main_window import Ui_MainWindow
 from src.gui.object_wizard import Ui_ObjectWizard
 from src.robot.SerialMonitor import StepperHandler, LDS
-from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import PortConfiguration
 from src.robot.scanner.Scanner import ObjectScanner, EdgeFinder
 from src.sim.ObjectVisualizer import ObjectVisualizer

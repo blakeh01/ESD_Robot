@@ -22,13 +22,13 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from src.robot.SerialMonitor import *
 from src.robot.arm.RobotHandler import RobotHandler
 from src.sim.Command import *
 from src.sim.simhelper import *
 from src.sim.simulation import Simulation
 from src.util.math_util import *
-
-from src.robot.SerialMonitor import *
 
 
 class ProbingFlowManager:
@@ -374,7 +374,6 @@ class RotationallySymmetric(ProbingFlowManager):
 
     def save_data(self):
         pass
-
 
 
 class RectangularPrism(ProbingFlowManager):

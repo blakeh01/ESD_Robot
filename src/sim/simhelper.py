@@ -1,16 +1,17 @@
 import pybullet as p
 import pybullet_planning as pp
-from src.sim.sim_constants import *
+
 from src.util.math_util import *
 
 
-def get_normal_point_cloud(pts_per_slice, z_limits, z_density, probe_dist, obj_center, draw_ray_start=False, draw_cloud=True):
+def get_normal_point_cloud(pts_per_slice, z_limits, z_density, probe_dist, obj_center, draw_ray_start=False,
+                           draw_cloud=True):
     ray_start = []
     ray_end = []
 
     z_space = np.linspace(start=z_limits[0], stop=z_limits[1], num=z_density, endpoint=True)
-    phi_space = np.linspace(start=0, stop=2*np.pi, num=pts_per_slice, endpoint=False)  # no endpoint as 0 = 2pi
-    rho = .200 # 200 mm
+    phi_space = np.linspace(start=0, stop=2 * np.pi, num=pts_per_slice, endpoint=False)  # no endpoint as 0 = 2pi
+    rho = .200  # 200 mm
 
     for phi in phi_space:
         for z in z_space:

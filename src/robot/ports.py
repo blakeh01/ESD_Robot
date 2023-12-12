@@ -15,6 +15,7 @@ FEATHER_BAUD = 9600
 LDS_PORT = "COM7"
 LDS_BAUD = 115200
 
+
 class PortConfiguration:
 
     def __init__(self):

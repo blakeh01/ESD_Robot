@@ -1,8 +1,10 @@
 import nidaqmx
-from src.robot.arm.RobotHandler import RobotHandler
-from src.sim.simulation import *
+
 from src.robot.SerialMonitor import StepperHandler, LDS, SerialMonitor
+from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import *
+from src.sim.simulation import *
+
 
 class Controller:
     """
@@ -51,7 +53,7 @@ class Controller:
 
         # Temp test stuff:
         self.obj_distance = 0
-        self.obj_height = None # obj_wiz_data[2]
+        self.obj_height = None  # obj_wiz_data[2]
 
     def send_update(self):
         """

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QInputDialog, QMessageBox
-from src.Controller import Controller
 
+from src.Controller import Controller
 from src.sim.scan_algo.ProbingFlowManager import Discharge, Charge, Wait, Probe, RectangularPrism, RotationallySymmetric
 
 

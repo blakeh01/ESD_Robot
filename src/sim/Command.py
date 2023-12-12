@@ -68,7 +68,6 @@ class ProbePositionSetter:
                                 maxVelocity=self.probe_v)
 
 
-
 class PlatformPositionSetter():
 
     def __init__(self, sim, inc_rot, plat_v=0.5, timeout=0):
@@ -85,7 +84,7 @@ class PlatformPositionSetter():
         if (abs(pp.get_joint_position(self.sim.sim_platform, 1) - self.goal_rot) <= 0.00005):
             self.complete = True
 
-        #self.sim.robot_handler.stepper_board.write_a(np.rad2deg(self.goal_rot), feed=1600)
+        # self.sim.robot_handler.stepper_board.write_a(np.rad2deg(self.goal_rot), feed=1600)
         p.setJointMotorControl2(self.sim.sim_platform, 1,
                                 controlMode=p.POSITION_CONTROL,
                                 targetPosition=self.goal_rot,

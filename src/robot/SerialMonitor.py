@@ -1,7 +1,6 @@
 import time
 
 import serial
-from src.robot.arm.rbt_constants import *
 
 CMD_READ = 0x52
 CMD_WRITE = 0x57
