@@ -112,10 +112,10 @@ class ObjectVisualizer:
         """
 
         # Testing points (Comment these out or delete)
-        xc = np.array([0, 5, 10, 0, 5, 10, 0, 5, 10, 10])
-        yc = np.array([0, 5, 10, 10, 10, 30, 30, 30, 40, 40])
-        zc = np.array([0, 25, 25, 25, 25, 25, 25, 25, 25, 25])
-        ca = np.array([0, 1, 2, 3, 4, 5, 6, 7, 7, 0])
+        # xc = np.array([0, 5, 10, 0, 5, 10, 0, 5, 10, 10])
+        # yc = np.array([0, 5, 10, 10, 10, 30, 30, 30, 40, 40])
+        # zc = np.array([0, 25, 25, 25, 25, 25, 25, 25, 25, 25])
+        # ca = np.array([0, 1, 2, 3, 4, 5, 6, 7, 7, 0])
 
         # Initialize the arrays
         xr1 = np.array([])
@@ -150,7 +150,7 @@ class ObjectVisualizer:
         yr8 = np.array([])
         zr8 = np.array([])
 
-        # Categorize the different scanned points into their correct scanned angle
+        # Categorize the different scanned XYZ points into their correct scanned angle
         for a in range(0, (np.size(ca))):
             if ca[a] == 0:
                 xr1 = np.append(xr1, xc[a])
@@ -190,30 +190,37 @@ class ObjectVisualizer:
         xyz1[:, 0] = np.reshape(xr1, -1)
         xyz1[:, 1] = np.reshape(yr1, -1)
         xyz1[:, 2] = np.reshape(zr1, -1)
+        
         xyz2 = np.zeros((np.size(xr2), 3))
         xyz2[:, 0] = np.reshape(xr2, -1)
         xyz2[:, 1] = np.reshape(yr2, -1)
         xyz2[:, 2] = np.reshape(zr2, -1)
+        
         xyz3 = np.zeros((np.size(xr3), 3))
         xyz3[:, 0] = np.reshape(xr3, -1)
         xyz3[:, 1] = np.reshape(yr3, -1)
         xyz3[:, 2] = np.reshape(zr3, -1)
+        
         xyz4 = np.zeros((np.size(xr4), 3))
         xyz4[:, 0] = np.reshape(xr4, -1)
         xyz4[:, 1] = np.reshape(yr4, -1)
         xyz4[:, 2] = np.reshape(zr4, -1)
+        
         xyz5 = np.zeros((np.size(xr5), 3))
         xyz5[:, 0] = np.reshape(xr5, -1)
         xyz5[:, 1] = np.reshape(yr5, -1)
         xyz5[:, 2] = np.reshape(zr5, -1)
+        
         xyz6 = np.zeros((np.size(xr6), 3))
         xyz6[:, 0] = np.reshape(xr6, -1)
         xyz6[:, 1] = np.reshape(yr6, -1)
         xyz6[:, 2] = np.reshape(zr6, -1)
+        
         xyz7 = np.zeros((np.size(xr7), 3))
         xyz7[:, 0] = np.reshape(xr7, -1)
         xyz7[:, 1] = np.reshape(yr7, -1)
         xyz7[:, 2] = np.reshape(zr7, -1)
+        
         xyz8 = np.zeros((np.size(xr8), 3))
         xyz8[:, 0] = np.reshape(xr8, -1)
         xyz8[:, 1] = np.reshape(yr8, -1)
@@ -239,7 +246,7 @@ class ObjectVisualizer:
 
         # Calculate the necessary rotation for each angle of scan
         pcd.rotate(pcd.get_rotation_matrix_from_xyz((0, 0, 0)), center=(0, 0, 0))
-        pcd2.rotate(pcd2.get_rotation_matrix_from_xyz((0, np.pi / 4, 0)), center=(0, 0, 0))
+        pcd2.rotate(pcd2.get_rotation_matrix_from_xyz((0, np.pi / 4, 0)), center=(0, 0, 0)) # The np.pi/4 accounts for the angle offset of the scan
         pcd3.rotate(pcd3.get_rotation_matrix_from_xyz((0, np.pi / 2, 0)), center=(0, 0, 0))
         pcd4.rotate(pcd4.get_rotation_matrix_from_xyz((0, 3 * np.pi / 4, 0)), center=(0, 0, 0))
         pcd5.rotate(pcd5.get_rotation_matrix_from_xyz((0, np.pi, 0)), center=(0, 0, 0))
@@ -250,6 +257,7 @@ class ObjectVisualizer:
         # Initialized a pcd for integrating all of the pcds into one
         pcd_combined = o3d.geometry.PointCloud()
 
+        # The following If-Else will combine the pcd's into 1 total pcd
         for i in range(9):
             if i == 0:
                 pcd_combined += pcd
