@@ -105,6 +105,7 @@ class ProbingFlowManager:
                 if not self.cur_flow.manual_charge:
                     self.feather.write_data("charge\n".encode())  # tell servo to begin charging!
                     self.charge_timeout = time_elapsed + self.cur_flow.duration
+                    self.gui.btn_charge_done.setVisible(False)  # set 'charge done' button to invisible
                 else:
                     self.gui.btn_charge_done.setVisible(True)  # set 'charge done' button to visible
 
@@ -534,13 +535,13 @@ class RectangularPrism(ProbingFlowManager):
 
 class Charge:
 
-    def __init__(self):
+    def __init__(self, duration):
         self.start_time = 0
         self.end_time = 0
 
         # automatic charge using slapper
-        self.manual_charge = False
-        self.duration = 0
+        self.duration = duration
+        self.manual_charge = (duration == 0)
 
         self.is_charged = False
 

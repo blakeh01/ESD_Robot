@@ -194,8 +194,18 @@ class DialogProbeProfile(QDialog):
                 self.handle_input_error()
 
     def add_charge(self):
-        self.add_item(f"Charge")
-        self.flow_list.append(Charge())
+        value, ok = QInputDialog.getText(self, 'Enter Charge Duration (0 for manual)', 'Duration (s):')
+
+        if ok:
+            try:
+                duration = abs(int(value))
+                is_manual = duration > 0
+
+                self.add_item("Charge" + ((': ' + str(duration)) if not is_manual else ''))
+                self.flow_list.append(Charge(duration))
+
+            except ValueError:
+                self.handle_input_error()
 
     def add_probe(self):
         self.add_item(f"Probe")
