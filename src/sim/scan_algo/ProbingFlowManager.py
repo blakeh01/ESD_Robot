@@ -398,6 +398,8 @@ class RectangularPrism(ProbingFlowManager):
         self.cur_point_index = 0
         self.side_index = 0
 
+        self.measure_flag = False
+
         self.visualize = True
 
         self.construct_probe_plan()
@@ -478,9 +480,22 @@ class RectangularPrism(ProbingFlowManager):
         # Convert normal_slices dictionary to a list of tuples for further processing
         self.normal_slices = [((x, y, z), data) for (x, y, z), data in self.normal_slices.items()]
 
-    def get_next_confs(self):
+    def update_probing(self, time_elapsed):
         if self.side_index >= len(self.normal_slices):
-            return None
+            print("Probing Completed!")
+            self.cur_flow.end_time = time_elapsed
+            self.cur_flow_idx += 1
+            self.save_data()
+
+            for i in range(100):
+                self.sim.drive_motors_to_home()
+                p.stepSimulation()
+                time.sleep(1 / 120)
+
+            self.robot.set_goal_conf(
+                pp.get_joint_positions(self.sim.sim_robot, [1, 2, 3, 4, 5]))
+
+            return
 
         if not self.cur_slice:
             self.cur_slice = self.normal_slices[self.side_index]
@@ -498,39 +513,85 @@ class RectangularPrism(ProbingFlowManager):
             self.cur_point_index = 0
             self.cur_slice = None
 
-            # todo add back off points.
-            # new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
-            # new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
-            # self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point,
-            #                                                  [0, 0, 0])
-        else:
+            new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+            new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
+            self.sim.pos_probe_command = ProbePositionSetter(self.sim, new_point,
+                                                             [0, 0, 0])
+            return
+
+        if self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag and not self.measure_flag:
             self.probe_percentage = int(100 * (self.cur_point_index / (len(self.cur_path) - 1)))
             self.gui.lbl_slice_index.setText(str(self.side_index))
             self.gui.lbl_point_index.setText(str(self.cur_point_index))
 
+            if self.next_ground_time == 0:
+                self.next_ground_time = self.grounding_interval + time_elapsed
+                print("Setting next ground time to: ", self.next_ground_time)
+
             print("Processing slice i: ", self.side_index, " | Current point index: ",
                   self.cur_point_index)
-
             # get point from current index
             pt = self.cur_path[self.cur_point_index]
 
             # find angle between point and lineup vector
-            goal_plat_rot = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
-                                          np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
+            angle = np.math.atan2(np.linalg.det([pt.direction[0:2], self.sim.lineup_normal[0:2]]),
+                                  np.dot(pt.direction[0:2], self.sim.lineup_normal[0:2]))
+
+            # rotate platform to angle
+            self.sim.pos_plat_command = PlatformPositionSetter(self.sim, angle)
 
             # rotate cur path
             temp = []
             for i in range(len(self.cur_path)):
-                pos = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].pos)
-                dir = np.dot(rotation_matrix_z(goal_plat_rot), self.cur_path[i].direction)
+                pos = np.dot(rotation_matrix_z(angle), self.cur_path[i].pos)
+                dir = np.dot(rotation_matrix_z(angle), self.cur_path[i].direction)
                 temp.append(AlignmentPoint(pos, dir))
 
-            pos, dir = self.cur_path[self.cur_point_index].pos, [0, 0, 0]  # todo rbt orn?
-
             self.cur_path = temp
-            self.cur_point_index += 1
+            self.sim.pos_probe_command = ProbePositionSetter(self.sim, self.cur_path[self.cur_point_index].pos,
+                                                             goal_orn=[0, 0, 0])
+            self.measure_flag = True
 
-            return (pos, dir), goal_plat_rot
+            # if our measure flag has been set, and the movement has been completed --> TAKE MEASUREMENT
+            if self.measure_flag and self.sim.pos_plat_command.complete and self.sim.pos_probe_command.complete and not self.ground_flag:
+                # if we have a finite measuring time, wait that amount of time before measuring, otherwise just measure
+
+                if self.measuring_time > 0 and self.action_timeout == 0:
+                    self.action_timeout = time_elapsed + self.measuring_time
+
+                if time_elapsed >= self.action_timeout or self.measuring_time == 0:
+                    print("Scanned current point: ", self.cur_path[self.cur_point_index].pos,
+                          " Measured: ", self.sim.controller.probe_voltage)
+                    self.cur_path[self.cur_point_index].measurement = self.sim.controller.probe_voltage
+                    self.cur_point_index += 1
+                    self.measure_flag = False
+                    self.action_timeout = 0
+
+        # if the next grounding time is less than time elapsed (i.e. its time to ground), then raise ground flag!
+
+        if self.next_ground_time <= time_elapsed and self.next_ground_time != 0:
+            print("Time to ground! Raising flag!")
+            self.ground_flag = True
+            self.next_ground_time = 0
+
+            # if there are no current movements (i.e. movement is complete) AND the ground flag is set:
+            # Offset the current probe position by a small amount such that it backs away from the object
+            # write to our action timer to wait 4 seconds, and send a serial comm to the feather telling it to ground
+        if self.ground_flag and self.sim.pos_probe_command.complete and self.sim.pos_plat_command.complete and self.action_timeout == 0:
+            new_point = pp.get_link_pose(self.sim.sim_robot, 6)[0]
+
+            new_point = np.add(new_point, [-.075, 0, 0])  # offset probe
+            self.sim.pos_probe_command = ProbePositionSetter(self.controller, new_point, [0, 0, 0])
+            self.feather.write_data("ground\n".encode())  # tell servo to ground!
+            self.action_timeout = time_elapsed + 4  # wait 4 seconds to let system ground
+
+            # after our grounding action, reset ground flag and action wait timer.
+        if self.action_timeout != 0 and time_elapsed >= self.action_timeout and self.ground_flag:
+            self.action_timeout = 0
+            self.ground_flag = False
+
+    def save_data(self):
+        pass
 
 
 class Charge:
