@@ -1,9 +1,7 @@
 import os
 
-import pybullet as p
 import numpy as np
 import open3d as o3d
-import shutil
 
 DATA_DIR = os.path.join(os.path.abspath('../'), "data", "sim", "meshes")
 

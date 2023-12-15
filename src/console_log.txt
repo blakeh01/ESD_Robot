@@ -1,11 +1,20 @@
+Connected to COM8 at 115200 baud.
+[DUET] Stepper motors enabled!
+[DUET] Current position is home.
+Connection successful! Model: CD22-100-485
+b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
+
+b3Printf: No inertial data for link, using mass=1, localinertiadiagonal = 1,1,1, identity local inertial frame
+b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
+
+b3Printf: rx200/probe_tip_ref
+[SIM] Initialized robot with ID: 0
+[SIM] Initialized platform with ID: 1
+[DUET] Exiting... going home.
+Connection closed.
+[LDS] Exiting... exiting serial communications with laser.
+[array([-0.68,  0.  ,  0.  ]), [0, 0, 0.32]]
 [MAIN] Initializing Controller...
-[DXL] Successfully opened port on COM6!
-[DXL] Successfully set baud rate to 4000000 bps!
-[ROBOT] Created bulk read parameter for motor ID#1. (Success? True)
-[ROBOT] Created bulk read parameter for motor ID#2. (Success? True)
-[ROBOT] Created bulk read parameter for motor ID#3. (Success? True)
-[ROBOT] Created bulk read parameter for motor ID#4. (Success? True)
-[ROBOT] Created bulk read parameter for motor ID#5. (Success? True)
 b3Printf: b3Warning[examples/Importers/ImportURDFDemo/BulletUrdfImporter.cpp,126]:
 
 b3Printf: No inertial data for link, using mass=1, localinertiadiagonal = 1,1,1, identity local inertial frame

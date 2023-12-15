@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog
+
 from src.Controller import Controller
 from src.sim.sim_constants import SIM_SCALE
 from src.sim.simhelper import get_normal_point_cloud
@@ -104,7 +105,6 @@ class Ui_NormalGenerator(object):
         self.sbox_scan_z_3.setMaximum(9999)
         self.sbox_scan_z_3.setProperty("value", 50)
 
-
         self.retranslateUi(NormalGenerator)
         QtCore.QMetaObject.connectSlotsByName(NormalGenerator)
 
@@ -141,7 +141,8 @@ class DialogNormalGenerator(QDialog):
 
         cloud = get_normal_point_cloud(
             int(self.ui.sbox_scan_resolution.text()),
-            (((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * SIM_SCALE, ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * SIM_SCALE), # scale correction factor
+            (((float(self.ui.sbox_scan_z.text()) + 160) / 1000) * SIM_SCALE,
+             ((float(self.ui.sbox_scan_z_3.text()) + 160) / 1000) * SIM_SCALE),  # scale correction factor
             int(self.ui.sbox_scan_z_4.text()),
             (float(self.ui.sbox_probe_distance.text()) / 1000) * SIM_SCALE,
             self.controller_instance.simulation_instance.object_offset

@@ -13,8 +13,9 @@
 import os
 
 import numpy as np
-from src.robot.arm.rbt_constants import *
 from dynamixel_sdk import *
+
+from src.robot.arm.rbt_constants import *
 
 
 def dxlToRadians(value, radian_offset):

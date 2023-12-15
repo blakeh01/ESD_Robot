@@ -42,7 +42,7 @@ void loop() {
       else if(command == "charge")
       {
         charge = !charge;
-        digitalWrite(14, charge);
+        digitalWrite(6, charge);
         Serial.println("ACK");
       }
       else

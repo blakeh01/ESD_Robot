@@ -1,11 +1,12 @@
 import numpy as np
-from scipy.interpolate import interp1d
-from scipy.interpolate import RegularGridInterpolator
 from scipy.fft import fft2
 from scipy.fft import fftshift
-from scipy.fft import ifftshift
 from scipy.fft import ifft2
+from scipy.fft import ifftshift
+from scipy.interpolate import RegularGridInterpolator
 from scipy.interpolate import griddata
+from scipy.interpolate import interp1d
+
 
 # Functions for post-processing of probe data to get surface charge density
 # usage:
@@ -72,15 +73,16 @@ def arrange_cylinder(indata, interpnumx=100, interpnumy=50):
     # circules are 0 to 360 degrees...
     thetastart = 0
     thetaend = 360
-    zstart = min(z) # get start and end z values from the data
+    zstart = min(z)  # get start and end z values from the data
     zend = max(z)
 
-    thetanew = np.linspace(thetastart, thetaend, interpnumx) # make linspaces for theta and z
+    thetanew = np.linspace(thetastart, thetaend, interpnumx)  # make linspaces for theta and z
     znew = np.linspace(zstart, zend, interpnumy)
 
-    xv, yv = np.meshgrid(thetanew, znew) # 2D grid to fill out with data
+    xv, yv = np.meshgrid(thetanew, znew)  # 2D grid to fill out with data
 
-    newgrid = griddata((theta, z), v, (xv, yv), method='cubic', fill_value=0) # takes unordered data and interpolates it onto the 2D grid
+    newgrid = griddata((theta, z), v, (xv, yv), method='cubic',
+                       fill_value=0)  # takes unordered data and interpolates it onto the 2D grid
 
     return newgrid, ravg, thetastart, thetaend, zstart, zend
 
@@ -105,11 +107,13 @@ def arrange_face(indata, interpnumx=100, interpnumy=100):
     xnew = np.linspace(xstart, xend, interpnumx)
     ynew = np.linspace(ystart, yend, interpnumy)
 
-    xv, yv = np.meshgrid(xnew, ynew) # 2D grid to interp onto
+    xv, yv = np.meshgrid(xnew, ynew)  # 2D grid to interp onto
 
-    newgrid = griddata((x, y), v, (xv, yv), method='linear', fill_value=0) # takes unordered data and interpolates it onto the 2D grid
+    newgrid = griddata((x, y), v, (xv, yv), method='linear',
+                       fill_value=0)  # takes unordered data and interpolates it onto the 2D grid
 
     return newgrid, xstart, xend, ystart, yend
+
 
 # takes 'vase' unordered r, theta, z, v (columns) data in and converts to theta, z, v array for further processing
 # use process_cylinder but pass rmax instead of ravg
@@ -137,8 +141,8 @@ def arrange_vase(indata, offsetx=0, offsety=0, interpnumx=100, interpnumy=50):
     yn = yp - offsety
 
     # back to polar:
-    r = xn**xn + yn**yn
-    theta = np.arctan(yn/xn)
+    r = xn ** xn + yn ** yn
+    theta = np.arctan(yn / xn)
 
     ravg = np.mean(r)
     rmax = np.max(r)
@@ -172,63 +176,67 @@ def process_rect(xmin, xmax, zmin, zmax, inmap, a, sig, g, mask_perc):
     x = np.linspace(xmin, xmax, np.size(inmap[0, :]))  # phi linspace for x of measured output
 
     xPSF = np.linspace(-600, 600, num=10000, endpoint=True)  # PSF x range (larger than needs to be)
-    bigG = (a / (sig * np.sqrt(2 * np.pi))) * np.exp(-(np.square(xPSF)) / (2 * np.square(sig))) # Gaussian profile
-    L = (g / np.pi) / (np.abs(xPSF) + np.square(g)) # Lorentz Profile
+    bigG = (a / (sig * np.sqrt(2 * np.pi))) * np.exp(-(np.square(xPSF)) / (2 * np.square(sig)))  # Gaussian profile
+    L = (g / np.pi) / (np.abs(xPSF) + np.square(g))  # Lorentz Profile
 
-    vPSF = np.convolve(bigG, L) # convolve the two
-    xPSF = np.linspace(-600, 600, 2 * np.size(xPSF) - 1, endpoint=True) # make new linspace for x
+    vPSF = np.convolve(bigG, L)  # convolve the two
+    xPSF = np.linspace(-600, 600, 2 * np.size(xPSF) - 1, endpoint=True)  # make new linspace for x
 
-    dz = (zmax / np.size(inmap[:, 1])) / 4 # get dz from input, divide by 4
-    dx = (np.max(x) / np.size(x)) / 4 # get dx from input, divide by 4
-    xx, yy = np.mgrid[-400:400 + dx:dx, -400:400 + dz:dz]  # 2D grid to interpolate onto, -400 to 400 hopefully big enough
+    dz = (zmax / np.size(inmap[:, 1])) / 4  # get dz from input, divide by 4
+    dx = (np.max(x) / np.size(x)) / 4  # get dx from input, divide by 4
+    xx, yy = np.mgrid[-400:400 + dx:dx,
+             -400:400 + dz:dz]  # 2D grid to interpolate onto, -400 to 400 hopefully big enough
     # some padding room
-    newGrid = np.sqrt(np.square(xx) + np.square(yy)) # the grid we will be interpolating onto, this makes a circular coordinate array
+    newGrid = np.sqrt(
+        np.square(xx) + np.square(yy))  # the grid we will be interpolating onto, this makes a circular coordinate array
 
-    f = interp1d(xPSF, vPSF) # interpolation function with x and v from above
+    f = interp1d(xPSF, vPSF)  # interpolation function with x and v from above
     yPSF = f(newGrid)  # the big PSF we want
 
-    [X, Y] = np.mgrid[0:np.max(x):dx, zmin:zmax + dz:dz] # a grid based on the data size and the new dx and dz
+    [X, Y] = np.mgrid[0:np.max(x):dx, zmin:zmax + dz:dz]  # a grid based on the data size and the new dx and dz
 
-    interp2 = RegularGridInterpolator((z, x), inmap, bounds_error=False, fill_value=None) # interpolate the data
+    interp2 = RegularGridInterpolator((z, x), inmap, bounds_error=False, fill_value=None)  # interpolate the data
     inmap_prime = interp2((Y, X))
 
     # get the amount of padding we need
     xpad = yPSF.shape[0]
     ypad = yPSF.shape[1]
-    inmap_padded = padding(inmap_prime, xpad, ypad) # pad the input data to the size of the PSF
+    inmap_padded = padding(inmap_prime, xpad, ypad)  # pad the input data to the size of the PSF
 
     # the actual math:
-    PS_FFT = fft2(yPSF) # get stuff into the frequency domain
+    PS_FFT = fft2(yPSF)  # get stuff into the frequency domain
     v_FFT = fft2(inmap_padded)
 
     # shift so FFT is zero centered
     PS_FFT = fftshift(PS_FFT)
     v_FFT = fftshift(v_FFT)
 
-    M, N = np.shape(v_FFT) # get shape of the FFT
+    M, N = np.shape(v_FFT)  # get shape of the FFT
 
     # filter the FFT of the input data with a circular cookie cutter to remove high frequency noise:
-    mask_radius = mask_perc * M # circle is a percentage of the size of the FFT
+    mask_radius = mask_perc * M  # circle is a percentage of the size of the FFT
     mask = create_circular_mask(M, N, radius=mask_radius)
     v_FFT = v_FFT * mask
 
     # Wiener Deconvolution:
     H = PS_FFT
-    Hdiv = (np.conj(H) / (np.square(np.abs(H)) + 8)) # 8 is an assumed noise level, 8 seems to work pretty well
+    Hdiv = (np.conj(H) / (np.square(np.abs(H)) + 8))  # 8 is an assumed noise level, 8 seems to work pretty well
     PHI = v_FFT
 
     wnrdeconv = Hdiv * PHI
     # now back to the spatial domain:
-    sigma = ifftshift(wnrdeconv) # 'unshift' the data
-    sigma_fft = ifft2(sigma) # inverse FFT
-    sigma_plot = ifftshift(sigma_fft) # shift back to center
+    sigma = ifftshift(wnrdeconv)  # 'unshift' the data
+    sigma_fft = ifft2(sigma)  # inverse FFT
+    sigma_plot = ifftshift(sigma_fft)  # shift back to center
 
     # cut out the data in the center of the output array
-    r_0, c_0 = np.asarray(inmap_prime.shape) # get start and end coordinates for where the data actually is
+    r_0, c_0 = np.asarray(inmap_prime.shape)  # get start and end coordinates for where the data actually is
     r_1, c_1 = np.asarray(sigma_plot.shape)
     outmap = np.transpose(
-        10 * np.real(sigma_plot[r_1 // 2 - r_0 // 2:r_1 // 2 + r_0 // 2, c_1 // 2 - c_0 // 2:c_1 // 2 + c_0 // 2])) # cut out the data and return
+        10 * np.real(sigma_plot[r_1 // 2 - r_0 // 2:r_1 // 2 + r_0 // 2,
+                     c_1 // 2 - c_0 // 2:c_1 // 2 + c_0 // 2]))  # cut out the data and return
     return outmap
+
 
 # takes data from cylinder (previously arranged) and returns surface charge density
 def process_cylinder(phimin, phimax, zmin, zmax, r, inmap, a, sig, g, mask_perc):
@@ -295,7 +303,7 @@ def process_cylinder(phimin, phimax, zmin, zmax, r, inmap, a, sig, g, mask_perc)
     Hdiv = (np.conj(H) / (np.square(np.abs(H)) + 8))
     PHI = v_FFT
 
-    wnrdeconv = Hdiv * PHI 
+    wnrdeconv = Hdiv * PHI
     sigma = ifftshift(wnrdeconv)
     sigma_fft = ifft2(sigma)
     sigma_plot = ifftshift(sigma_fft)
@@ -310,15 +318,15 @@ def process_cylinder(phimin, phimax, zmin, zmax, r, inmap, a, sig, g, mask_perc)
 # generates a, sigma, and gamma for PSF given a permittivity
 def gen_psf(perm, psf_file):
     # inputs: permitivitty and the PSF file in CSV format
-    perm10 = round(perm * 10) # multiply permitivitty by ten to make indexing easier, tenth granularity is good enough
+    perm10 = round(perm * 10)  # multiply permitivitty by ten to make indexing easier, tenth granularity is good enough
 
-    psf_data = np.loadtxt(psf_file, delimiter=',', skiprows=1) # load the PSF file
+    psf_data = np.loadtxt(psf_file, delimiter=',', skiprows=1)  # load the PSF file
     # pull out columns:
-    e = psf_data[:, 0]*10 # permitivitty
-    a = psf_data[:, 1] # alpha
+    e = psf_data[:, 0] * 10  # permitivitty
+    a = psf_data[:, 1]  # alpha
     sigma = psf_data[:, 2]
     gamma = psf_data[:, 3]
-    erange = np.arange(0, 300, 1, dtype=int) # make range of 0 to 300 to interpolate over (0 to 30 F/m)
+    erange = np.arange(0, 300, 1, dtype=int)  # make range of 0 to 300 to interpolate over (0 to 30 F/m)
     # interpolate outputs:
     ainterp = np.interp(erange, e, a)
     sinterp = np.interp(erange, e, sigma)

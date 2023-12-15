@@ -1,12 +1,9 @@
-import os
-import time
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-from mpl_toolkits.mplot3d import Axes3D
 from src.robot.SerialMonitor import *
-from datetime import datetime
 
 
 # possibly useful article if 3D board does NOT respond 'OK' after a move is completed:
@@ -29,8 +26,8 @@ class ObjectScanner:
         self.z_end = 203  # in mm
 
         self.x_feed = 1500  # in mm/min
-        self.z_feed = 500   # in mm/min
-        self.rot_feed = 1600    # in mm/min
+        self.z_feed = 500  # in mm/min
+        self.rot_feed = 1600  # in mm/min
 
         self.degree = 45
         self.rotations = 360 / self.degree
@@ -70,7 +67,7 @@ class ObjectScanner:
 
                 # calculate how long it takes to reach x_end going x_feed mm/min, then divide by number of steps
                 # to get the interval at which the scanner should scan.
-                dt = ((self.x_end - self.x_start) / (self.x_feed/60)) / len(steps)
+                dt = ((self.x_end - self.x_start) / (self.x_feed / 60)) / len(steps)
 
                 self.stepper_board.write_x(self.x_end, self.x_feed)  # begin motion to end of rail
                 for x_pos in steps:  # go through each step, sleeping for dt so scanning only on proper interval.

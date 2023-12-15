@@ -19,6 +19,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QMessageBox, QWizard, QFileDialog
 )
+
 from src.Controller import Controller
 from src.gui.dialogs.dialog_normal_generator import DialogNormalGenerator
 from src.gui.dialogs.dialog_probe_profile import DialogProbeProfile
@@ -26,7 +27,6 @@ from src.gui.dialogs.dialog_robot_info import DialogRobotInfo
 from src.gui.main_window import Ui_MainWindow
 from src.gui.object_wizard import Ui_ObjectWizard
 from src.robot.SerialMonitor import StepperHandler, LDS
-from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import PortConfiguration
 from src.robot.scanner.Scanner import ObjectScanner, EdgeFinder
 from src.sim.ObjectVisualizer import ObjectVisualizer
@@ -98,7 +98,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_probe_setup.clicked.connect(self.dialog_probe_setup)  # probe flow setup
         self.btn_start_probing.clicked.connect(self.start_probe_flow)  # start probe flow
         self.btn_charge_done.clicked.connect(self.charge_confirm)  # charge done
-        self.btn_sim_terminate.clicked.connect(self.sim_stop)  # stop simulation
+        self.btn_sim_terminate.clicked.connect(self.stop_flow_and_home)  # stop simulation
         self.btn_stop.clicked.connect(self.rbt_stop)  # big red stop button
 
         self.lbl_charge_warn.setVisible(False)  # hide charge btn/label
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             p.stepSimulation()
             time.sleep(1 / 120)
 
-        self.controller.simulation_instance.robot_handler.set_goal_conf(
+        self.controller.robot_instance.set_goal_conf(
             pp.get_joint_positions(self.controller.simulation_instance.sim_robot, [1, 2, 3, 4, 5]))
 
     def rbt_stop(self):
@@ -354,6 +354,8 @@ class ObjectWizard(QWizard):
 
         self.stepper_controller = StepperHandler(port_config.stepper_port, port_config.stepper_baud)
         self.lds_instance = LDS(port_config.lds_port, port_config.lds_baud)
+
+        self.stepper_controller.home_all()
 
     def update(self):
         if self.scan_thread and self.scanner:
@@ -649,7 +651,9 @@ if __name__ == '__main__':
         first_window.show()
         app1.exec_()
         app1.exit()
-        param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset]
+        # store robot offset, object offset, and object dims to be used in the simulation
+        param = [first_window.SIM_ROBOT_OFFSET, first_window.obj_joint_offset, (float(first_window.ui.sbox_prim_field_A.text()),
+                                   float(first_window.ui.sbox_prim_field_B.text()), float(first_window.ui.sbox_prim_field_C.text()))]
         del app1
         del first_window
 

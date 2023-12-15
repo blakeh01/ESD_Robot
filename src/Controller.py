@@ -1,8 +1,10 @@
 import nidaqmx
-from src.robot.arm.RobotHandler import RobotHandler
-from src.sim.simulation import *
+
 from src.robot.SerialMonitor import StepperHandler, LDS, SerialMonitor
+from src.robot.arm.RobotHandler import RobotHandler
 from src.robot.ports import *
+from src.sim.simulation import *
+
 
 class Controller:
     """
@@ -34,11 +36,11 @@ class Controller:
 
         # Instance management
         self.main_instance = main_instance
-        self.simulation_instance = Simulation(main_instance, obj_wiz_data[0], obj_wiz_data[1])
         self.stepper_controller = StepperHandler(self.port_conf.stepper_port, self.port_conf.stepper_baud)
         self.lds_instance = LDS(self.port_conf.lds_port, self.port_conf.lds_baud)
         self.robot_instance = RobotHandler(port_config, stepper_controller=self.stepper_controller)
         self.feather_instance = SerialMonitor(port=port_config.feather_port, baud_rate=port_config.feather_baud)
+        self.simulation_instance = Simulation(main_instance, self, obj_wiz_data[0], obj_wiz_data[1])
 
         # NIDAQ probing
         print("Connecting to NI-DAQ @ Dev1/ai0...")
@@ -51,7 +53,7 @@ class Controller:
 
         # Temp test stuff:
         self.obj_distance = 0
-        self.obj_height = None # obj_wiz_data[2]
+        self.obj_height = obj_wiz_data[2][2]
 
     def send_update(self):
         """

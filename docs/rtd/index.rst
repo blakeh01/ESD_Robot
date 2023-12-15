@@ -1,5 +1,5 @@
 .. Your Project Name documentation master file, created by
-   sphinx-quickstart on Thu Dec 1 12:34:56 2023.
+sphinx-quickstart on Thu Dec 1 12:34:56 2023.
 
 Welcome to Your Project Name's documentation!
 =============================================
