@@ -253,7 +253,8 @@ class RotationallySymmetric(ProbingFlowManager):
         if self.z_sil_index >= len(self.z_slices):
             print("Probing Completed!")
             self.cur_flow.end_time = time_elapsed
-            self.save_data()
+            # once complete, write the measured points to Excel file
+            self.cur_flow.export_measured_points()
             self.cur_flow_idx += 1
 
             # hacky way to quickly step simulation to move the motors home
@@ -348,7 +349,10 @@ class RotationallySymmetric(ProbingFlowManager):
                 if time_elapsed >= self.action_timeout or self.measuring_time == 0:
                     print("Scanned current point: ", self.cur_path[self.cur_point_index].pos,
                           " Measured: ", self.sim.controller.probe_voltage)
+                    # set the measurement variable in the alignment point to the current probe voltage
                     self.cur_path[self.cur_point_index].measurement = self.sim.controller.probe_voltage
+                    # add the measured point to the flow
+                    self.cur_flow.add_measured_point(self.cur_path[self.cur_point_index])
                     self.cur_point_index += 1
                     self.measure_flag = False
                     self.action_timeout = 0
@@ -375,9 +379,6 @@ class RotationallySymmetric(ProbingFlowManager):
         if self.action_timeout != 0 and time_elapsed >= self.action_timeout and self.ground_flag:
             self.action_timeout = 0
             self.ground_flag = False
-
-    def save_data(self):
-        pass
 
 
 class RectangularPrism(ProbingFlowManager):
@@ -484,8 +485,9 @@ class RectangularPrism(ProbingFlowManager):
         if self.side_index >= len(self.normal_slices):
             print("Probing Completed!")
             self.cur_flow.end_time = time_elapsed
+            # once complete, write the measured points to Excel file
+            self.cur_flow.export_measured_points()
             self.cur_flow_idx += 1
-            self.save_data()
 
             for i in range(100):
                 self.sim.drive_motors_to_home()
@@ -562,7 +564,10 @@ class RectangularPrism(ProbingFlowManager):
                 if time_elapsed >= self.action_timeout or self.measuring_time == 0:
                     print("Scanned current point: ", self.cur_path[self.cur_point_index].pos,
                           " Measured: ", self.sim.controller.probe_voltage)
+                    # set the measurement variable in the alignment point to the current probe voltage
                     self.cur_path[self.cur_point_index].measurement = self.sim.controller.probe_voltage
+                    # add the measured point to the flow
+                    self.cur_flow.add_measured_point(self.cur_path[self.cur_point_index])
                     self.cur_point_index += 1
                     self.measure_flag = False
                     self.action_timeout = 0
@@ -589,9 +594,6 @@ class RectangularPrism(ProbingFlowManager):
         if self.action_timeout != 0 and time_elapsed >= self.action_timeout and self.ground_flag:
             self.action_timeout = 0
             self.ground_flag = False
-
-    def save_data(self):
-        pass
 
 
 class Charge:
