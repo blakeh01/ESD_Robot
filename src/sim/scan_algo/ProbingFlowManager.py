@@ -113,7 +113,7 @@ class ProbingFlowManager:
             if time_elapsed >= self.action_timeout:
                 self.action_timeout = time_elapsed + 0.25
                 self.gui.lbl_charge_warn.setStyleSheet(
-                    "background-color: lightgreen" if self.sim.controller.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
+                    "background-color: lightgreen" if self.gui.lbl_charge_warn.styleSheet() == "background-color: white" else "background-color: white")
 
             # if the charge done flag is set by something, consider this action complete!
             # or if the charge time is up.
